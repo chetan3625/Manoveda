@@ -13,7 +13,7 @@ class ERP extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: BlurBackGround(),
+      home:BlurBackGround(),
     );
   }
 }

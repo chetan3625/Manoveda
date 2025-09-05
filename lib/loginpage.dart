@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'package:erptransportexpress/homepage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -9,18 +13,37 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+
+  Future<void> saveLogin() async {
+
+    final passkey=GlobalKey<FormState>();
+    bool isLoading=false;
+
+    final prefs = await SharedPreferences.getInstance();
+    String email=loginidcontroller.text.trim();
+    String pass=passwordcontroller.text.trim();
+
+    await prefs.setBool("isLoggedIn", true);
+    await prefs.setString("email", email);
+
+  }
+
+
+
+
   bool obsecure = true;
-  TextEditingController loginid = TextEditingController();
-  TextEditingController pass = TextEditingController();
+  TextEditingController loginidcontroller = TextEditingController();
+  TextEditingController passwordcontroller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width; // 👈 screen size घेतो
-    final bool isMobile = screenWidth < 600; // threshold (mobile < 600px)
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS); // threshold
+
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: screenWidth*0.1,
+        toolbarHeight: isMobile?screenWidth*0.1:screenWidth*0.05,
         centerTitle: true,
         backgroundColor:Colors.blue ,
         title:Text("Fleet ERP",
@@ -38,13 +61,11 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           // -------- Top (Image) --------
           Expanded(
-            flex: 2,
+            flex: 1,
             child: Container(
-
-                color: Colors.blue.shade50,
                 child: Center(
                 child: Image.asset(
-                  "assets/images/loginimage/7053246-removebg-preview.png",
+                  "assets/images/bg_login.png",
                   fit: BoxFit.contain,
                 ),
               ),
@@ -66,10 +87,11 @@ class _LoginPageState extends State<LoginPage> {
 
             flex: 1,
             child: Container(
+
               color: Colors.blue.shade50,
               child: Center(
                 child: Image.asset(
-                  "assets/images/loginimage/7053246-removebg-preview.png",
+                  "assets/images/loginimage/bg_login.png",
                   fit: BoxFit.contain,
                 ),
               ),
@@ -93,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  /// 🔑 Login Form Widget (common for both layouts)
+  ///  Login Form Widget (common for both layouts)
   Widget _buildLoginForm() {
     return Center(
       child: Padding(
@@ -124,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Username
                   TextField(
-                    controller: loginid,
+                    controller: loginidcontroller,
                     decoration: const InputDecoration(
                       labelText: "LoginId",
                       border: OutlineInputBorder(),
@@ -134,14 +156,14 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Password
                   TextField(
-                    controller: pass,
+                    controller: passwordcontroller,
                     obscureText: obsecure,
                     decoration: InputDecoration(
                       labelText: "Password",
                       suffixIcon: InkWell(
                         onTap: () {
                           setState(() {
-                            obsecure = !obsecure; // ✅ toggle
+                            obsecure = !obsecure;
                           });
                         },
                         child: Icon(
@@ -154,7 +176,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 40),
 
                   // Login Button
                   SizedBox(
@@ -168,8 +190,9 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      onPressed: () {
-                        // handle login here
+                      onPressed: () async{
+                        await saveLogin();
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>Homepage()));
                       },
                       child: const Text(
                         "Login",
@@ -178,7 +201,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
                   // RichText Example (Signup link)
                   RichText(
@@ -201,6 +224,7 @@ class _LoginPageState extends State<LoginPage> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text("Sign Up Clicked!"),
+
                                 ),
                               );
                             },
