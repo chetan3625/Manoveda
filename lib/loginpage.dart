@@ -1,5 +1,10 @@
+import 'dart:io';
+
+import 'package:erptransportexpress/screens/Dashboard_Screens/dashboard_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -16,7 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width; // 👈 screen size घेतो
-    final bool isMobile = screenWidth < 600; // threshold (mobile < 600px)
+    final bool isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
     return Scaffold(
       appBar: AppBar(
@@ -33,6 +38,8 @@ class _LoginPageState extends State<LoginPage> {
 
         ),)
       ),
+
+      //       ----------------- --------   for Mobile ----------------------------- ----------------
       body: isMobile
           ? Column(
         children: [
@@ -40,7 +47,6 @@ class _LoginPageState extends State<LoginPage> {
           Expanded(
             flex: 2,
             child: Container(
-
                 color: Colors.blue.shade50,
                 child: Center(
                 child: Image.asset(
@@ -51,13 +57,15 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          // -------- Bottom (Form) --------
           Expanded(
             flex: 3,
             child: _buildLoginForm(),
           ),
         ],
       )
+
+
+      //       ---------------------------       web ------------------------------------
           : Row(
         children: [
 
@@ -169,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       onPressed: () {
-                        // handle login here
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardScreen(),),);
                       },
                       child: const Text(
                         "Login",
