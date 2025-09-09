@@ -14,7 +14,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Fleet"),
+        backgroundColor: Colors.blue,
+        title: const Text("Analytics Screen",style: TextStyle(
+          color: Colors.white
+        ),),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
