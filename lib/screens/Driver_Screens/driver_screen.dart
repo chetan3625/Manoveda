@@ -15,7 +15,7 @@ class _DriverScreenState extends State<DriverScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Fleet"),
+        title: const Text("Divers"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {

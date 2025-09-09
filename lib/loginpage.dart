@@ -20,12 +20,11 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width; // 👈 screen size घेतो
     final bool isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: screenWidth*0.1,
+
         centerTitle: true,
         backgroundColor:Colors.blue ,
         title:Text("Fleet ERP",
@@ -71,7 +70,6 @@ class _LoginPageState extends State<LoginPage> {
 
           // -------- Left Column (Image) --------
           Expanded(
-
             flex: 1,
             child: Container(
               color: Colors.blue.shade50,
@@ -83,15 +81,12 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-
           // -------- Right Column (Form) --------
           Expanded(
             flex: 2,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-
               children: [
-
                 _buildLoginForm(),
               ],
             ),

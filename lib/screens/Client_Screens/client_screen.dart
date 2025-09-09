@@ -15,7 +15,7 @@ class _ClientScreenState extends State<ClientScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Fleet"),
+        title: const Text("Clients"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/vehicle.dart';
+import '../models/VehicalModel.dart';
 
 class VehicleCard extends StatefulWidget {
   final Vehicle vehicle;
