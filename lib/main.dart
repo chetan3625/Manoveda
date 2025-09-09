@@ -1,9 +1,6 @@
 import 'package:erptransportexpress/splashscreen.dart';
 
 import 'package:flutter/material.dart';
-
-import 'loginpage.dart';
-
 void main(){
   runApp(ERP());
 }
@@ -13,7 +10,9 @@ class ERP extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
 
+      ),
       debugShowCheckedModeBanner: false,
       home:SplashScreen(),
     );
