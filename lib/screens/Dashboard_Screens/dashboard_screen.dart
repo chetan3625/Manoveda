@@ -31,7 +31,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       drawer: const Sidebar(),
       appBar: AppBar(
-        title: const Text("Fleet Management"),
+        title: const Text("Dashboard",style:TextStyle(
+        ),),
         actions: const [
           Padding(
             padding: EdgeInsets.all(8.0),

@@ -30,7 +30,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.dashboard),
             title: const Text("Dashboard"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const DashboardScreen()),
               );
@@ -40,7 +40,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.local_shipping),
             title: const Text("Fleet"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const FleetScreen()),
               );
@@ -50,7 +50,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.store),
             title: const Text("Vendor"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const VendorScreen()),
               );
@@ -70,7 +70,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.people),
             title: const Text("Client"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ClientScreen()),
               );
@@ -80,7 +80,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.route),
             title: const Text("Trip"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const TripScreen()),
               );
@@ -90,7 +90,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.account_balance),
             title: const Text("Financials"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const FinancialsScreen()),
               );
@@ -100,7 +100,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.description),
             title: const Text("Documents"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const DocumentsScreen()),
               );
@@ -110,7 +110,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.analytics),
             title: const Text("Analytics"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AnalyticsScreen()),
               );
