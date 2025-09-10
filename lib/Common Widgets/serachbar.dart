@@ -1,9 +1,13 @@
+import 'package:erptransportexpress/utils/Colors.dart';
+import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:flutter/material.dart';
 
 class CustomSearchBar extends StatefulWidget {
+  final bool isVisibileFloating=true;
   final String screen;
+  final GlobalKey<ScaffoldState> scaffoldKey; // 🔹 Add this
 
-  const CustomSearchBar({super.key, required this.screen});
+  const CustomSearchBar({super.key, required this.screen, required this.scaffoldKey});
 
   @override
   State<CustomSearchBar> createState() => _CustomSearchBarState();
@@ -14,19 +18,16 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final doubleScreenWidth = MediaQuery.of(context).size.width;
 
-    final doubleScreenWidth=MediaQuery.of(context).size.width;
-    double unit = doubleScreenWidth/6;
-    final doubleScreenHeight=MediaQuery.of(context).size.height;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       child: Container(
-        width: doubleScreenWidth - doubleScreenWidth*0.06,
-
+        width: doubleScreenWidth - doubleScreenWidth * 0.06,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: common_Colors.textColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.blue, width: 1),
+          border: Border.all(color: common_Colors.primaryColor, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.2),
@@ -39,20 +40,11 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
-              // LHS: Screen Name
               Text(
                 widget.screen,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
-
-              // Flexible gap
               const Spacer(),
-
-              // RHS: Search Bar (with Search Button inside)
               Expanded(
                 flex: 3,
                 child: Container(
@@ -60,15 +52,13 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.blue, width: 1),
+                    border: Border.all(color: common_Colors.primaryColor, width: 1),
                   ),
                   child: Row(
                     children: [
                       const Icon(Icons.search, color: Colors.grey),
                       const SizedBox(width: 8),
-
-                      // Text Field
-                      Flexible(
+                      Expanded(
                         child: TextField(
                           controller: _controller,
                           decoration: InputDecoration(
@@ -77,19 +67,14 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                           ),
                         ),
                       ),
-
                       const SizedBox(width: 8),
-
-                      // Search Button inside Search Bar
                       ElevatedButton(
-
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.lightBlueAccent,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5),
                           ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         ),
                         onPressed: () {
                           String searchText = _controller.text;
@@ -97,33 +82,16 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                             SnackBar(content: Text("Searching for: $searchText")),
                           );
                         },
-                        child: const Text(
-                          "Search",
-                          style: TextStyle(color: Colors.white),
-                        ),
+                        child: const Text("Search", style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
                 ),
               ),
-
               const SizedBox(width: 12),
-
-              // Filter Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  backgroundColor: Colors.red,
-                ),
-                onPressed: () => Scaffold.of(context).openEndDrawer(),
-                child: const Text(
-                  "Filters",
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
+              commonButton(text: "Filters", onPressed: (){
+                Scaffold.of(context).openEndDrawer();
+              })
             ],
           ),
         ),

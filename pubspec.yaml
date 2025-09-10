@@ -23,7 +23,6 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/images/
 
   fonts:
     - family: Merriweather

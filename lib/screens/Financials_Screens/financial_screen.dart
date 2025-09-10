@@ -1,3 +1,4 @@
+import 'package:erptransportexpress/Common%20Widgets/customtable.dart';
 import 'package:flutter/material.dart';
 
 import '../Dashboard_Screens/dashboard_screen.dart';
@@ -26,23 +27,16 @@ class _FinancialsScreenState extends State<FinancialsScreen> {
           },
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("Financials Screen"),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-
-                });
-              },
-              child: const Text("Add Financials"),
-            ),
-          ],
-        ),
-      ),
+      body: Column(
+        children: [
+          CustomTable(columns: ["Profit","Loss"], rows: [
+            ["5","6"],
+            ["5","6"],
+            ["5","6"],
+            ["5","6"],
+          ])
+        ],
+      )
     );
   }
 }
