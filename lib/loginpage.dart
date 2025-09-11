@@ -50,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
                 color: Colors.blue.shade50,
                 child: Center(
                 child: Image.asset(
-                  "assets/images/loginimage/7053246-removebg-preview.png",
+                  "assets/images/bg_login.png",
                   fit: BoxFit.contain,
                 ),
               ),
@@ -77,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
               color: Colors.blue.shade50,
               child: Center(
                 child: Image.asset(
-                  "assets/images/loginimage/7053246-removebg-preview.png",
+                  "assets/images/bg_login.png",
                   fit: BoxFit.contain,
                 ),
               ),
