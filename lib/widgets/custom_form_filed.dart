@@ -87,8 +87,7 @@ class CustomFormField extends StatelessWidget {
                 ),
                 prefixIcon: prefixIcon,
                 suffixIcon: suffixIcon,
-                contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(

@@ -1,7 +1,17 @@
-import 'package:erptransportexpress/screens/Vendor_Screens/vendor_details.dart';
+import 'package:erptransportexpress/screens/Vendor_Screens/edit_table_vendor_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../Common Widgets/FleetTableWidget.dart';
+import '../../Common Widgets/card.dart';
+import '../../Common Widgets/filter.dart';
+import '../../Common Widgets/serachbar.dart';
+import '../../models/FilterModel.dart';
+import '../../models/SubFilterOptionModel.dart';
+import '../../models/VehicleModel.dart';
+import '../../utils/Colors.dart';
 import '../../widgets/custom_form_filed.dart';
+import '../../widgets/sidebar.dart';
+import '../Fleet_Screens/Edit_Table_FleetScreen.dart';
 
 
 class VendorScreen extends StatefulWidget {
@@ -13,98 +23,172 @@ class VendorScreen extends StatefulWidget {
 }
 
 class _VendorScreenState extends State<VendorScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final List<VehicleModel> vehicles = [
+    VehicleModel(
+      "VH001",
+      "Toyota",
+      "Corolla",
+      "Sedan",
+      "Petrol",
+      "MH12AB1234",
+      "1/2/2025",
+      "2/2/2025",
+    ),
+    VehicleModel(
+      "VH002",
+      "Honda",
+      "City",
+      "Sedan",
+      "Diesel",
+      "MH14CD5678",
+      "2/2/2025",
+      "3/3/2025",
+    ),
+    VehicleModel(
+      "VH003",
+      "Tata",
+      "Nexon",
+      "SUV",
+      "Electric",
+      "MH15EF9012",
+      "4/4/2025",
+      "5/5/2025",
+    ),
+    VehicleModel(
+      "VH004",
+      "Hyundai",
+      "i20",
+      "Hatchback",
+      "Petrol",
+      "MH13GH3456",
+      "6/6/2025",
+      "7/7/2025",
+    ),
+  ];
+  void deleteFromRow(String vehicleno){
+    setState(() {
 
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
+    });
+
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
+
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
     return Scaffold(
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat, // FAB position
+
       appBar: AppBar(
-        title: const Text("Vendor Form"),
+        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: common_Colors.primaryColor,
+        title: Text("Vendor Screen", style: TextStyle(color: Colors.white)),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
+      drawer: Sidebar(),
+      floatingActionButton: SizedBox(
+
+        height: 70,
+        width: 150,
+        child: FloatingActionButton(
+
+          backgroundColor: common_Colors.primaryColor,
+          onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>EditTableVendorScreen())
+            );
+          },
+          child: Text("Add a Vendor",style: TextStyle(
+            color: common_Colors.textColor,
+          ),),
+
+        ),
+      ),
+      body: FleetFilterWidget(
+        filters: [
+          FilterModel("Vehicle Type", [
+            SubFilterOptionModel("Truck", 1, false),
+            SubFilterOptionModel("Tempo", 2, false),
+            SubFilterOptionModel("Van", 3, false),
+          ]),
+          FilterModel("Fuel Type", [
+            SubFilterOptionModel("Diesel", 1, false),
+            SubFilterOptionModel("Petrol", 2, false),
+            SubFilterOptionModel("CNG", 3, false),
+            SubFilterOptionModel("Electric / Hybrid", 4, false),
+          ]),
+
+          // FilterModel("FLeet Type",  [SubFilterOptionModel("Truck", 1)])
+          // FilterModel("FLeet Type",  [SubFilterOptionModel("Truck", 1)])
+        ],
+        child: SingleChildScrollView(
           child: Column(
-            children: [
-              CustomFormField(
-                caplebal: "",
-                label: "Vendor Name",      // Label text above the field
-                hint: "Enter vendor name", // Placeholder inside the field
-                controller: nameController,
+            children: <Widget>[
+              CustomSearchBar(screen: "Vendor Screen", scaffoldKey: _scaffoldKey),
+              // FleetTableWidget(vehicles: vehicles),
+              FleetTableWidget(
+                dataColumnList: [
+                  DataColumn(label: Expanded(child: Text("Vehicle No"))),
+                  DataColumn(label: Expanded(child: Text("Type"))),
+                  DataColumn(label: Expanded(child: Text("Capacity"))),
+                  DataColumn(label: Expanded(child: Text("Status"))),
+                  DataColumn(label: Expanded(child: Text("Driver"))),
+                  DataColumn(label: Expanded(child: Text("Last Service"))),
+                  DataColumn(label: Expanded(child: Text("start date"))),
+                  DataColumn(label: Expanded(child: Text("enddate"))),
+                  DataColumn(label: Expanded(child: Text("Actions")))
 
-                backgroundColor: Colors.white, // Correct parameter
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Name cannot be empty";
-                  }
-                  return null;
-                },
-                prefixIcon: const Icon(Icons.person),
-              ),
+                ],
+                dataRowList:
 
-              Container(
-                child: CustomFormField(
-                  caplebal: "",
-                  label: "Email",
-                  hint: "Enter email",
-                  controller: emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  //height: 60,
-                //  width: 350,
-                  backgroundColor: Colors.white,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Email cannot be empty";
-                    }
-                    return null;
-                  },
-                  prefixIcon: const Icon(Icons.email),
-                ),
-                
-              ),
-              CustomFormField(
-                caplebal: "",
-                label: "Mobile no",
-                hint: "Enter mobile no",
-                controller: phoneController,
-                keyboardType: TextInputType.emailAddress,
-                backgroundColor: Colors.white,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Phone cannot be empty";
-                  } else if (value.length != 10) {
-                    return "Phone number must be 10 digits";
-                  }
-                  return null;
-                },
-                prefixIcon: const Icon(Icons.phone),
-              ),
-
-
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => VendorDetailsScreen(
-                          name: nameController.text,
-                          email: emailController.text,
-                          phone: phoneController.text,
+                vehicles.map((vehicle) {
+                  return DataRow(cells: [
+                    DataCell(Text(vehicle.vehileNo)),
+                    DataCell(Text(vehicle.type)),
+                    DataCell(Text(vehicle.capacity)),
+                    DataCell(
+                      Text(
+                        vehicle.status,
+                        style: TextStyle(
+                          color: vehicle.status == "Available"
+                              ? Colors.green
+                              : vehicle.status == "In Transit"
+                              ? Colors.orange
+                              : Colors.red,
                         ),
                       ),
-                    );
-                  }
-                },
-                child: const Text("Submit"),
-              )
+                    ),
+                    DataCell(Text(vehicle.driver)),
+                    DataCell(Text(vehicle.lastService)),
+                    DataCell(Text(vehicle.startdate)),
+                    DataCell(Text(vehicle.enddate)),
+                    DataCell(Row(
+                      children: [
+                        InkWell(
+                          child: Icon(Icons.edit),
+                          onTap: (){
+                            print("Edit tapped");
+                          },),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        InkWell(
 
+                          child: Icon(
+                              color: Colors.red,
+                              Icons.delete),
+                          onTap: (){
+                            print("delete tapped");
+                          },
+                        ),
+
+                      ],
+                    ))
+
+                  ]);
+                }).toList(),
+              ),
             ],
           ),
         ),
@@ -112,3 +196,4 @@ class _VendorScreenState extends State<VendorScreen> {
     );
   }
 }
+

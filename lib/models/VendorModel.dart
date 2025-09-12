@@ -1,55 +1,29 @@
 class VendorModel {
-  String name;
-  String contact;
-  String email;
-  String? contractDetails;
-  String? vehiclesOnRent;
-  DateTime? contractExpiry;
-  double? revenueShare;
-  double? pendingPayment;
+  String vendorName;
+  String contractId;
+  String revenueShare;
 
   VendorModel({
-    required this.name,
-    required this.contact,
-    required this.email,
-    this.contractDetails,
-    this.vehiclesOnRent,
-    this.contractExpiry,
-    this.revenueShare,
-    this.pendingPayment,
+    required this.vendorName,
+    required this.contractId,
+    required this.revenueShare,
   });
 
-  /// Factory constructor to create VendorModel from JSON
+  // Factory constructor to create VendorModel from JSON
   factory VendorModel.fromJson(Map<String, dynamic> json) {
     return VendorModel(
-      name: json['name'] ?? '',
-      contact: json['contact'] ?? '',
-      email: json['email'] ?? '',
-      contractDetails: json['contractDetails'],
-      vehiclesOnRent: json['vehiclesOnRent'],
-      contractExpiry: json['contractExpiry'] != null
-          ? DateTime.tryParse(json['contractExpiry'])
-          : null,
-      revenueShare: json['revenueShare'] != null
-          ? (json['revenueShare'] as num).toDouble()
-          : null,
-      pendingPayment: json['pendingPayment'] != null
-          ? (json['pendingPayment'] as num).toDouble()
-          : null,
+      vendorName: json['vendorName'] ?? '',
+      contractId: json['contractId'] ?? '',
+      revenueShare: json['revenueShare'] ?? '',
     );
   }
 
-  /// Convert VendorModel to JSON
+  // Convert VendorModel to JSON
   Map<String, dynamic> toJson() {
     return {
-      "name": name,
-      "contact": contact,
-      "email": email,
-      "contractDetails": contractDetails,
-      "vehiclesOnRent": vehiclesOnRent,
-      "contractExpiry": contractExpiry?.toIso8601String(),
+      "vendorName": vendorName,
+      "contractId": contractId,
       "revenueShare": revenueShare,
-      "pendingPayment": pendingPayment,
     };
   }
 }
