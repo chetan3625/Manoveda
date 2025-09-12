@@ -6,6 +6,7 @@ import 'package:erptransportexpress/models/SubFilterOptionModel.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 import 'package:erptransportexpress/screens/Fleet_Screens/Edit_Table_FleetScreen.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
+import 'package:erptransportexpress/Common Widgets/add_documents.dart';
 
 import 'package:flutter/material.dart';
 
@@ -233,6 +234,10 @@ class _FleetScreenState extends State<FleetScreen> {
                             print("delete tapped");
                           },
                         ),
+                        SizedBox(
+                          width: 10,
+                        ),
+
 
                       ],
                     ))
@@ -240,6 +245,7 @@ class _FleetScreenState extends State<FleetScreen> {
                   ]);
                 }).toList(),
               ),
+
             ],
           ),
         ),
