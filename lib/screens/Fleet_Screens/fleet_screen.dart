@@ -1,4 +1,5 @@
 import 'package:erptransportexpress/Common%20Widgets/card.dart';
+import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:erptransportexpress/Common%20Widgets/serachbar.dart';
 import 'package:erptransportexpress/models/FilterModel.dart';
 import 'package:erptransportexpress/Common Widgets/FleetTableWidget.dart';
@@ -77,32 +78,35 @@ class _FleetScreenState extends State<FleetScreen> {
     final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat, // FAB position
+      // floatingActionButtonLocation: FloatingActionButtonLocation.startFloat, // FAB position
 
       appBar: AppBar(
+        actions: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton.icon(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>EditTableFleetscreen()));
+          }, label: Text("Add A New Entry")),
+        ),
+        ],
         iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: common_Colors.primaryColor,
         title: Text("FleetScreen", style: TextStyle(color: Colors.white)),
       ),
       drawer: Sidebar(),
-      floatingActionButton: SizedBox(
-
-        height: 70,
-        width: 150,
-        child: FloatingActionButton(
-
-
-          backgroundColor: common_Colors.primaryColor,
-          onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>EditTableFleetscreen())
-            );
-          },
-        child: Text("Add a Vehicle",style: TextStyle(
-          color: common_Colors.textColor,
-        ),),
-
-        ),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //
+      //
+      //   backgroundColor: common_Colors.primaryColor,
+      //   onPressed: (){
+      //     Navigator.push(context, MaterialPageRoute(builder: (context)=>EditTableFleetscreen())
+      //     );
+      //   },
+      // child: Text("Add a Vehicle",style: TextStyle(
+      //   color: common_Colors.textColor,
+      // ),),
+      //
+      // ),
       body: FleetFilterWidget(
         filters: [
           FilterModel("Vehicle Type", [
