@@ -5,10 +5,7 @@ import '../../widgets/custom_form_filed.dart';
 
 
 class VendorScreen extends StatefulWidget {
-
-
   const VendorScreen({super.key});
-
 
 
   @override
@@ -35,11 +32,12 @@ class _VendorScreenState extends State<VendorScreen> {
           child: Column(
             children: [
               CustomFormField(
-                label: "Vendor Name",
-                hint: "Enter vendor name",
+                caplebal: "",
+                label: "Vendor Name",      // Label text above the field
+                hint: "Enter vendor name", // Placeholder inside the field
                 controller: nameController,
-                height: 60,
-                width: 350,
+
+                backgroundColor: Colors.white, // Correct parameter
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "Name cannot be empty";
@@ -51,12 +49,14 @@ class _VendorScreenState extends State<VendorScreen> {
 
               Container(
                 child: CustomFormField(
+                  caplebal: "",
                   label: "Email",
                   hint: "Enter email",
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
-                  height: 60,
-                  width: 350,
+                  //height: 60,
+                //  width: 350,
+                  backgroundColor: Colors.white,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Email cannot be empty";
@@ -67,25 +67,26 @@ class _VendorScreenState extends State<VendorScreen> {
                 ),
                 
               ),
-            CustomFormField(
-              label: "Phone",
-              hint: "Enter phone number",
-              controller: phoneController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              height: 60,
-              width: 350,// Only numbers
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return "Phone cannot be empty";
-                } else if (value.length != 10) {
-                  return "Phone number must be 10 digits";
-                }
-                return null;
-              },
-              prefixIcon: const Icon(Icons.phone),
-            ),
-            const SizedBox(height: 20),
+              CustomFormField(
+                caplebal: "",
+                label: "Mobile no",
+                hint: "Enter mobile no",
+                controller: phoneController,
+                keyboardType: TextInputType.emailAddress,
+                backgroundColor: Colors.white,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Phone cannot be empty";
+                  } else if (value.length != 10) {
+                    return "Phone number must be 10 digits";
+                  }
+                  return null;
+                },
+                prefixIcon: const Icon(Icons.phone),
+              ),
+
+
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
