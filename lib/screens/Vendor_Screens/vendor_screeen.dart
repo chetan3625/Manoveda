@@ -1,136 +1,113 @@
+import 'package:erptransportexpress/screens/Vendor_Screens/vendor_details.dart';
 import 'package:flutter/material.dart';
-import '../Dashboard_Screens/dashboard_screen.dart';
+import 'package:flutter/services.dart';
+import '../../widgets/custom_form_filed.dart';
+
 
 class VendorScreen extends StatefulWidget {
   const VendorScreen({super.key});
+
 
   @override
   State<VendorScreen> createState() => _VendorScreenState();
 }
 
 class _VendorScreenState extends State<VendorScreen> {
-
-  List<Map<String, String>> vendors = [
-    {"name": "ABC Transport", "contact": "9876543210", "email": "abc@gmail.com"},
-    {"name": "XYZ Logistics", "contact": "9123456789", "email": "xyz@gmail.com"},
-  ];
+  final _formKey = GlobalKey<FormState>();
 
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController contactController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-
-  void _addVendor() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Add Vendor"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(labelText: "Name"),
-            ),
-            TextField(
-              controller: contactController,
-              decoration: const InputDecoration(labelText: "Contact"),
-              keyboardType: TextInputType.phone,
-            ),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(labelText: "Email"),
-              keyboardType: TextInputType.emailAddress,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              nameController.clear();
-              contactController.clear();
-              emailController.clear();
-            },
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (nameController.text.isNotEmpty &&
-                  contactController.text.isNotEmpty &&
-                  emailController.text.isNotEmpty) {
-                setState(() {
-                  vendors.add({
-                    "name": nameController.text,
-                    "contact": contactController.text,
-                    "email": emailController.text,
-                  });
-                });
-                Navigator.pop(context);
-
-                // Clear fields after saving
-                nameController.clear();
-                contactController.clear();
-                emailController.clear();
-              }
-            },
-            child: const Text("Save"),
-          ),
-        ],
-      ),
-    );
-  }
+  final TextEditingController phoneController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Vendors"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const DashboardScreen()),
-            );
-          },
-        ),
+        title: const Text("Vendor Form"),
       ),
-      body: ListView.builder(
-        itemCount: vendors.length,
-        itemBuilder: (context, index) {
-          final vendor = vendors[index];
-          return Card(
-            margin: const EdgeInsets.all(8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              leading: const CircleAvatar(
-                child: Icon(Icons.business),
-              ),
-              title: Text(vendor["name"]!),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Contact: ${vendor["contact"]}"),
-                  Text("Email: ${vendor["email"]}"),
-                ],
-              ),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  setState(() {
-                    vendors.removeAt(index);
-                  });
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              CustomFormField(
+                caplebal: "",
+                label: "Vendor Name",      // Label text above the field
+                hint: "Enter vendor name", // Placeholder inside the field
+                controller: nameController,
+
+                backgroundColor: Colors.white, // Correct parameter
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Name cannot be empty";
+                  }
+                  return null;
                 },
+                prefixIcon: const Icon(Icons.person),
               ),
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addVendor,
-        child: const Icon(Icons.add),
+
+              Container(
+                child: CustomFormField(
+                  caplebal: "",
+                  label: "Email",
+                  hint: "Enter email",
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  //height: 60,
+                //  width: 350,
+                  backgroundColor: Colors.white,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Email cannot be empty";
+                    }
+                    return null;
+                  },
+                  prefixIcon: const Icon(Icons.email),
+                ),
+                
+              ),
+              CustomFormField(
+                caplebal: "",
+                label: "Mobile no",
+                hint: "Enter mobile no",
+                controller: phoneController,
+                keyboardType: TextInputType.emailAddress,
+                backgroundColor: Colors.white,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Phone cannot be empty";
+                  } else if (value.length != 10) {
+                    return "Phone number must be 10 digits";
+                  }
+                  return null;
+                },
+                prefixIcon: const Icon(Icons.phone),
+              ),
+
+
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => VendorDetailsScreen(
+                          name: nameController.text,
+                          email: emailController.text,
+                          phone: phoneController.text,
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: const Text("Submit"),
+              )
+
+            ],
+          ),
+        ),
       ),
     );
   }

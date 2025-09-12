@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
+
 import 'package:erptransportexpress/screens/Dashboard_Screens/dashboard_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'utils/Constants.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,48 +15,66 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool obsecure = true;
-  TextEditingController loginController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-
-  Future<void> saveLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-    String email = loginController.text.trim();
-    String password = passwordController.text.trim();
-
-    await prefs.setBool(PrefKeys.isLoggedIn, true);
-    await prefs.setString(PrefKeys.email, email);
-    await prefs.setString(PrefKeys.password, password);
-  }
+  TextEditingController loginid = TextEditingController();
+  TextEditingController pass = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.of(context).size.width; // 👈 screen size घेतो
     final bool isMobile = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: isMobile ? screenWidth * 0.1 : screenWidth * 0.05,
+        toolbarHeight: screenWidth*0.1,
         centerTitle: true,
-        backgroundColor: Colors.blue,
-        title: Text(
-          "Fleet ERP",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.normal,
-            fontFamily: "Merriweather",
-          ),
-        ),
+        backgroundColor:Colors.blue ,
+        title:Text("Fleet ERP",
+
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          fontWeight: FontWeight.normal,
+          fontFamily: "Merriweather",
+
+        ),)
       ),
 
-      // ------------------- for Mobile -------------------
+      //       ----------------- --------   for Mobile ----------------------------- ----------------
       body: isMobile
           ? Column(
         children: [
-          // Top (Image)
+          // -------- Top (Image) --------
           Expanded(
+            flex: 2,
+            child: Container(
+                color: Colors.blue.shade50,
+                child: Center(
+                child: Image.asset(
+                  "assets/images/bg_login.png",
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+
+          Expanded(
+            flex: 3,
+            child: _buildLoginForm(),
+          ),
+        ],
+      )
+
+
+      //       ---------------------------       web ------------------------------------
+          : Row(
+        children: [
+
+          // -------- Left Column (Image) --------
+          Expanded(
+
             flex: 1,
             child: Container(
+              color: Colors.blue.shade50,
               child: Center(
                 child: Image.asset(
                   "assets/images/bg_login.png",
@@ -66,34 +84,14 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          // Bottom (Form)
-          Expanded(
-            flex: 3,
-            child: _buildLoginForm(),
-          ),
-        ],
-      )
-
-      // ------------------- for Web -------------------
-          : Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Container(
-              color: Colors.blue.shade50,
-              child: Center(
-                child: Image.asset(
-                  "assets/images/loginimage/bg_login.png",
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-          ),
+          // -------- Right Column (Form) --------
           Expanded(
             flex: 2,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+
               children: [
+
                 _buildLoginForm(),
               ],
             ),
@@ -111,11 +109,13 @@ class _LoginPageState extends State<LoginPage> {
         child: Card(
           elevation: 10,
           shape: RoundedRectangleBorder(
-              side: BorderSide(color: Colors.blueAccent),
+            side: BorderSide(
+              color: Colors.blueAccent,
+            ),
               borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
-            child: SingleChildScrollView(
+            child: SingleChildScrollView( // 👉 mobile वर keyboard मुळे scroll होईल
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -132,7 +132,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Username
                   TextField(
-                    controller: loginController,
+                    controller: loginid,
                     decoration: const InputDecoration(
                       labelText: "LoginId",
                       border: OutlineInputBorder(),
@@ -142,14 +142,14 @@ class _LoginPageState extends State<LoginPage> {
 
                   // Password
                   TextField(
-                    controller: passwordController,
+                    controller: pass,
                     obscureText: obsecure,
                     decoration: InputDecoration(
                       labelText: "Password",
                       suffixIcon: InkWell(
                         onTap: () {
                           setState(() {
-                            obsecure = !obsecure;
+                            obsecure = !obsecure; // ✅ toggle
                           });
                         },
                         child: Icon(
@@ -168,6 +168,7 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue.shade800,
                         shape: RoundedRectangleBorder(
@@ -175,13 +176,8 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      onPressed: () async {
-                        await saveLogin();
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => DashboardScreen()),
-                        );
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => DashboardScreen(),),);
                       },
                       child: const Text(
                         "Login",
@@ -192,7 +188,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 20),
 
-                  // Signup Link
+                  // RichText Example (Signup link)
                   RichText(
                     text: TextSpan(
                       style: const TextStyle(

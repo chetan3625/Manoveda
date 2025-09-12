@@ -3,7 +3,7 @@ import '../../widgets/sidebar.dart';
 import '../../widgets/stat_card.dart';
 import '../../widgets/vehical_card.dart';
 
-import '../../models/vehicle.dart';
+import '../../models/VehicalModel.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

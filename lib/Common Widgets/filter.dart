@@ -98,8 +98,7 @@ class _FleetFilterWidgetState extends State<FleetFilterWidget> {
                             vertical: 20
                         ),
                         shape: RoundedRectangleBorder(
-
-                            borderRadius: BorderRadiusGeometry.circular(
+                            borderRadius: BorderRadius.circular(
                                 5)
                         ),
                         backgroundColor: Colors.red
