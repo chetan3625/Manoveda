@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
 
+import '../../Common Widgets/add_documents.dart';
 import '../../widgets/custom_form_filed.dart'; // तुझा colors file
 
 class EditTableFleetscreen extends StatefulWidget {
@@ -24,6 +25,8 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
   final TextEditingController lastServiceController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
+
+
 
   void _addVehicle() {
     if (!mounted) return;
@@ -111,7 +114,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                     const SizedBox(height: 12),
 
                     CustomFormField(
-                      caplebal: "capacity",
+                      caplebal: "Capacity",
                       label: "",
                       hint: "",
                       controller: capacityController,
@@ -138,8 +141,9 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                       hint: "",
                       controller: lastServiceController,
                       backgroundColor: Colors.white,
-                      
+
                     ),
+
 
                     // Start Date + End Date
                     Row(
@@ -163,58 +167,89 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                             backgroundColor: Colors.white,
                           ),
                         ),
+
                       ],
                     ),
                     const SizedBox(height: 20),
 
-                    commonButton(
-                      backgroundColor: Colors.green,
-                      text: "Add Vehicle",
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text("Confirm Vehicle"),
-                            content: Text(
-                              "Do you want to save this vehicle?\n\n"
-                                  "Vehicle No: ${vehNoController.text}\n"
-                                  "Type: ${typeController.text}\n"
-                                  "Capacity: ${capacityController.text}\n"
-                                  "Status: ${statusController.text}\n"
-                                  "Driver: ${driverController.text}\n"
-                                  "Last Service: ${lastServiceController.text}\n"
-                                  "Start Date: ${startDateController.text}\n"
-                                  "End Date: ${endDateController.text}",
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text(
-                                  "Cancel",
-                                  style: TextStyle(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+
+                    Row(
+                      children: [
+                        uploadDoc(
+                          title:"Upload RC",
+                          hintText: "Enter Date",
+
+                        ),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        uploadDoc(title: "Insurence", hintText: "Ensurence ID"),
+                        SizedBox(
+                          width: 10,
+                        ),
+                        uploadDoc(title: "Ownership Proof", hintText: "Ownership ID"),
+                        SizedBox(
+                          width: 10,
+                        ),
+
+                      ],
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Center(
+                        child: commonButton(
+                          backgroundColor: Colors.green,
+                          text: "Add Vehicle",
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text("Confirm Vehicle"),
+                                content: Text(
+                                  "Do you want to save this vehicle?\n\n"
+                                      "Vehicle No: ${vehNoController.text}\n"
+                                      "Type: ${typeController.text}\n"
+                                      "Capacity: ${capacityController.text}\n"
+                                      "Status: ${statusController.text}\n"
+                                      "Driver: ${driverController.text}\n"
+                                      "Last Service: ${lastServiceController.text}\n"
+                                      "Start Date: ${startDateController.text}\n"
+                                      "End Date: ${endDateController.text}",
                                 ),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  _addVehicle();
-                                  Navigator.pop(context);
-                                  setState(() {});
-                                },
-                                child: const Text(
-                                  "Confirm",
-                                  style: TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text(
+                                      "Cancel",
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  TextButton(
+                                    onPressed: () {
+                                      _addVehicle();
+                                      Navigator.pop(context);
+                                      setState(() {});
+                                    },
+                                    child: const Text(
+                                      "Confirm",
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+
+
+                                ],
                               ),
-                            ],
-                          ),
-                        );
-                      },
+                            );
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),
