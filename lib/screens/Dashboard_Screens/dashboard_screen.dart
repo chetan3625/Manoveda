@@ -1,3 +1,4 @@
+import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/sidebar.dart';
 import '../../widgets/stat_card.dart';
@@ -30,16 +31,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       drawer: const Sidebar(),
-      appBar: AppBar(
-        title: const Text("Dashboard",style:TextStyle(
-        ),),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircleAvatar(child: Icon(Icons.person)),
-          )
-        ],
-      ),
+      appBar: CommonAppBar(title: Text("Dashboard")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

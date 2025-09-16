@@ -1,3 +1,4 @@
+import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:flutter/material.dart';
 
 import '../Dashboard_Screens/dashboard_screen.dart';
@@ -13,21 +14,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: const Text("Analytics Screen",style: TextStyle(
-          color: Colors.white
-        ),),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const DashboardScreen()),
-            );
-          },
-        ),
-      ),
+      appBar: CommonAppBar(title: Text("Analytics Screen")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class commonButton extends StatelessWidget {
+class CommonButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
   final Color backgroundColor;
@@ -8,7 +8,7 @@ class commonButton extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final double borderRadius;
 
-  const commonButton({
+  const CommonButton({
     super.key,
     required this.text,
     required this.onPressed,

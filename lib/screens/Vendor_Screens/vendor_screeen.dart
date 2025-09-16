@@ -1,3 +1,4 @@
+import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:erptransportexpress/screens/Vendor_Screens/vendor_details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,9 +23,7 @@ class _VendorScreenState extends State<VendorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Vendor Form"),
-      ),
+      appBar: CommonAppBar(title: Text("Vendor")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(

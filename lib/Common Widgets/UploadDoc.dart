@@ -2,25 +2,41 @@ import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
-class uploadDoc extends StatefulWidget {
+
+class UploadDoc extends StatefulWidget {
   final String title;
   final String hintText;
 
-  const uploadDoc({
+  const UploadDoc({
     super.key,
     required this.title,
     required this.hintText,
   });
 
   @override
-  State<uploadDoc> createState() => _uploadDocState();
+  State<UploadDoc> createState() => _UploadDocState();
 }
 
-class _uploadDocState extends State<uploadDoc> {
+class _UploadDocState extends State<UploadDoc> {
   String? fileName;
 
   void pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    // Corrected code: Add the type: FileType.custom parameter
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom, // <-- This line is the fix
+        allowedExtensions: [
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "txt",
+          "png",
+          "jpg",
+
+        ]
+    );
     if (result != null) {
       setState(() {
         fileName = result.files.first.name;
@@ -36,7 +52,7 @@ class _uploadDocState extends State<uploadDoc> {
     double screenWidth = MediaQuery.of(context).size.width;
     double cardWidth = screenWidth < 600
         ? screenWidth * 0.50
-        : screenWidth * 0.15;
+        : screenWidth * 0.20;
     double cardHeight = 230;
 
     return SizedBox(
@@ -61,8 +77,8 @@ class _uploadDocState extends State<uploadDoc> {
             children: [
               // Top Row: icon + title
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
                   Text(
                     widget.title,
                     overflow: TextOverflow.ellipsis,
@@ -88,12 +104,12 @@ class _uploadDocState extends State<uploadDoc> {
                 ),
               ),
               Container(
-                child: fileName == null ?Text(""):Text("Selected: $fileName"),
+                child: fileName == null ? const Text("") : Text("Selected: $fileName"),
               ),
               const SizedBox(height: 8),
 
               // Upload Button
-              commonButton(
+              CommonButton(
                 text: "Select Document",
                 onPressed: pickFile,
               ),

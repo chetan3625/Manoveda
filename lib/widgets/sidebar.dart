@@ -3,7 +3,7 @@ import '../screens/Dashboard_Screens/dashboard_screen.dart';
 
 import '../screens/Documents_Screens/documents_screen.dart';
 import '../screens/Financials_Screens/financial_screen.dart';
-import '../screens/Fleet_Screens/fleet_screen.dart';
+import '../screens/Fleet_Screens/FleetScreen.dart';
 
 import '../screens/Driver_Screens/driver_screen.dart';
 import '../screens/Client_Screens/client_screen.dart';

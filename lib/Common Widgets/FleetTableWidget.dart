@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 
-class FleetTableWidget extends StatelessWidget {
+class Common_Table extends StatelessWidget {
   final List<DataRow> dataRowList;
   final List<DataColumn> dataColumnList;
 
-  const FleetTableWidget({super.key,  required this.dataRowList ,  required this.dataColumnList});
+  const Common_Table({super.key,  required this.dataRowList ,  required this.dataColumnList});
 
   @override
   Widget build(BuildContext context) {

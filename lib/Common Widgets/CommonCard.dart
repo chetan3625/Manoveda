@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class StatCard extends StatelessWidget {
+class CommonCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String value;
 
-  const StatCard({
+  const CommonCard({
     super.key,
     required this.icon,
     required this.title,

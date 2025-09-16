@@ -1,10 +1,10 @@
+import 'package:erptransportexpress/Common%20Widgets/UploadDoc.dart';
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
 
-import '../../Common Widgets/add_documents.dart';
-import '../../widgets/custom_form_filed.dart'; // तुझा colors file
+import '../../widgets/custom_form_filed.dart'; // Make sure this is the correct path
 
 class EditTableFleetscreen extends StatefulWidget {
   const EditTableFleetscreen({super.key});
@@ -25,8 +25,6 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
   final TextEditingController lastServiceController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
-
-
 
   void _addVehicle() {
     if (!mounted) return;
@@ -84,121 +82,128 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min, // ✅ shrink to content
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Vehicle No + Type
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CustomFormField(
-                            caplebal: "Vehicle No",
-                            label: "",
-                            hint: "",
-                            controller: vehNoController,
-                            backgroundColor: Colors.white,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomFormField(
+                              caplebal: "Vehicle No",
+                              label: "",
+                              hint: "",
+                              controller: vehNoController,
+                              backgroundColor: Colors.white,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: CustomFormField(
-                            caplebal: "Type",
-                            label: "",
-                            hint: "",
-                            controller: typeController,
-                            backgroundColor: Colors.white,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: CustomFormField(
+                              caplebal: "Type",
+                              label: "",
+                              hint: "",
+                              controller: typeController,
+                              backgroundColor: Colors.white,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    CustomFormField(
-                      caplebal: "Capacity",
-                      label: "",
-                      hint: "",
-                      controller: capacityController,
-                      keyboardType: TextInputType.number,
-                      backgroundColor: Colors.white,
-                    ),
-                    CustomFormField(
-                      caplebal: "Status",
-                      label: "",
-                      hint: "",
-                      controller: statusController,
-                      backgroundColor: Colors.white,
-                    ),
-                    CustomFormField(
-                      caplebal: "Driver",
-                      label: "",
-                      hint: "",
-                      controller: driverController,
-                      backgroundColor: Colors.white,
-                    ),
-                    CustomFormField(
-                      caplebal: "Last Service",
-                      label: "",
-                      hint: "",
-                      controller: lastServiceController,
-                      backgroundColor: Colors.white,
-
+                        ],
+                      ),
                     ),
 
+                    // Capacity
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: CustomFormField(
+                        caplebal: "Capacity",
+                        label: "",
+                        hint: "",
+                        controller: capacityController,
+                        keyboardType: TextInputType.number,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: CustomFormField(
+                        caplebal: "Status",
+                        label: "",
+                        hint: "",
+                        controller: statusController,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: CustomFormField(
+                        caplebal: "Driver",
+                        label: "",
+                        hint: "",
+                        controller: driverController,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: CustomFormField(
+                        caplebal: "Last Service",
+                        label: "",
+                        hint: "",
+                        controller: lastServiceController,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
 
                     // Start Date + End Date
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CustomFormField(
-                            caplebal: "Start Date",
-                            label: "",
-                            hint: "",
-                            controller: startDateController,
-                            backgroundColor: Colors.white,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomFormField(
+                              caplebal: "Start Date",
+                              label: "",
+                              hint: "",
+                              controller: startDateController,
+                              backgroundColor: Colors.white,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: CustomFormField(
-                            caplebal: "End Date",
-                            label: "",
-                            hint: "",
-                            controller: endDateController,
-                            backgroundColor: Colors.white,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: CustomFormField(
+                              caplebal: "End Date",
+                              label: "",
+                              hint: "",
+                              controller: endDateController,
+                              backgroundColor: Colors.white,
+                            ),
                           ),
-                        ),
-
-                      ],
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 20),
 
-
                     Row(
                       children: [
-                        uploadDoc(
-                          title:"Upload RC",
+                        UploadDoc(
+                          title:"Registration Certificate",
                           hintText: "Enter Date",
-
                         ),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        uploadDoc(title: "Insurence", hintText: "Ensurence ID"),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        uploadDoc(title: "Ownership Proof", hintText: "Ownership ID"),
-                        SizedBox(
-                          width: 10,
-                        ),
-
+                        const SizedBox(width: 10),
+                        UploadDoc(title: "Insurence", hintText: "Ensurence ID"),
+                        const SizedBox(width: 10),
+                        UploadDoc(title: "Ownership Proof", hintText: "Ownership ID"),
+                        const SizedBox(width: 10),
                       ],
                     ),
 
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Center(
-                        child: commonButton(
+                        child: CommonButton(
                           backgroundColor: Colors.green,
                           text: "Add Vehicle",
                           onPressed: () {
@@ -242,8 +247,6 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                                       ),
                                     ),
                                   ),
-
-
                                 ],
                               ),
                             );
@@ -258,7 +261,6 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
           ),
         ),
       ),
-
     );
   }
 }

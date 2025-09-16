@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 
+import '../../Common Widgets/CommonAppBar.dart';
 import '../Dashboard_Screens/dashboard_screen.dart';
 
 class TripScreen extends StatefulWidget {
@@ -95,18 +96,7 @@ class _TripScreenState extends State<TripScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Trips"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const DashboardScreen()),
-            );
-          },
-        ),
-      ),
+      appBar: CommonAppBar(title: Text("Trip Screen")),
       body: trips.isEmpty
           ? const Center(child: Text("No trips added yet"))
           : ListView.builder(

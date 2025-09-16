@@ -1,3 +1,4 @@
+import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:flutter/material.dart';
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -11,9 +12,8 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: Text("profile"),
-      backgroundColor: Colors.blue,
-      ),
+      appBar: CommonAppBar(title: Text("profile")),
+
     );
   }
 }

@@ -1,24 +1,26 @@
-import 'package:erptransportexpress/Common%20Widgets/card.dart';
+import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
+import 'package:erptransportexpress/Common%20Widgets/CommonCard.dart';
 import 'package:erptransportexpress/Common%20Widgets/serachbar.dart';
 import 'package:erptransportexpress/models/FilterModel.dart';
 import 'package:erptransportexpress/Common Widgets/FleetTableWidget.dart';
 import 'package:erptransportexpress/models/SubFilterOptionModel.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
-import 'package:erptransportexpress/screens/Fleet_Screens/Edit_Table_FleetScreen.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
-import 'package:erptransportexpress/Common Widgets/add_documents.dart';
 
 import 'package:flutter/material.dart';
 
-import '../../Common Wi'
-    'dgets/filter.dart';
+import '../../Common Widgets/CommonAlertBox.dart';
+import '../../Common Widgets/CommonFilter.dart';
 import '../../widgets/sidebar.dart';
+import 'EditTableFleetscreen.dart';
 
-class FleetScreen extends StatefulWidget {
+class FleetScreen extends StatefulWidget { // Removed 'implements PreferredSizeWidget'
+
   const FleetScreen({super.key});
 
   @override
   State<FleetScreen> createState() => _FleetScreenState();
+
 }
 
 class _FleetScreenState extends State<FleetScreen> {
@@ -67,9 +69,9 @@ class _FleetScreenState extends State<FleetScreen> {
     ),
   ];
   void deleteFromRow(String vehicleno){
-  setState(() {
+    setState(() {
 
-  });
+    });
 
   }
 
@@ -80,12 +82,8 @@ class _FleetScreenState extends State<FleetScreen> {
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat, // FAB position
 
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: common_Colors.primaryColor,
-        title: Text("FleetScreen", style: TextStyle(color: Colors.white)),
-      ),
-      drawer: Sidebar(),
+      appBar:CommonAppBar(title: Text("FleetScreen")) , // Added const and changed title to a Text widget
+      drawer: const Sidebar(),
       floatingActionButton: SizedBox(
 
         height: 70,
@@ -93,20 +91,20 @@ class _FleetScreenState extends State<FleetScreen> {
         child: FloatingActionButton(
 //
 
-        
+
 
           backgroundColor: common_Colors.primaryColor,
           onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>EditTableFleetscreen())
+            Navigator.push(context, MaterialPageRoute(builder: (context)=>const EditTableFleetscreen())
             );
           },
-        child: Text("Add a Vehicle",style: TextStyle(
-          color: common_Colors.textColor,
-        ),),
+          child: const Text("Add a Vehicle",style: TextStyle(
+            color: common_Colors.textColor,
+          ),),
 
         ),
       ),
-      body: FleetFilterWidget(
+      body: CommonFilter(
         filters: [
           FilterModel("Vehicle Type", [
             SubFilterOptionModel("Truck", 1, false),
@@ -136,37 +134,37 @@ class _FleetScreenState extends State<FleetScreen> {
                     child: Row(
                       children: const [
                         SizedBox(width: 12), // सुरुवातीला gap
-                        StatCard(
+                        CommonCard(
                           icon: Icons.fire_truck,
                           title: "Total Vehicles",
                           value: "245",
                         ),
                         SizedBox(width: 12),
-                        StatCard(
+                        CommonCard(
                           icon: Icons.fire_truck,
                           title: "On Road",
                           value: "120",
                         ),
                         SizedBox(width: 12),
-                        StatCard(
+                        CommonCard(
                           icon: Icons.car_crash,
                           title: "Idle Vehicles",
                           value: "80",
                         ),
                         SizedBox(width: 12),
-                        StatCard(
+                        CommonCard(
                           icon: Icons.build,
                           title: "Under Maintenance",
                           value: "15",
                         ),
                         SizedBox(width: 12),
-                        StatCard(
+                        CommonCard(
                           icon: Icons.event,
                           title: "Upcoming Trips",
                           value: "30",
                         ),
                         SizedBox(width: 12),
-                        StatCard(
+                        CommonCard(
                           icon: Icons.local_gas_station,
                           title: "Fuel Consumption",
                           value: "500L",
@@ -177,10 +175,10 @@ class _FleetScreenState extends State<FleetScreen> {
                   ),
                 ),
               ),
-              CustomSearchBar(screen: "Fleetscreen", scaffoldKey: _scaffoldKey),
+              CommonSearchBar(screen: "Fleetscreen",),
               // FleetTableWidget(vehicles: vehicles),
-              FleetTableWidget(
-                dataColumnList: [
+              Common_Table(
+                dataColumnList: const [
                   DataColumn(label: Expanded(child: Text("Vehicle No"))),
                   DataColumn(label: Expanded(child: Text("Type"))),
                   DataColumn(label: Expanded(child: Text("Capacity"))),
@@ -218,23 +216,32 @@ class _FleetScreenState extends State<FleetScreen> {
                     DataCell(Row(
                       children: [
                         InkWell(
-                            child: Icon(Icons.edit),
-                        onTap: (){
-                              print("Edit tapped");
-                        },),
-                        SizedBox(
+                          child: const Icon(Icons.edit),
+                          onTap: (){
+                                showDialog(context: context, builder: (BuildContext context){
+                  return CommonAlertBox(title: "Alert !", content: "Are you sure to edit this entry ?", positiveText: "Yes", onPositivePressed: (){}, negativeText: "No", onNegativePressed: (){});
+
+                                });
+                            print("Edit tapped");
+                          },
+                        ),
+                        const SizedBox(
                           width: 10,
                         ),
                         InkWell(
 
-                          child: Icon(
-                            color: Colors.red,
+                          child: const Icon(
+                              color: Colors.red,
                               Icons.delete),
                           onTap: (){
-                            print("delete tapped");
+                            showDialog(context: context, builder: (BuildContext context){
+                              return CommonAlertBox(title: "Alert !", content: "Are you sure to delete this entry ?", positiveText: "Yes", onPositivePressed: (){}, negativeText: "No", onNegativePressed: (){});
+
+                            });
+                            print("Edit tapped");
                           },
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 10,
                         ),
 

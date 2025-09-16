@@ -1,3 +1,4 @@
+import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:flutter/material.dart';
 
 import '../Dashboard_Screens/dashboard_screen.dart';
@@ -14,19 +15,7 @@ class _DriverScreenState extends State<DriverScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Divers"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            //  Navigate back to Dashboard
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const DashboardScreen()),
-            );
-          },
-        ),
-      ),
+      appBar: CommonAppBar(title: Text("Driver Screen")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

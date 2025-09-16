@@ -1,12 +1,14 @@
 import 'package:erptransportexpress/models/FilterModel.dart';
 import 'package:flutter/material.dart';
 
-class FleetFilterWidget extends StatefulWidget {
+
+
+class CommonFilter extends StatefulWidget {
   final Widget child; // main content of the screen
   final List<FilterModel> filters; // filter options
   final double drawerWidth;
 
-  const FleetFilterWidget({
+  const CommonFilter({
     super.key,
     required this.child,
     required this.filters,
@@ -14,10 +16,10 @@ class FleetFilterWidget extends StatefulWidget {
   });
 
   @override
-  State<FleetFilterWidget> createState() => _FleetFilterWidgetState();
+  State<CommonFilter> createState() => _CommonFilterState();
 }
 
-class _FleetFilterWidgetState extends State<FleetFilterWidget> {
+class _CommonFilterState extends State<CommonFilter> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

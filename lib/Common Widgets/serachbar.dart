@@ -2,47 +2,52 @@ import 'package:erptransportexpress/utils/Colors.dart';
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:flutter/material.dart';
 
-class CustomSearchBar extends StatefulWidget {
-  final bool isVisibileFloating=true;
-  final String screen;
-  final GlobalKey<ScaffoldState> scaffoldKey; // 🔹 Add this
 
-  const CustomSearchBar({super.key, required this.screen, required this.scaffoldKey});
+class CommonSearchBar extends StatefulWidget {
+  final bool isVisibileFloating = true;
+  final String screen;
+
+  const CommonSearchBar({super.key, required this.screen});
 
   @override
-  State<CustomSearchBar> createState() => _CustomSearchBarState();
+  State<CommonSearchBar> createState() => _CommonSearchBarState();
 }
 
-class _CustomSearchBarState extends State<CustomSearchBar> {
+class _CommonSearchBarState extends State<CommonSearchBar> {
   final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final doubleScreenWidth = MediaQuery.of(context).size.width;
+    final double screenWidth = MediaQuery.of(context).size.width;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       child: Container(
-        width: doubleScreenWidth - doubleScreenWidth * 0.06,
+        width: screenWidth - screenWidth * 0.06,
         decoration: BoxDecoration(
-          color: common_Colors.textColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: common_Colors.primaryColor, width: 1),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: common_Colors.primaryColor.withOpacity(0.4), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
+              color: Colors.blue.withOpacity(0.1),
+              blurRadius: 10,
+              spreadRadius: 2,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
               Text(
                 widget.screen,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: common_Colors.primaryColor,
+                ),
               ),
               const Spacer(),
               Expanded(
@@ -50,31 +55,39 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: common_Colors.primaryColor, width: 1),
+                    gradient: LinearGradient(
+                      colors: [Colors.blue.shade50, Colors.white],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: common_Colors.primaryColor.withOpacity(0.5), width: 1),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.search, color: Colors.grey),
+                      Icon(Icons.search, color: common_Colors.primaryColor.withOpacity(0.7)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextField(
                           controller: _controller,
+                          style: const TextStyle(fontSize: 14),
                           decoration: InputDecoration(
                             hintText: "Search in ${widget.screen}",
+                            hintStyle: TextStyle(color: Colors.grey.shade500),
                             border: InputBorder.none,
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      ElevatedButton(
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.arrow_forward, size: 16, color: Colors.white),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.lightBlueAccent,
+                          backgroundColor: common_Colors.primaryColor,
+                          elevation: 2,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         ),
                         onPressed: () {
                           String searchText = _controller.text;
@@ -82,16 +95,19 @@ class _CustomSearchBarState extends State<CustomSearchBar> {
                             SnackBar(content: Text("Searching for: $searchText")),
                           );
                         },
-                        child: const Text("Search", style: TextStyle(color: Colors.white)),
+                        label: const Text("Search", style: TextStyle(color: Colors.white, fontSize: 13)),
                       ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              commonButton(text: "Filters", onPressed: (){
-                Scaffold.of(context).openEndDrawer();
-              })
+              CommonButton(
+                text: "Filters",
+                onPressed: () {
+                  Scaffold.of(context).openEndDrawer();
+                },
+              )
             ],
           ),
         ),

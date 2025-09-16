@@ -1,3 +1,4 @@
+import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:erptransportexpress/Common%20Widgets/customtable.dart';
 import 'package:flutter/material.dart';
 import '../Dashboard_Screens/dashboard_screen.dart';
@@ -13,19 +14,7 @@ class _FinancialsScreenState extends State<FinancialsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Financials"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DashboardScreen()),
-            );
-          },
-        ),
-      ),
+      appBar: CommonAppBar(title: Text("Financials Screen")),
       body: Column(
         children: [
           CustomTable(columns: ["Profit","Loss"], rows: [
