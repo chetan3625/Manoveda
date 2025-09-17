@@ -1,22 +1,10 @@
-import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
-import 'package:flutter/material.dart';
+
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+import 'UploadDoc.dart';
 import 'common_buttons.dart';
-import 'package:erptransportexpress/Common Widgets/UploadDoc.dart';
-
-class UploadDoc extends StatefulWidget {
-  final String title;
-  final String hintText;
-
-  const UploadDoc({
-    super.key,
-    required this.title,
-    required this.hintText,
-  });
-
-  @override
-  State<UploadDoc> createState() => _UploadDocState();
-}
 
 class _UploadDocState extends State<UploadDoc> {
   String? fileName;
@@ -79,7 +67,7 @@ class _UploadDocState extends State<UploadDoc> {
               // Top Row: icon + title
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+                children: <Widget>[
                   Text(
                     widget.title,
                     overflow: TextOverflow.ellipsis,
@@ -100,6 +88,7 @@ class _UploadDocState extends State<UploadDoc> {
                       ),
                     ),
                   ),
+
                 ],
               ),
               const SizedBox(height: 6),

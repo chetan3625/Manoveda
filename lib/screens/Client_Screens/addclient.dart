@@ -46,7 +46,7 @@ class _addClientState extends State<addClient> {
                 SizedBox(
                   width: 20,
                 ),
-                Expanded(child: CustomFormField(caplebal: 'Address', label: '', hint: 'Enter Address', controller: clientNameController,backgroundColor: Colors.white,)),
+                Expanded(child: CustomFormField(caplebal: 'Address', label: '', hint: 'Enter Address', controller: addressController,backgroundColor: Colors.white,)),
 
               ],
             ),
