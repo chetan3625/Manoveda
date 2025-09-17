@@ -7,7 +7,7 @@ class CustomTable extends StatefulWidget {
   const CustomTable({
     super.key,
     required this.columns,
-    required this.rows,
+    required this.rows, required int width, required int height,
   });
 
   @override

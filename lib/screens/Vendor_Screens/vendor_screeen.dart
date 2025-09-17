@@ -54,16 +54,7 @@ class _VendorScreenState extends State<VendorScreen> {
       "4/4/2025",
       "5/5/2025",
     ),
-    VehicleModel(
-      "VH004",
-      "Hyundai",
-      "i20",
-      "Hatchback",
-      "Petrol",
-      "MH13GH3456",
-      "6/6/2025",
-      "7/7/2025",
-    ),
+
   ];
   void deleteFromRow(String vehicleno){
     setState(() {

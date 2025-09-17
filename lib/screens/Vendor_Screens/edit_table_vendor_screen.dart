@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
 
+import '../../Common Widgets/uploadComponent.dart';
 import '../../models/VendorModel.dart';
 import '../../widgets/custom_form_filed.dart'; // तुझा colors file
 
@@ -115,11 +116,18 @@ class _EditTableVendorScreen extends State<EditTableVendorScreen> {
                         keyboardType: TextInputType.number,
                         backgroundColor: Colors.white,
                       ),
+
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: 300,   // set your width
+                        height: 200,  // set your height
+                        child: uploadDoc(
+                          title: "Agreement Document",
+                          hintText: "Upload agreement file",
+                        ),
+                      ),
                       const SizedBox(height: 12),
 
-
-
-                      // Save Button with Confirmation
                       commonButton(
                         backgroundColor: Colors.green,
                         text: "Save Vendor & Vehicle",

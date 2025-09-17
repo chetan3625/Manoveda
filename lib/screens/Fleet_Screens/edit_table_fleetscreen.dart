@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
 
-import '../../Common Widgets/add_documents.dart';
+import '../../Common Widgets/uploadComponent.dart';
 import '../../widgets/custom_form_filed.dart'; // तुझा colors file
 
 class EditTableFleetscreen extends StatefulWidget {
