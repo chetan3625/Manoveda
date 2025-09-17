@@ -1,15 +1,19 @@
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
+import 'package:erptransportexpress/screens/Documents_Screens/documents_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
 class UploadDoc extends StatefulWidget {
   final String title;
   final String hintText;
+  final List<String> AllowedDcoments;
 
   const UploadDoc({
     super.key,
     required this.title,
     required this.hintText,
+    required this.AllowedDcoments,
+
   });
 
   @override
@@ -19,20 +23,22 @@ class UploadDoc extends StatefulWidget {
 class _UploadDocState extends State<UploadDoc> {
   String? fileName;
 
+
   void pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: [
-        "pdf",
-        "doc",
-        "docx",
-        "xls",
-        "xlsx",
-        "txt",
-        "png",
-        "jpg",
+      allowedExtensions: widget.AllowedDcoments,
+        /*[
+          "pdf",
+          "doc",
+          "docx",
+          "xls",
+          "xlsx",
+          "txt",
+          "png",
+          "jpg",
 
-      ],
+        ]*/
     );
     if (result != null) {
       setState(() {

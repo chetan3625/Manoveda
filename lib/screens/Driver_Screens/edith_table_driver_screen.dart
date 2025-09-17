@@ -1,7 +1,6 @@
 import 'package:erptransportexpress/Common%20Widgets/UploadDoc.dart';
+import 'package:erptransportexpress/utils/AllowedDocList.dart';
 import 'package:flutter/material.dart';
-
-import '../../Common Widgets/uploadComponent.dart';
 import '../../widgets/custom_form_filed.dart';
 
 class DriverManagementScreen extends StatefulWidget {
@@ -109,6 +108,9 @@ class _DriverManagementScreenState extends State<DriverManagementScreen> {
                         child: UploadDoc(
                           title: "Aadhaar Details",
                           hintText: "Upload certificate file",
+                          AllowedDcoments: [
+                            AllowedDocList.pdf
+                          ],
                         ),
                       ),
                     ),
@@ -121,6 +123,10 @@ class _DriverManagementScreenState extends State<DriverManagementScreen> {
                         child: UploadDoc(
                           title: "Medical Fitness Certificate",
                           hintText: "Upload certificate file",
+                          AllowedDcoments: [
+                            AllowedDocList.pdf,
+
+                          ],
                         ),
                       ),
                     ),

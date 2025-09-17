@@ -1,5 +1,6 @@
 import 'package:erptransportexpress/Common%20Widgets/UploadDoc.dart';
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
+import 'package:erptransportexpress/utils/AllowedDocList.dart';
 import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
@@ -191,11 +192,14 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                         UploadDoc(
                           title:"Registration Certificate",
                           hintText: "Enter Date",
+                          AllowedDcoments: [
+                            AllowedDocList.pdf
+                          ],
                         ),
                         const SizedBox(width: 10),
-                        UploadDoc(title: "Insurence", hintText: "Ensurence ID"),
+                        UploadDoc(title: "Insurence", hintText: "Ensurence ID",AllowedDcoments: [AllowedDocList.pdf],),
                         const SizedBox(width: 10),
-                        UploadDoc(title: "Ownership Proof", hintText: "Ownership ID"),
+                        UploadDoc(title: "Ownership Proof", hintText: "Ownership ID",AllowedDcoments: [AllowedDocList.pdf],),
                         const SizedBox(width: 10),
                       ],
                     ),

@@ -1,4 +1,5 @@
 import 'package:erptransportexpress/Common%20Widgets/UploadDoc.dart';
+import 'package:erptransportexpress/utils/AllowedDocList.dart';
 import 'package:flutter/material.dart';
 import '../../Common Widgets/common_buttons.dart';
 import '../../Common Widgets/uploadComponent.dart';
@@ -92,6 +93,11 @@ class _EditTableTripScreenState extends State<EditTableTripScreen> {
               child: UploadDoc(
                 title: "POD Document",
                 hintText: "Upload POD file",
+                AllowedDcoments: [
+                  AllowedDocList.pdf,
+                  AllowedDocList.document,
+                  AllowedDocList.docx,
+                ],
               ),
             ),
 

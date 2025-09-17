@@ -1,10 +1,10 @@
 import 'package:erptransportexpress/Common%20Widgets/UploadDoc.dart';
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
+import 'package:erptransportexpress/utils/AllowedDocList.dart';
 import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
 
-import '../../Common Widgets/uploadComponent.dart';
 import '../../models/VendorModel.dart';
 import '../../widgets/custom_form_filed.dart'; // तुझा colors file
 
@@ -125,6 +125,11 @@ class _EditTableVendorScreen extends State<EditTableVendorScreen> {
                         child: UploadDoc(
                           title: "Agreement Document",
                           hintText: "Upload agreement file",
+                          AllowedDcoments: [
+                            AllowedDocList.text,
+                            AllowedDocList.pdf,
+                            AllowedDocList.docx,
+                          ],
                         ),
                       ),
                       const SizedBox(height: 12),
