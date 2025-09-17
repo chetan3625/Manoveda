@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
 
-import '../../Common Widgets/uploadComponent.dart';
-import '../../widgets/custom_form_filed.dart';
+import '../../widgets/custom_form_filed.dart'; // Make sure this is the correct path
 
 class EditTableFleetscreen extends StatefulWidget {
   const EditTableFleetscreen({super.key});
@@ -56,10 +55,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width; // ✅ responsive width
-    final screenHeight = MediaQuery.of(context).size.height; // ✅ responsive height
-    final padding = screenWidth * 0.04; // ✅ dynamic padding
-    final spacing = screenHeight * 0.015; // ✅ dynamic spacing
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -72,9 +68,9 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
         backgroundColor: common_Colors.primaryColor,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(padding),
+        padding: const EdgeInsets.all(16.0),
         child: Padding(
-          padding: EdgeInsets.only(left: screenWidth * 0.08),
+          padding: const EdgeInsets.only(left: 60),
           child: SizedBox(
             width: screenWidth * 0.9,
             child: Card(
@@ -84,124 +80,128 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Padding(
-                padding: EdgeInsets.all(padding),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Vehicle No + Type
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CustomFormField(
-                            caplebal: "Vehicle No",
-                            label: "",
-                            hint: "",
-                            controller: vehNoController,
-                            backgroundColor: Colors.white,
-                          ),
-                        ),
-                        SizedBox(width: spacing),
-                        Expanded(
-                          child: CustomFormField(
-                            caplebal: "Type",
-                            label: "",
-                            hint: "",
-                            controller: typeController,
-                            backgroundColor: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: spacing),
-
-                    CustomFormField(
-                      caplebal: "Capacity",
-                      label: "",
-                      hint: "",
-                      controller: capacityController,
-                      keyboardType: TextInputType.number,
-                      backgroundColor: Colors.white,
-                    ),
-                    SizedBox(height: spacing),
-
-                    CustomFormField(
-                      caplebal: "Status",
-                      label: "",
-                      hint: "",
-                      controller: statusController,
-                      backgroundColor: Colors.white,
-                    ),
-                    SizedBox(height: spacing),
-
-                    CustomFormField(
-                      caplebal: "Driver",
-                      label: "",
-                      hint: "",
-                      controller: driverController,
-                      backgroundColor: Colors.white,
-                    ),
-                    SizedBox(height: spacing),
-
-                    CustomFormField(
-                      caplebal: "Last Service",
-                      label: "",
-                      hint: "",
-                      controller: lastServiceController,
-                      backgroundColor: Colors.white,
-                    ),
-                    SizedBox(height: spacing),
-
-                    // Start Date + End Date
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CustomFormField(
-                            caplebal: "Start Date",
-                            label: "",
-                            hint: "",
-                            controller: startDateController,
-                            backgroundColor: Colors.white,
-                          ),
-                        ),
-                        SizedBox(width: spacing),
-                        Expanded(
-                          child: CustomFormField(
-                            caplebal: "End Date",
-                            label: "",
-                            hint: "",
-                            controller: endDateController,
-                            backgroundColor: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: spacing * 2),
-
-                    // Upload Section
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
                       child: Row(
                         children: [
-                          UploadDoc(
-                            title: "Upload RC",
-                            hintText: "Enter Date",
+                          Expanded(
+                            child: CustomFormField(
+                              caplebal: "Vehicle No",
+                              label: "",
+                              hint: "",
+                              controller: vehNoController,
+                              backgroundColor: Colors.white,
+                            ),
                           ),
-                          SizedBox(width: spacing),
-                          UploadDoc(
-                              title: "Insurance", hintText: "Insurance ID"),
-                          SizedBox(width: spacing),
-                          UploadDoc(
-                              title: "Ownership Proof",
-                              hintText: "Ownership ID"),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: CustomFormField(
+                              caplebal: "Type",
+                              label: "",
+                              hint: "",
+                              controller: typeController,
+                              backgroundColor: Colors.white,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    SizedBox(height: spacing * 2),
 
-                    // Button
+                    // Capacity
                     Padding(
-                      padding: EdgeInsets.all(spacing),
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: CustomFormField(
+                        caplebal: "Capacity",
+                        label: "",
+                        hint: "",
+                        controller: capacityController,
+                        keyboardType: TextInputType.number,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: CustomFormField(
+                        caplebal: "Status",
+                        label: "",
+                        hint: "",
+                        controller: statusController,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: CustomFormField(
+                        caplebal: "Driver",
+                        label: "",
+                        hint: "",
+                        controller: driverController,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: CustomFormField(
+                        caplebal: "Last Service",
+                        label: "",
+                        hint: "",
+                        controller: lastServiceController,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+
+                    // Start Date + End Date
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomFormField(
+                              caplebal: "Start Date",
+                              label: "",
+                              hint: "",
+                              controller: startDateController,
+                              backgroundColor: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: CustomFormField(
+                              caplebal: "End Date",
+                              label: "",
+                              hint: "",
+                              controller: endDateController,
+                              backgroundColor: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    Row(
+                      children: [
+                        UploadDoc(
+                          title:"Registration Certificate",
+                          hintText: "Enter Date",
+                        ),
+                        const SizedBox(width: 10),
+                        UploadDoc(title: "Insurence", hintText: "Ensurence ID"),
+                        const SizedBox(width: 10),
+                        UploadDoc(title: "Ownership Proof", hintText: "Ownership ID"),
+                        const SizedBox(width: 10),
+                      ],
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
                       child: Center(
                         child: CommonButton(
                           backgroundColor: Colors.green,
@@ -224,8 +224,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                                 ),
                                 actions: [
                                   TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(context),
+                                    onPressed: () => Navigator.pop(context),
                                     child: const Text(
                                       "Cancel",
                                       style: TextStyle(
