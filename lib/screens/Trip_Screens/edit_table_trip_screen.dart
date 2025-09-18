@@ -2,7 +2,6 @@ import 'package:erptransportexpress/Common%20Widgets/UploadDoc.dart';
 import 'package:erptransportexpress/utils/AllowedDocList.dart';
 import 'package:flutter/material.dart';
 import '../../Common Widgets/common_buttons.dart';
-import '../../Common Widgets/uploadComponent.dart';
 import '../../widgets/custom_form_filed.dart';
 
 class EditTableTripScreen extends StatefulWidget {

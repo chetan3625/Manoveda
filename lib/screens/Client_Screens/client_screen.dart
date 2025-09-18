@@ -2,6 +2,7 @@ import 'package:erptransportexpress/Common%20Widgets/CommonAlertBox.dart';
 import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:erptransportexpress/Common%20Widgets/FleetTableWidget.dart';
 import 'package:erptransportexpress/Common%20Widgets/serachbar.dart';
+
 import 'package:erptransportexpress/screens/Client_Screens/addclient.dart';
 import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/FilterModel.dart';
@@ -23,6 +24,7 @@ class ClientScreen extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _ClientScreenState extends State<ClientScreen> {
+
   List<ClientModel> demoClients = [
     ClientModel(
       clientId: "CLT001",
@@ -137,7 +139,7 @@ class _ClientScreenState extends State<ClientScreen> {
             backgroundColor: Colors.blue,
             onPressed: () {
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const addClient())); // Added const
+                  MaterialPageRoute(builder: (context) => const AddClient())); // Added const
             },
             child: const Text( // Added const
               "Add Client",
@@ -183,19 +185,36 @@ class _ClientScreenState extends State<ClientScreen> {
                       // If they are actions, you'd put IconButton or similar here.
                      // Placeholder for 'start date' or an action
                       DataCell(Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
                         children: [
+                          InkWell(
+                            onTap: () {
+                              print("View detail tapped");
+                              Navigator.push(context, MaterialPageRoute(builder: (context)=>AddClient(isClientEditable: true,)));
+                            },
+                            child: Icon(
+                                color: Colors.blueAccent,
+                                Icons.remove_red_eye_outlined),
+                          ),
+                        SizedBox(
+                          width: 10,
+                        ),
                         InkWell(
                           onTap: () {
                             showDialog(context: context, builder: (BuildContext context){
-                              return CommonAlertBox(title: "Alert !", content: "Are you sure to edit this entry ?", positiveText: "Yes", onPositivePressed: (){}, negativeText: "No", onNegativePressed: (){});
+                              return CommonAlertBox(title: "Alert !", content: "Are you sure to edit this entry ?", positiveText: "Yes", onPositivePressed: (){
+                                Navigator.push(context, MaterialPageRoute(builder: (context)=>AddClient(isClientEditable: false,)));
+                              }, negativeText: "No", onNegativePressed: (){});
+
                             });
                             print("Edit tapped");
                                           },
                             child: Icon(Icons.edit)),
-                        SizedBox(
-                          width:10,
-                        ),
 
+                          SizedBox(
+                            width: 10,
+                          ),
                         InkWell(
                           onTap: () {
                             showDialog(context: context, builder: (BuildContext context){
@@ -210,20 +229,9 @@ class _ClientScreenState extends State<ClientScreen> {
 
                         ),
                           SizedBox(
-                            width:10,
+                            width: 10,
                           ),
-                        InkWell(
-                          onTap: () {
-                            showDialog(context: context, builder: (BuildContext context){
-                              return CommonAlertBox(title: "Alert !", content: "Are You Sure to Edit this client ?", positiveText: "Yes", onPositivePressed: (){}, negativeText: "No", onNegativePressed: (){});
 
-                            });
-                            print("View detail tapped");
-                            },
-                          child: Icon(
-                            color: Colors.blueAccent,
-                              Icons.person_2_outlined),
-                        )
                       ],)), // Placeholder for 'Actions'
                     ]);
                   }).toList(), // Convert the Iterable from .map() to a List<DataRow>

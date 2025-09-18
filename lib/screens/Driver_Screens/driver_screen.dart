@@ -1,3 +1,5 @@
+import 'package:erptransportexpress/Common%20Widgets/CommonAlertBox.dart';
+import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:erptransportexpress/Common%20Widgets/CommonFilter.dart';
 import 'package:flutter/material.dart';
 
@@ -9,8 +11,7 @@ import '../../models/VehicleModel.dart';
 import '../../utils/Colors.dart';
 import '../../widgets/sidebar.dart';
 import '../Dashboard_Screens/dashboard_screen.dart';
-import '../Vendor_Screens/edit_table_vendor_screen.dart';
-import 'edith_table_driver_screen.dart';
+import 'AddNewDriverForm.dart';
 
 class DriverScreen extends StatefulWidget {
   const DriverScreen({super.key});
@@ -20,6 +21,7 @@ class DriverScreen extends StatefulWidget {
 }
 
 class _DriverScreenState extends State<DriverScreen> {
+
   final List<VehicleModel> vehicles = [
     VehicleModel(
       "VH001",
@@ -51,45 +53,40 @@ class _DriverScreenState extends State<DriverScreen> {
       "4/4/2025",
       "5/5/2025",
     ),
-
   ];
 
-  void deleteFromRow(String vehicleno){
+  void deleteFromRow(String vehicleno) {
     setState(() {
-
+      // Logic to delete the vehicle from the list
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
-
     final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat, // FAB position
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
 
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: common_Colors.primaryColor,
-        title: Text("Driver Screen", style: TextStyle(color: Colors.white)),
-      ),
-      drawer: Sidebar(),
+      appBar: CommonAppBar(title: Text("DriverScreen")),
+      drawer: const Sidebar(),
       floatingActionButton: SizedBox(
-
         height: 70,
         width: 150,
         child: FloatingActionButton(
-
           backgroundColor: common_Colors.primaryColor,
-          onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>DriverManagementScreen())
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddNewDriverForm()),
             );
           },
-          child: Text("Add a Driver",style: TextStyle(
-            color: common_Colors.textColor,
-          ),),
-
+          child: const Text(
+            "Add a Driver",
+            style: TextStyle(
+              color: common_Colors.textColor,
+            ),
+          ),
         ),
       ),
       body: CommonFilter(
@@ -105,17 +102,13 @@ class _DriverScreenState extends State<DriverScreen> {
             SubFilterOptionModel("CNG", 3, false),
             SubFilterOptionModel("Electric / Hybrid", 4, false),
           ]),
-
-          // FilterModel("FLeet Type",  [SubFilterOptionModel("Truck", 1)])
-          // FilterModel("FLeet Type",  [SubFilterOptionModel("Truck", 1)])
         ],
         child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
-              CommonSearchBar(screen: "Driver Screen"),
-              // FleetTableWidget(vehicles: vehicles),
+              const CommonSearchBar(screen: "Driver Screen"),
               Common_Table(
-                dataColumnList: [
+                dataColumnList: const [
                   DataColumn(label: Expanded(child: Text("Vehicle No"))),
                   DataColumn(label: Expanded(child: Text("Type"))),
                   DataColumn(label: Expanded(child: Text("Capacity"))),
@@ -124,12 +117,9 @@ class _DriverScreenState extends State<DriverScreen> {
                   DataColumn(label: Expanded(child: Text("Last Service"))),
                   DataColumn(label: Expanded(child: Text("start date"))),
                   DataColumn(label: Expanded(child: Text("enddate"))),
-                  DataColumn(label: Expanded(child: Text("Actions")))
-
+                  DataColumn(label: Expanded(child: Text("Actions"))),
                 ],
-                dataRowList:
-
-                vehicles.map((vehicle) {
+                dataRowList: vehicles.map((vehicle) {
                   return DataRow(cells: [
                     DataCell(Text(vehicle.vehileNo)),
                     DataCell(Text(vehicle.type)),
@@ -151,28 +141,55 @@ class _DriverScreenState extends State<DriverScreen> {
                     DataCell(Text(vehicle.startdate)),
                     DataCell(Text(vehicle.enddate)),
                     DataCell(Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         InkWell(
-                          child: Icon(Icons.edit),
-                          onTap: (){
-                            print("Edit tapped");
-                          },),
-                        SizedBox(
-                          width: 10,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AddNewDriverForm(isDriverEditable: true,)),
+                            );
+                          },
+                          child: const Icon(
+                            color: Colors.blue,
+                              Icons.remove_red_eye_outlined),
                         ),
                         InkWell(
-
-                          child: Icon(
-                              color: Colors.red,
-                              Icons.delete),
-                          onTap: (){
+                          child: const Icon(Icons.edit),
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return CommonAlertBox(
+                                  title: "Alert",
+                                  content: "Do you want to edit this entry?",
+                                  positiveText: "Yes",
+                                  onPositivePressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const AddNewDriverForm(isDriverEditable: false,)),
+                                    );
+                                  },
+                                  negativeText: "No",
+                                  onNegativePressed: () {
+                                    // The CommonAlertBox will handle popping the dialog
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
+                        InkWell(
+                          child: const Icon(
+                            color: Colors.red,
+                            Icons.delete,
+                          ),
+                          onTap: () {
                             print("delete tapped");
                           },
                         ),
-
                       ],
-                    ))
-
+                    )),
                   ]);
                 }).toList(),
               ),
@@ -183,4 +200,3 @@ class _DriverScreenState extends State<DriverScreen> {
     );
   }
 }
-

@@ -2,6 +2,9 @@ import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:erptransportexpress/screens/Documents_Screens/documents_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'dart:io';
+
+import 'package:open_filex/open_filex.dart';
 
 class UploadDoc extends StatefulWidget {
   final String title;
@@ -22,9 +25,11 @@ class UploadDoc extends StatefulWidget {
 
 class _UploadDocState extends State<UploadDoc> {
   String? fileName;
+  String? filePath;
 
 
-  void pickFile() async {
+
+ Future<void> pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: widget.AllowedDcoments,
@@ -43,12 +48,23 @@ class _UploadDocState extends State<UploadDoc> {
     if (result != null) {
       setState(() {
         fileName = result.files.first.name;
-        print(fileName);
+        filePath = result.files.first.path!;
       });
     } else {
       print("No file selected");
     }
   }
+  void viewfile(){
+   if(filePath!=null){
+    OpenFilex.open(filePath!);
+   }
+   else{
+     debugPrint('No file path available to open.');
+
+   }
+
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -118,9 +134,22 @@ class _UploadDocState extends State<UploadDoc> {
               const SizedBox(height: 8),
 
               // Upload Button
-              CommonButton(
-                text: "Select Document",
-                onPressed: pickFile,
+              Row(
+                children: [
+                  CommonButton(
+                    text: "Select Document",
+                    onPressed: pickFile,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  if (fileName != null)
+
+                    CommonButton(text: "View", onPressed: (){
+                      viewfile();
+                    },backgroundColor: Colors.deepPurple,)
+
+                ],
               ),
             ],
           ),

@@ -26,17 +26,23 @@ class CommonAlertBox extends StatelessWidget {
       content: Text(content),
       actions: <Widget>[
         CommonButton(
-
-            text: negativeText, onPressed: (){
-          Navigator.of(context).pop();
-          onNegativePressed();
-        }),
-        SizedBox(width: 10,),
+          text: negativeText,
+          onPressed: (){
+            Navigator.of(context).pop();
+            onNegativePressed();
+          },
+        ),
+        const SizedBox(width: 10),
         CommonButton(
           backgroundColor: Colors.green,
-            text: positiveText, onPressed: (){
-          Navigator.of(context).pop();
-        }),
+          text: positiveText,
+          onPressed: (){
+            // Pop the dialog first
+            Navigator.of(context).pop();
+            // Then execute the provided callback
+            onPositivePressed();
+          },
+        ),
       ],
     );
   }

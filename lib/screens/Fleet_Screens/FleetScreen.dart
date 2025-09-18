@@ -3,30 +3,26 @@ import 'package:erptransportexpress/models/FilterModel.dart';
 import 'package:erptransportexpress/Common Widgets/FleetTableWidget.dart';
 import 'package:erptransportexpress/models/SubFilterOptionModel.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
+import 'package:erptransportexpress/screens/Fleet_Screens/AddNewVehicleForm.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
-import 'package:erptransportexpress/Common Widgets/uploadComponent.dart';
-
 import 'package:flutter/material.dart';
-
 import '../../Common Widgets/CommonAlertBox.dart';
 import '../../Common Widgets/CommonAppBar.dart';
 import '../../Common Widgets/CommonCard.dart';
 import '../../Common Widgets/CommonFilter.dart';
 import '../../widgets/sidebar.dart';
-import 'EditTableFleetscreen.dart';
 
-class FleetScreen extends StatefulWidget { // Removed 'implements PreferredSizeWidget'
 
+
+class FleetScreen extends StatefulWidget {
   const FleetScreen({super.key});
 
   @override
   State<FleetScreen> createState() => _FleetScreenState();
-
 }
 
 class _FleetScreenState extends State<FleetScreen> {
-
-
+  final isEditable=false;
   final List<VehicleModel> vehicles = [
     VehicleModel(
       "VH001",
@@ -69,40 +65,36 @@ class _FleetScreenState extends State<FleetScreen> {
       "7/7/2025",
     ),
   ];
-  void deleteFromRow(String vehicleno){
+
+  void deleteFromRow(String vehicleno) {
     setState(() {
-
+      vehicles.removeWhere((vehicle) => vehicle.vehileNo == vehicleno);
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat, // FAB position
-
-      appBar:CommonAppBar(title: Text("FleetScreen")) , // Added const and changed title to a Text widget
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      appBar: const CommonAppBar(title: Text("FleetScreen")),
       drawer: const Sidebar(),
       floatingActionButton: SizedBox(
-
         height: 70,
         width: 150,
         child: FloatingActionButton(
-//
-
-
-
           backgroundColor: common_Colors.primaryColor,
-          onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>const EditTableFleetscreen())
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AddNewVehicleForm()),
             );
           },
-          child: const Text("Add a Vehicle",style: TextStyle(
-            color: common_Colors.textColor,
-          ),),
-
+          child: const Text(
+            "Add a Vehicle",
+            style: TextStyle(
+              color: common_Colors.textColor,
+            ),
+          ),
         ),
       ),
       body: CommonFilter(
@@ -118,9 +110,6 @@ class _FleetScreenState extends State<FleetScreen> {
             SubFilterOptionModel("CNG", 3, false),
             SubFilterOptionModel("Electric / Hybrid", 4, false),
           ]),
-
-          // FilterModel("FLeet Type",  [SubFilterOptionModel("Truck", 1)])
-          // FilterModel("FLeet Type",  [SubFilterOptionModel("Truck", 1)])
         ],
         child: SingleChildScrollView(
           child: Column(
@@ -134,7 +123,7 @@ class _FleetScreenState extends State<FleetScreen> {
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
                       children: const [
-                        SizedBox(width: 12), // सुरुवातीला gap
+                        SizedBox(width: 12),
                         CommonCard(
                           icon: Icons.fire_truck,
                           title: "Total Vehicles",
@@ -170,14 +159,13 @@ class _FleetScreenState extends State<FleetScreen> {
                           title: "Fuel Consumption",
                           value: "500L",
                         ),
-                        SizedBox(width: 12), // शेवटी gap
+                        SizedBox(width: 12),
                       ],
                     ),
                   ),
                 ),
               ),
-              CommonSearchBar(screen: "Fleetscreen",),
-              // FleetTableWidget(vehicles: vehicles),
+              const CommonSearchBar(screen: "Fleetscreen"),
               Common_Table(
                 dataColumnList: const [
                   DataColumn(label: Expanded(child: Text("Vehicle No"))),
@@ -188,12 +176,9 @@ class _FleetScreenState extends State<FleetScreen> {
                   DataColumn(label: Expanded(child: Text("Last Service"))),
                   DataColumn(label: Expanded(child: Text("start date"))),
                   DataColumn(label: Expanded(child: Text("enddate"))),
-                  DataColumn(label: Expanded(child: Text("Actions")))
-
+                  DataColumn(label: Expanded(child: Text("Actions"))),
                 ],
-                dataRowList:
-
-                vehicles.map((vehicle) {
+                dataRowList: vehicles.map((vehicle) {
                   return DataRow(cells: [
                     DataCell(Text(vehicle.vehileNo)),
                     DataCell(Text(vehicle.type)),
@@ -215,45 +200,86 @@ class _FleetScreenState extends State<FleetScreen> {
                     DataCell(Text(vehicle.startdate)),
                     DataCell(Text(vehicle.enddate)),
                     DataCell(Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         InkWell(
-                          child: const Icon(Icons.edit),
-                          onTap: (){
-                                showDialog(context: context, builder: (BuildContext context){
-                  return CommonAlertBox(title: "Alert !", content: "Are you sure to edit this entry ?", positiveText: "Yes", onPositivePressed: (){}, negativeText: "No", onNegativePressed: (){});
-
-                                });
-                            print("Edit tapped");
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddNewVehicleForm(
+                                  isEditable: true, // For "view" mode, set this to false
+                                ),
+                              ),
+                            );
                           },
-                        ),
-                        const SizedBox(
-                          width: 10,
+                          child: const Icon(
+                            color: Colors.lightBlue,
+                            Icons.remove_red_eye_outlined,
+                          ),
                         ),
                         InkWell(
-
-                          child: const Icon(
-                              color: Colors.red,
-                              Icons.delete),
-                          onTap: (){
-                            showDialog(context: context, builder: (BuildContext context){
-                              return CommonAlertBox(title: "Alert !", content: "Are you sure to delete this entry ?", positiveText: "Yes", onPositivePressed: (){}, negativeText: "No", onNegativePressed: (){});
-
-                            });
-                            print("Edit tapped");
+                          child: const Icon(Icons.edit),
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return CommonAlertBox(
+                                  title: "Alert !",
+                                  content: "Are you sure to edit this entry?",
+                                  positiveText: "Yes",
+                                  onPositivePressed: () {
+                                    isEditable : true;
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AddNewVehicleForm(
+                                          vehicle: vehicle,
+                                          isEditable: false, // For "edit" mode, set this to true
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  negativeText: "No",
+                                  onNegativePressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                );
+                              },
+                            );
                           },
                         ),
-                        const SizedBox(
-                          width: 10,
+                        InkWell(
+                          child: const Icon(
+                            color: Colors.red,
+                            Icons.delete,
+                          ),
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return CommonAlertBox(
+                                  title: "Alert !",
+                                  content: "Are you sure to delete this entry?",
+                                  positiveText: "Yes",
+                                  onPositivePressed: () {
+                                    deleteFromRow(vehicle.vehileNo);
+                                    Navigator.of(context).pop();
+                                  },
+                                  negativeText: "No",
+                                  onNegativePressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                );
+                              },
+                            );
+                          },
                         ),
-
-
                       ],
-                    ))
-
+                    )),
                   ]);
                 }).toList(),
               ),
-
             ],
           ),
         ),

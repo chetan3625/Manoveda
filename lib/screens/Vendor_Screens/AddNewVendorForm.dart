@@ -8,14 +8,16 @@ import 'package:erptransportexpress/utils/Colors.dart';
 import '../../models/VendorModel.dart';
 import '../../widgets/custom_form_filed.dart'; // तुझा colors file
 
-class EditTableVendorScreen extends StatefulWidget {
-  const EditTableVendorScreen({super.key});
+class AddNewVendorForm extends StatefulWidget {
+  final bool isVendorEditable;
+
+  const AddNewVendorForm({super.key, this.isVendorEditable=true});
 
   @override
-  State<EditTableVendorScreen> createState() => _EditTableVendorScreen();
+  State<AddNewVendorForm> createState() => _EditTableVendorScreen();
 }
 
-class _EditTableVendorScreen extends State<EditTableVendorScreen> {
+class _EditTableVendorScreen extends State<AddNewVendorForm> {
   List<VehicleModel> vehicles = [];
 
   // Controllers
@@ -61,7 +63,7 @@ class _EditTableVendorScreen extends State<EditTableVendorScreen> {
       appBar: AppBar(
         iconTheme: IconThemeData(color: common_Colors.textColor),
         title: Text(
-          "Vendor Management",
+           "Vendor Profile Management",
           style: TextStyle(color: common_Colors.textColor),
         ),
         backgroundColor: common_Colors.primaryColor,
@@ -89,6 +91,7 @@ class _EditTableVendorScreen extends State<EditTableVendorScreen> {
                         children: [
                           Expanded(
                             child: CustomFormField(
+                              isEditable: widget.isVendorEditable,
                               caplebal: "Vendor Name",
                               label: "",
                               hint: "Enter vendor name",
@@ -99,6 +102,7 @@ class _EditTableVendorScreen extends State<EditTableVendorScreen> {
                           const SizedBox(width: 12), // spacing between fields
                           Expanded(
                             child: CustomFormField(
+                              isEditable: widget.isVendorEditable,
                               caplebal: "Email ID",
                               label: "",
                               hint: "Enter Email ID",
@@ -110,6 +114,7 @@ class _EditTableVendorScreen extends State<EditTableVendorScreen> {
                       ),
                       const SizedBox(height: 12),
                       CustomFormField(
+                        isEditable: widget.isVendorEditable,
                         caplebal: "Revenue Sharing (%)",
                         label: "",
                         hint: "Enter percentage",
@@ -119,6 +124,7 @@ class _EditTableVendorScreen extends State<EditTableVendorScreen> {
                       ),
 
                       const SizedBox(height: 12),
+                      if(!widget.isVendorEditable)
                       SizedBox(
                         width: 300,   // set your width
                         height: 200,  // set your height
@@ -133,51 +139,56 @@ class _EditTableVendorScreen extends State<EditTableVendorScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      if(!widget.isVendorEditable)
+                      Center(
+                        child: CommonButton(
 
-                      CommonButton(
-                        backgroundColor: Colors.green,
-                        text: "Save Vendor & Vehicle",
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text("Confirm Vendor Profile"),
-                              content: Text(
-                                "Do you want to save this vendor & vehicle?\n\n"
-                                    "Vendor: ${vendorNameController.text}\n"
-                                    "Contract ID: ${contractIdController.text}\n"
-                                    "Revenue Share: ${revenueShareController.text}%\n",
+                          backgroundColor: Colors.green,
+                          text: "Save Vendor & Vehicle",
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text("Confirm Vendor Profile"),
+                                content: Text(
+                                  "Do you want to save this vendor & vehicle?\n\n"
+                                      "Vendor: ${vendorNameController.text}\n"
+                                      "Contract ID: ${contractIdController.text}\n"
+                                      "Revenue Share: ${revenueShareController.text}%\n",
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text(
+                                      "Cancel",
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      _addVendor();
+                                      Navigator.pop(context);
+                                      setState(() {});
+                                    },
+                                    child: const Text(
+                                      "Confirm",
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text(
-                                    "Cancel",
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    _addVendor();
-                                    Navigator.pop(context);
-                                    setState(() {});
-                                  },
-                                  child: const Text(
-                                    "Confirm",
-                                    style: TextStyle(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
+                      if(widget.isVendorEditable)
+                        CommonButton(text: "View Agreement document", onPressed: (){},backgroundColor: Colors.green,)
                     ]
 
 

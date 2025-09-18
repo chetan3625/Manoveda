@@ -5,16 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
 
-import '../../widgets/custom_form_filed.dart'; // Make sure this is the correct path
+import '../../widgets/custom_form_filed.dart'; // Ensure this is the correct path
 
-class EditTableFleetscreen extends StatefulWidget {
-  const EditTableFleetscreen({super.key});
+class AddNewVehicleForm extends StatefulWidget {
+  final bool isEditable;
+  final VehicleModel? vehicle; // Make vehicle optional for new entries
+
+  const AddNewVehicleForm({super.key, this.isEditable = false, this.vehicle});
 
   @override
-  State<EditTableFleetscreen> createState() => _EditTableFleetscreenState();
+  State<AddNewVehicleForm> createState() => _AddNewVehicleFormState();
 }
 
-class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
+class _AddNewVehicleFormState extends State<AddNewVehicleForm> {
+  // Use a List for state management, though it might be better handled by a provider or bloc
   List<VehicleModel> vehicles = [];
 
   // Controllers
@@ -26,6 +30,22 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
   final TextEditingController lastServiceController = TextEditingController();
   final TextEditingController startDateController = TextEditingController();
   final TextEditingController endDateController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.vehicle != null) {
+      // Pre-populate fields if a vehicle is passed for editing
+      vehNoController.text = widget.vehicle!.vehileNo;
+      typeController.text = widget.vehicle!.type;
+      capacityController.text = widget.vehicle!.capacity;
+      statusController.text = widget.vehicle!.status;
+      driverController.text = widget.vehicle!.driver;
+      lastServiceController.text = widget.vehicle!.lastService;
+      startDateController.text = widget.vehicle!.startdate;
+      endDateController.text = widget.vehicle!.enddate;
+    }
+  }
 
   void _addVehicle() {
     if (!mounted) return;
@@ -63,7 +83,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
       appBar: AppBar(
         iconTheme: IconThemeData(color: common_Colors.textColor),
         title: Text(
-          "Vehicle Management",
+          widget.isEditable ? "Edit Vehicle" : "Add New Vehicle",
           style: TextStyle(color: common_Colors.textColor),
         ),
         backgroundColor: common_Colors.primaryColor,
@@ -93,6 +113,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                         children: [
                           Expanded(
                             child: CustomFormField(
+                              isEditable: widget.isEditable,
                               caplebal: "Vehicle No",
                               label: "",
                               hint: "",
@@ -103,6 +124,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: CustomFormField(
+                              isEditable: widget.isEditable,
                               caplebal: "Type",
                               label: "",
                               hint: "",
@@ -118,6 +140,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2.0),
                       child: CustomFormField(
+                        isEditable: widget.isEditable,
                         caplebal: "Capacity",
                         label: "",
                         hint: "",
@@ -130,6 +153,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2.0),
                       child: CustomFormField(
+                        isEditable: widget.isEditable,
                         caplebal: "Status",
                         label: "",
                         hint: "",
@@ -140,6 +164,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2.0),
                       child: CustomFormField(
+                        isEditable: widget.isEditable,
                         caplebal: "Driver",
                         label: "",
                         hint: "",
@@ -150,6 +175,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2.0),
                       child: CustomFormField(
+                        isEditable: widget.isEditable,
                         caplebal: "Last Service",
                         label: "",
                         hint: "",
@@ -165,6 +191,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                         children: [
                           Expanded(
                             child: CustomFormField(
+                              isEditable: widget.isEditable,
                               caplebal: "Start Date",
                               label: "",
                               hint: "",
@@ -175,6 +202,7 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: CustomFormField(
+                              isEditable: widget.isEditable,
                               caplebal: "End Date",
                               label: "",
                               hint: "",
@@ -186,25 +214,31 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
-                    Row(
-                      children: [
-                        UploadDoc(
-                          title:"Registration Certificate",
-                          hintText: "Enter Date",
-                          AllowedDcoments: [
-                            AllowedDocList.pdf
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        UploadDoc(title: "Insurence", hintText: "Ensurence ID",AllowedDcoments: [AllowedDocList.pdf],),
-                        const SizedBox(width: 10),
-                        UploadDoc(title: "Ownership Proof", hintText: "Ownership ID",AllowedDcoments: [AllowedDocList.pdf],),
-                        const SizedBox(width: 10),
-                      ],
-                    ),
-
-                    Padding(
+                    if (!widget.isEditable) // Hide upload docs in edit/view mode
+                      Row(
+                        children: [
+                          UploadDoc(
+                            title: "Registration Certificate",
+                            hintText: "Enter Date",
+                            AllowedDcoments: [AllowedDocList.pdf],
+                          ),
+                          const SizedBox(width: 10),
+                          UploadDoc(
+                            title: "Insurence",
+                            hintText: "Insurence ID",
+                            AllowedDcoments: [AllowedDocList.pdf],
+                          ),
+                          const SizedBox(width: 10),
+                          UploadDoc(
+                            title: "Ownership Proof",
+                            hintText: "Ownership ID",
+                            AllowedDcoments: [AllowedDocList.pdf],
+                          ),
+                          const SizedBox(width: 10),
+                        ],
+                      ),
+                    if (!widget.isEditable) // Hide upload docs in edit/view mode
+                      Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Center(
                         child: CommonButton(
@@ -241,7 +275,6 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                                     onPressed: () {
                                       _addVehicle();
                                       Navigator.pop(context);
-                                      setState(() {});
                                     },
                                     child: const Text(
                                       "Confirm",
@@ -258,6 +291,17 @@ class _EditTableFleetscreenState extends State<EditTableFleetscreen> {
                         ),
                       ),
                     ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          if (widget.isEditable)
+                            CommonButton(text: "View Registration Certificate", onPressed: (){},backgroundColor: Colors.green,),
+                          if (widget.isEditable)
+                            CommonButton(text: "View Insurence Certificate", onPressed: (){},backgroundColor: Colors.green,),
+                          if (widget.isEditable)
+                            CommonButton(text: "View Ownership Certificate", onPressed: (){},backgroundColor: Colors.green,)
+                        ],
+                      ),
                   ],
                 ),
               ),

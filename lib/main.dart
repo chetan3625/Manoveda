@@ -1,5 +1,3 @@
-import 'package:erptransportexpress/screens/Driver_Screens/edith_table_driver_screen.dart';
-import 'package:erptransportexpress/screens/Vendor_Screens/edit_table_vendor_screen.dart';
 import 'package:erptransportexpress/splashscreen.dart';
 
 import 'package:flutter/material.dart';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CustomFormField extends StatelessWidget {
+  final bool isEditable;
   final String caplebal; // top label
   final String label; // inside label (optional)
   final String hint;
@@ -31,6 +32,7 @@ class CustomFormField extends StatelessWidget {
     this.width, // 0.8 = 80% of screen width
     this.height, // 0.08 = 8% of screen height
     this.backgroundColor,
+    this.isEditable = false,
   }) : super(key: key);
 
   @override
@@ -61,6 +63,7 @@ class CustomFormField extends StatelessWidget {
 
             // Input field
             TextFormField(
+              readOnly: isEditable,
               controller: controller,
               obscureText: isPassword,
               keyboardType: keyboardType,

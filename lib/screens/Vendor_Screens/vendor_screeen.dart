@@ -1,5 +1,7 @@
+import 'package:erptransportexpress/Common%20Widgets/CommonAlertBox.dart';
 import 'package:erptransportexpress/Common%20Widgets/CommonFilter.dart';
-import 'package:erptransportexpress/screens/Vendor_Screens/edit_table_vendor_screen.dart';
+import 'package:erptransportexpress/screens/Vendor_Screens/AddNewVendorForm.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../Common Widgets/FleetTableWidget.dart';
@@ -10,17 +12,16 @@ import '../../models/VehicleModel.dart';
 import '../../utils/Colors.dart';
 import '../../widgets/custom_form_filed.dart';
 import '../../widgets/sidebar.dart';
-import 'package:erptransportexpress/Common Widgets/serachbar.dart';
 
 class VendorScreen extends StatefulWidget {
   const VendorScreen({super.key});
-
 
   @override
   State<VendorScreen> createState() => _VendorScreenState();
 }
 
 class _VendorScreenState extends State<VendorScreen> {
+   final isVendorEditable=false;
   final List<VehicleModel> vehicles = [
     VehicleModel(
       "VH001",
@@ -52,46 +53,32 @@ class _VendorScreenState extends State<VendorScreen> {
       "4/4/2025",
       "5/5/2025",
     ),
-
   ];
-  void deleteFromRow(String vehicleno){
-    setState(() {
-
-    });
-
+  void deleteFromRow(String vehicleno) {
+    setState(() {});
   }
-
-
 
   @override
   Widget build(BuildContext context) {
-
-    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat, // FAB position
-
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: common_Colors.primaryColor,
-        title: Text("Vendor Screen", style: TextStyle(color: Colors.white)),
+        title: const Text("Vendor Screen", style: TextStyle(color: Colors.white)),
       ),
-      drawer: Sidebar(),
+      drawer: const Sidebar(),
       floatingActionButton: SizedBox(
-
         height: 70,
         width: 150,
         child: FloatingActionButton(
-
           backgroundColor: common_Colors.primaryColor,
-          onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context)=>EditTableVendorScreen())
-            );
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AddNewVendorForm()));
           },
-          child: Text("Add a Vendor",style: TextStyle(
+          child: const Text("Add a Vendor", style: TextStyle(
             color: common_Colors.textColor,
-          ),),
-
+          )),
         ),
       ),
       body: CommonFilter(
@@ -107,17 +94,13 @@ class _VendorScreenState extends State<VendorScreen> {
             SubFilterOptionModel("CNG", 3, false),
             SubFilterOptionModel("Electric / Hybrid", 4, false),
           ]),
-
-          // FilterModel("FLeet Type",  [SubFilterOptionModel("Truck", 1)])
-          // FilterModel("FLeet Type",  [SubFilterOptionModel("Truck", 1)])
         ],
         child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
-              CommonSearchBar(screen: "Vendor Screen"),
-              // FleetTableWidget(vehicles: vehicles),
+              const CommonSearchBar(screen: "Vendor Screen"),
               Common_Table(
-                dataColumnList: [
+                dataColumnList: const [
                   DataColumn(label: Expanded(child: Text("Vehicle No"))),
                   DataColumn(label: Expanded(child: Text("Type"))),
                   DataColumn(label: Expanded(child: Text("Capacity"))),
@@ -127,11 +110,8 @@ class _VendorScreenState extends State<VendorScreen> {
                   DataColumn(label: Expanded(child: Text("start date"))),
                   DataColumn(label: Expanded(child: Text("enddate"))),
                   DataColumn(label: Expanded(child: Text("Actions")))
-
                 ],
-                dataRowList:
-
-                vehicles.map((vehicle) {
+                dataRowList: vehicles.map((vehicle) {
                   return DataRow(cells: [
                     DataCell(Text(vehicle.vehileNo)),
                     DataCell(Text(vehicle.type)),
@@ -153,28 +133,65 @@ class _VendorScreenState extends State<VendorScreen> {
                     DataCell(Text(vehicle.startdate)),
                     DataCell(Text(vehicle.enddate)),
                     DataCell(Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         InkWell(
-                          child: Icon(Icons.edit),
-                          onTap: (){
-                            print("Edit tapped");
-                          },),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        InkWell(
+                          onTap: () {
 
-                          child: Icon(
-                              color: Colors.red,
-                              Icons.delete),
-                          onTap: (){
-                            print("delete tapped");
+                            Navigator.push(context, MaterialPageRoute(builder: (context) =>  AddNewVendorForm(isVendorEditable:true)));
+
+                              isVendorEditable:false;
+
+                          },
+                          child: const Icon(
+                            color: Colors.blue,
+                              Icons.remove_red_eye_outlined),
+                        ),
+                        const SizedBox(width: 10),
+                        InkWell(
+                          child:  Icon(Icons.edit),
+                          onTap: () {
+
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return CommonAlertBox(
+                                  title: "Alert !",
+                                  content: "Are You Sure to Edit Vendor Entry",
+                                  positiveText: "Yes",
+                                  onPositivePressed: () {
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) =>  AddNewVendorForm(isVendorEditable: false,)));
+                                  },
+                                  negativeText: "No",
+                                  onNegativePressed: () {},
+                                );
+                              },
+                            );
+                              isVendorEditable:true;
+
                           },
                         ),
-
+                        const SizedBox(width: 10),
+                        InkWell(
+                          child: const Icon(
+                            color: Colors.red,
+                            Icons.delete,
+                          ),
+                          onTap: () {
+                            showDialog(context: context, builder: (BuildContext context) {
+                              return CommonAlertBox(
+                                title: "Alert !",
+                                content: "Are You Sure to Delete Vendor Entry",
+                                positiveText: "Yes",
+                                onPositivePressed: () {},
+                                negativeText: "No",
+                                onNegativePressed: () {},
+                              );
+                            });
+                          },
+                        ),
                       ],
-                    ))
-
+                    )),
                   ]);
                 }).toList(),
               ),
@@ -185,4 +202,3 @@ class _VendorScreenState extends State<VendorScreen> {
     );
   }
 }
-
