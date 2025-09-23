@@ -1,9 +1,11 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:erptransportexpress/Common%20Widgets/CommonAlertBox.dart';
 import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:erptransportexpress/Common%20Widgets/CommonFilter.dart';
+import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:flutter/material.dart';
 
-import '../../Common Widgets/FleetTableWidget.dart';
+import '../../Common Widgets/Common_Table.dart';
 import '../../Common Widgets/serachbar.dart';
 import '../../models/FilterModel.dart' show FilterModel;
 import '../../models/SubFilterOptionModel.dart';
@@ -21,6 +23,39 @@ class DriverScreen extends StatefulWidget {
 }
 
 class _DriverScreenState extends State<DriverScreen> {
+  final List<VehicleModel> vehicles1 = [
+    VehicleModel(
+      "VH001",
+      "Toyota",
+      "Corolla",
+      "Sedan",
+      "Petrol",
+      "MH12AB1234",
+      "1/2/2025",
+      "2/2/2025",
+    ),
+    VehicleModel(
+      "VH002",
+      "Honda",
+      "City",
+      "Sedan",
+      "Diesel",
+      "MH14CD5678",
+      "2/2/2025",
+      "3/3/2025",
+    ),
+    VehicleModel(
+      "VH003",
+      "Tata",
+      "Nexon",
+      "SUV",
+      "Electric",
+      "MH15EF9012",
+      "4/4/2025",
+      "5/5/2025",
+    ),
+  ];
+
 
   final List<VehicleModel> vehicles = [
     VehicleModel(
@@ -55,17 +90,20 @@ class _DriverScreenState extends State<DriverScreen> {
     ),
   ];
 
-  void deleteFromRow(String vehicleno) {
-    setState(() {
-      // Logic to delete the vehicle from the list
-    });
-  }
+
 
   @override
   Widget build(BuildContext context) {
+    void LoadMoreDrivers(){
+      setState(() {
+        vehicles.addAll(vehicles1);
+      });
+    }
     final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
     return Scaffold(
+
+
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
 
       appBar: CommonAppBar(title: Text("DriverScreen")),
@@ -192,11 +230,16 @@ class _DriverScreenState extends State<DriverScreen> {
                     )),
                   ]);
                 }).toList(),
+                onPressed: LoadMoreDrivers,
               ),
+
+
             ],
           ),
         ),
+
       ),
+
     );
   }
 }

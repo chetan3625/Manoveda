@@ -1,10 +1,11 @@
 import 'package:erptransportexpress/Common%20Widgets/CommonAlertBox.dart';
 import 'package:erptransportexpress/Common%20Widgets/CommonFilter.dart';
+import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:erptransportexpress/screens/Vendor_Screens/AddNewVendorForm.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../Common Widgets/FleetTableWidget.dart';
+import '../../Common Widgets/Common_Table.dart' show Common_Table;
 import '../../Common Widgets/serachbar.dart';
 import '../../models/FilterModel.dart';
 import '../../models/SubFilterOptionModel.dart';
@@ -22,7 +23,40 @@ class VendorScreen extends StatefulWidget {
 
 class _VendorScreenState extends State<VendorScreen> {
    final isVendorEditable=false;
-  final List<VehicleModel> vehicles = [
+   final List<VehicleModel> vehicles2 = [
+     VehicleModel(
+       "VH001",
+       "Toyota",
+       "Corolla",
+       "Sedan",
+       "Petrol",
+       "MH12AB1234",
+       "1/2/2025",
+       "2/2/2025",
+     ),
+     VehicleModel(
+       "VH002",
+       "Honda",
+       "City",
+       "Sedan",
+       "Diesel",
+       "MH14CD5678",
+       "2/2/2025",
+       "3/3/2025",
+     ),
+     VehicleModel(
+       "VH003",
+       "Tata",
+       "Nexon",
+       "SUV",
+       "Electric",
+       "MH15EF9012",
+       "4/4/2025",
+       "5/5/2025",
+     ),
+   ];
+
+   final List<VehicleModel> vehicles = [
     VehicleModel(
       "VH001",
       "Toyota",
@@ -60,6 +94,11 @@ class _VendorScreenState extends State<VendorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    void LoadMoreVendor(){
+      setState(() {
+        vehicles.addAll(vehicles2);
+      });
+    }
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       appBar: AppBar(
@@ -191,9 +230,13 @@ class _VendorScreenState extends State<VendorScreen> {
                           },
                         ),
                       ],
-                    )),
-                  ]);
+                    ),
+
+                    ),
+                  ]
+                  );
                 }).toList(),
+                onPressed: LoadMoreVendor,
               ),
             ],
           ),

@@ -1,6 +1,6 @@
 import 'package:erptransportexpress/Common%20Widgets/CommonAlertBox.dart';
 import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
-import 'package:erptransportexpress/Common%20Widgets/FleetTableWidget.dart';
+import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:erptransportexpress/Common%20Widgets/serachbar.dart';
 
 import 'package:erptransportexpress/screens/Client_Screens/addclient.dart';
@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/FilterModel.dart';
 import 'package:erptransportexpress/models/SubFilterOptionModel.dart';
 import '../../Common Widgets/CommonFilter.dart';
+import '../../Common Widgets/Common_Table.dart';
 import '../../models/client_model.dart';
 import '../../utils/Colors.dart' show common_Colors;
 import '../Dashboard_Screens/dashboard_screen.dart';
@@ -24,7 +25,6 @@ class ClientScreen extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _ClientScreenState extends State<ClientScreen> {
-
   List<ClientModel> demoClients = [
     ClientModel(
       clientId: "CLT001",
@@ -130,6 +130,12 @@ class _ClientScreenState extends State<ClientScreen> {
 
   @override
   Widget build(BuildContext context) {
+    void LoadMoreClient(){
+      setState(() {
+        demoClients.addAll(demoClients);
+      });
+    }
+
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: SizedBox(
@@ -246,6 +252,7 @@ class _ClientScreenState extends State<ClientScreen> {
                     DataColumn(label: Expanded(child: Text("Start Date"))), // Corrected "start date"
                     DataColumn(label: Expanded(child: Text("Actions"))),
                   ],
+                  onPressed: LoadMoreClient,
                 ),
               ),
             ),

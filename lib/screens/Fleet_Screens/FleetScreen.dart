@@ -1,6 +1,5 @@
 import 'package:erptransportexpress/Common%20Widgets/serachbar.dart';
 import 'package:erptransportexpress/models/FilterModel.dart';
-import 'package:erptransportexpress/Common Widgets/FleetTableWidget.dart';
 import 'package:erptransportexpress/models/SubFilterOptionModel.dart';
 import 'package:erptransportexpress/models/VehicleModel.dart';
 import 'package:erptransportexpress/screens/Fleet_Screens/AddNewVehicleForm.dart';
@@ -10,8 +9,9 @@ import '../../Common Widgets/CommonAlertBox.dart';
 import '../../Common Widgets/CommonAppBar.dart';
 import '../../Common Widgets/CommonCard.dart';
 import '../../Common Widgets/CommonFilter.dart';
+import '../../Common Widgets/Common_Table.dart';
 import '../../widgets/sidebar.dart';
-
+import '../../Common Widgets/common_buttons.dart'; // Import CommonButton
 
 
 class FleetScreen extends StatefulWidget {
@@ -22,8 +22,9 @@ class FleetScreen extends StatefulWidget {
 }
 
 class _FleetScreenState extends State<FleetScreen> {
-  final isEditable=false;
-  final List<VehicleModel> vehicles = [
+  bool isEditable = false;
+
+  final List<VehicleModel> _initialVehicles = [
     VehicleModel(
       "VH001",
       "Toyota",
@@ -66,14 +67,34 @@ class _FleetScreenState extends State<FleetScreen> {
     ),
   ];
 
-  void deleteFromRow(String vehicleno) {
+  late List<VehicleModel> _displayedVehicles;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayedVehicles = List.from(_initialVehicles);
+  }
+
+  void _loadMoreVehicles() {
     setState(() {
-      vehicles.removeWhere((vehicle) => vehicle.vehileNo == vehicleno);
+      _displayedVehicles.addAll(_initialVehicles);
+    });
+  }
+
+  void _deleteFromRow(String vehicleno) {
+    setState(() {
+      _displayedVehicles.removeWhere((vehicle) => vehicle.vehileNo == vehicleno);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    void LoadMoreFleet(){
+      setState(() {
+        _displayedVehicles.addAll(_initialVehicles);
+      });
+    }
+
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       appBar: const CommonAppBar(title: Text("FleetScreen")),
@@ -178,7 +199,7 @@ class _FleetScreenState extends State<FleetScreen> {
                   DataColumn(label: Expanded(child: Text("enddate"))),
                   DataColumn(label: Expanded(child: Text("Actions"))),
                 ],
-                dataRowList: vehicles.map((vehicle) {
+                dataRowList: _displayedVehicles.map((vehicle) {
                   return DataRow(cells: [
                     DataCell(Text(vehicle.vehileNo)),
                     DataCell(Text(vehicle.type)),
@@ -207,8 +228,8 @@ class _FleetScreenState extends State<FleetScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => AddNewVehicleForm(
-                                  isEditable: true, // For "view" mode, set this to false
+                                builder: (context) => const AddNewVehicleForm(
+                                  isEditable: true,
                                 ),
                               ),
                             );
@@ -229,13 +250,13 @@ class _FleetScreenState extends State<FleetScreen> {
                                   content: "Are you sure to edit this entry?",
                                   positiveText: "Yes",
                                   onPositivePressed: () {
-                                    isEditable : true;
+                                    isEditable = false;
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => AddNewVehicleForm(
                                           vehicle: vehicle,
-                                          isEditable: false, // For "edit" mode, set this to true
+                                          isEditable: isEditable,
                                         ),
                                       ),
                                     );
@@ -263,7 +284,7 @@ class _FleetScreenState extends State<FleetScreen> {
                                   content: "Are you sure to delete this entry?",
                                   positiveText: "Yes",
                                   onPositivePressed: () {
-                                    deleteFromRow(vehicle.vehileNo);
+                                    _deleteFromRow(vehicle.vehileNo);
                                     Navigator.of(context).pop();
                                   },
                                   negativeText: "No",
@@ -279,6 +300,7 @@ class _FleetScreenState extends State<FleetScreen> {
                     )),
                   ]);
                 }).toList(),
+                onPressed: LoadMoreFleet,
               ),
             ],
           ),
