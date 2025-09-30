@@ -243,28 +243,33 @@ class _FleetScreenState extends State<FleetScreen> {
                           child: const Icon(Icons.edit),
                           onTap: () {
                             showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return CommonAlertBox(
-                                  title: "Alert !",
-                                  content: "Are you sure to edit this entry?",
-                                  positiveText: "Yes",
-                                  onPositivePressed: () {
-                                    isEditable = false;
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => AddNewVehicleForm(
-                                          vehicle: vehicle,
-                                          isEditable: isEditable,
+                              context: context, // parent context
+                              builder: (_) {
+                                return AlertDialog(
+                                  title: const Text("Alert!"),
+                                  content: const Text("Are you sure to edit this entry?"),
+                                  actions: [
+                                    CommonButton(text: "No", onPressed: (){
+                                      Navigator.of(context).pop(); // close dialog
+
+                                    }),
+                                    CommonButton(text: "Yes",
+                                        backgroundColor: Colors.green,
+                                        onPressed: (){
+                                      Navigator.of(context).pop();
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AddNewVehicleForm(
+                                            vehicle: vehicle,
+                                            isEditable: true, // Editing mode
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  },
-                                  negativeText: "No",
-                                  onNegativePressed: () {
-                                    Navigator.of(context).pop();
-                                  },
+                                      );
+
+                                        }
+                                    )
+                                  ],
                                 );
                               },
                             );

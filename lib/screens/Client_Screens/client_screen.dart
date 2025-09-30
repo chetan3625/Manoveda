@@ -11,6 +11,7 @@ import '../../Common Widgets/CommonFilter.dart';
 import '../../Common Widgets/Common_Table.dart';
 import '../../models/client_model.dart';
 import '../../utils/Colors.dart' show common_Colors;
+import '../../widgets/sidebar.dart';
 import '../Dashboard_Screens/dashboard_screen.dart';
 
 class ClientScreen extends StatefulWidget implements PreferredSizeWidget {
@@ -137,6 +138,8 @@ class _ClientScreenState extends State<ClientScreen> {
     }
 
     return Scaffold(
+      drawer: const Sidebar(),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: SizedBox(
           height: 50,

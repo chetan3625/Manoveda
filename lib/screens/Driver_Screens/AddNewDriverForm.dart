@@ -1,12 +1,12 @@
 import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:erptransportexpress/Common%20Widgets/UploadDoc.dart';
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
-import 'package:erptransportexpress/utils/AllowedDocList.dart';
+import 'package:erptransportexpress/models/UploadDocsInputModel.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/custom_form_filed.dart';
 
 class AddNewDriverForm extends StatefulWidget {
-  final bool isDriverEditable; // Make this a bool
+  final bool isDriverEditable; // Editable mode
   const AddNewDriverForm({super.key, this.isDriverEditable = false});
 
   @override
@@ -14,144 +14,202 @@ class AddNewDriverForm extends StatefulWidget {
 }
 
 class _AddNewDriverFormState extends State<AddNewDriverForm> {
-  // Controllers for driver profile
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController licenseController = TextEditingController();
-  final TextEditingController aadhaarController = TextEditingController();
+  // Controllers
+  final TextEditingController driverNameController = TextEditingController();
+  final TextEditingController driverEmailController = TextEditingController();
   final TextEditingController contactController = TextEditingController();
-  final TextEditingController salaryController = TextEditingController();
+  final TextEditingController driverAddressController = TextEditingController();
+  String? selectedType; // <-- Use this for dropdown value
+  final TextEditingController typeController = TextEditingController();
+
+
+
+  // Driver Documents List using model
+  final List<UploadDocsInputModel> driverDocs = [
+    UploadDocsInputModel(
+      id: "adhar",
+      title: "Adhar Card(KYC)",
+      allowedDocuments: ["pdf"],
+      isCalendar: false,
+    ),
+    UploadDocsInputModel(
+      id: "pan",
+      title: "Pan(KYC)",
+      allowedDocuments: ["jpg", "png"],
+      isCalendar: false,
+    ),
+    UploadDocsInputModel(
+      id: "bankpassbook",
+      title: "Bank Passbook",
+      allowedDocuments: ["pdf", "jpg", "png"],
+      isCalendar: false,
+    ),
+    UploadDocsInputModel(
+      id: "salary",
+      title: "Salary",
+      allowedDocuments: ["pdf", "jpg", "png"],
+      isCalendar: false,
+    ),
+    UploadDocsInputModel(
+      id: "Photo",
+      title: "Passport photo",
+      allowedDocuments: ["pdf", "jpg", "png"],
+      isCalendar: false,
+    ),
+    UploadDocsInputModel(
+      id: "Driving License",
+      title: "Driving License",
+      allowedDocuments: ["pdf", "jpg", "png"],
+      isCalendar: false,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CommonAppBar(title: const Text("Driver Management")),
+      appBar: CommonAppBar(title: const Text("Employee Management")),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(40), // overall padding for the whole form
+          padding: const EdgeInsets.all(40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Driver Profile",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 16), // spacing
+
 
               // Row 1: License Number | Driver Name
               Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 8, right: 6),
-                      child: CustomFormField(
-                        isEditable: widget.isDriverEditable,
-                        caplebal: "License Number",
-                        label: "",
-                        hint: "Enter license number",
-                        controller: licenseController,
-                        width: 1.0,
-                      ),
+                    child: CustomFormField(
+                      isEditable: widget.isDriverEditable,
+                      caplebal: "",
+                      label: "",
+                      hint: "Enter Employee name",
+                      controller: driverNameController,
+                      width: 1.0,
                     ),
                   ),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 8, left: 6),
-                      child: CustomFormField(
-                        isEditable: widget.isDriverEditable,
-                        caplebal: "Driver Name",
-                        label: "",
-                        hint: " Enter driver name ",
-                        controller: nameController,
-                        width: 1.0,
-                      ),
+                    child: CustomFormField(
+                      isEditable: widget.isDriverEditable,
+                      caplebal: "",
+                      label: "",
+                      hint: "Enter Driver Email",
+                      controller: driverEmailController,
+                      width: 1.0,
                     ),
                   ),
+
                 ],
               ),
 
               const SizedBox(height: 16),
 
-              // Row 2: Salary (Per Trip / Fixed) | Contact Number
+              // Row 2: Salary | Contact Number
               Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 8, right: 6),
-                      child: CustomFormField(
-                        isEditable: widget.isDriverEditable,
-                        caplebal: " Salary (per Trip / Fixed) ",
-                        label: "",
-                        hint: " Enter the salary ",
-                        controller: salaryController, // Corrected controller
-                        width: 1.0,
-                      ),
+                    child: CustomFormField(
+                      isEditable: widget.isDriverEditable,
+                      caplebal: "",
+                      label: "",
+                      hint: "Mobile No",
+                      controller: contactController,
+                      width: 1.0,
                     ),
                   ),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.only(top: 8, left: 6),
-                      child: CustomFormField(
-                        isEditable: widget.isDriverEditable,
-                        caplebal: "Contact Number ",
-                        label: "",
-                        hint: "Enter contact number ",
-                        controller: contactController, // Corrected controller
-                        width: 1.0,
-                      ),
+                    child: CustomFormField(
+                      isEditable: widget.isDriverEditable,
+                      caplebal: "",
+                      label: "",
+                      hint: "Enter Address ",
+                      controller: driverAddressController,
+                      width: 1.0,
                     ),
                   ),
+                  SizedBox(width: 12),
+                  Expanded(child: DropdownButton(
+                    borderRadius: BorderRadius.circular(6),
+                    hint: Text("Select Deal Type"),
+                    value: selectedType,
+                    isExpanded: true,
+                    items: [
+
+                      DropdownMenuItem(value: "permenant", child: Text("Permenant")),
+                      DropdownMenuItem(value: "contracted", child: Text("Contracted")),
+                    ],
+                    onChanged: (val) {
+                      setState(() {
+                        selectedType = val;
+                        typeController.text = val ?? '';
+                      });
+                    },
+                  )),
+
                 ],
               ),
+
               const SizedBox(height: 16),
-              // Corrected Conditional Logic
-              if (!widget.isDriverEditable) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 185,
-                        child: Container(
-                          padding: const EdgeInsets.only(top: 8, right: 6),
-                          child: UploadDoc(
-                            title: "Aadhaar Details",
-                            hintText: "Upload certificate file",
-                            AllowedDcoments: const [AllowedDocList.pdf],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: SizedBox(
-                        height: 185,
-                        child: Container(
-                          padding: const EdgeInsets.only(top: 8, left: 6),
-                          child: UploadDoc(
-                            title: "Medical Fitness Certificate",
-                            hintText: "Upload certificate file",
-                            AllowedDcoments: const [AllowedDocList.pdf],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              if (widget.isDriverEditable) ...[
+
+              // UploadDoc Row for Non-editable mode
+              if (!widget.isDriverEditable)
+                Column(
+                    children:[
+                      GridView.count(
+                        crossAxisCount: 6,
+                          shrinkWrap: true,
+                          mainAxisSpacing: 10,
+                        children: [
+                          UploadDoc(docModel: driverDocs[0]),
+                          UploadDoc(docModel: driverDocs[1]),
+                          UploadDoc(docModel: driverDocs[2]),
+                          UploadDoc(docModel: driverDocs[3]),
+                          UploadDoc(docModel: driverDocs[4]),
+                          UploadDoc(docModel: driverDocs[5]),
+                          UploadDoc(docModel: driverDocs[5]),
+                          UploadDoc(docModel: driverDocs[5]),
+                          UploadDoc(docModel: driverDocs[5]),
+
+
+                        ],
+                      )
+                      // Container(
+                      //   child: SingleChildScrollView(
+                      //     scrollDirection: Axis.horizontal,
+                      //     child: Row(
+                      //       children: [
+                      //         UploadDoc(docModel: driverDocs[0]),
+                      //         UploadDoc(docModel: driverDocs[1]),
+                      //         UploadDoc(docModel: driverDocs[2]),
+                      //         UploadDoc(docModel: driverDocs[3]),
+                      //         UploadDoc(docModel: driverDocs[4]),
+                      //         UploadDoc(docModel: driverDocs[5]),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // )
+
+                    ]
+                  ),
+
+
+              // View Buttons for Editable mode
+              if (widget.isDriverEditable)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    CommonButton(
+                  children: driverDocs.map((doc) {
+                    return CommonButton(
                       backgroundColor: Colors.green,
-                      text: "View Aadhaar Detail",
-                      onPressed: () {},
-                    ),
-                    const SizedBox(width: 10),
-                    CommonButton(
-                      backgroundColor: Colors.green,
-                      text: "View Medical Fitness Certificate",
-                      onPressed: () {},
-                    ),
-                  ],
+                      text: "View ${doc.title}",
+                      onPressed: () {
+                        // TODO: Implement view logic (open file / preview)
+                      },
+                    );
+                  }).toList(),
                 ),
-              ],
             ],
           ),
         ),

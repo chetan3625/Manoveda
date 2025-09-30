@@ -1,4 +1,5 @@
 import 'package:erptransportexpress/Common%20Widgets/UploadDoc.dart';
+import 'package:erptransportexpress/models/UploadDocsInputModel.dart';
 import 'package:erptransportexpress/utils/AllowedDocList.dart';
 import 'package:flutter/material.dart';
 import '../../Common Widgets/common_buttons.dart';
@@ -17,6 +18,31 @@ class _EditTableTripScreenState extends State<EditTableTripScreen> {
   final TextEditingController routeController = TextEditingController();
   final TextEditingController vehicleController = TextEditingController();
   final TextEditingController driverController = TextEditingController();
+
+  /// Trip-related documents list
+  final List<UploadDocsInputModel> tripDocs = [
+    UploadDocsInputModel(
+      id: "pod",
+      title: "POD Document",
+      hintText: "Upload POD File",
+      allowedDocuments: [AllowedDocList.pdf, AllowedDocList.jpg, AllowedDocList.png],
+      isCalendar: false,
+    ),
+    UploadDocsInputModel(
+      id: "ewaybill",
+      title: "E-Way Bill",
+      hintText: "Upload E-Way Bill",
+      allowedDocuments: [AllowedDocList.pdf, AllowedDocList.jpg],
+      isCalendar: false,
+    ),
+    UploadDocsInputModel(
+      id: "invoice",
+      title: "Invoice",
+      hintText: "Upload Invoice File",
+      allowedDocuments: [AllowedDocList.pdf, AllowedDocList.png],
+      isCalendar: false,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -82,21 +108,27 @@ class _EditTableTripScreenState extends State<EditTableTripScreen> {
 
             const SizedBox(height: 24),
 
-            // POD Upload
-            const Text("POD Upload",
+            // Trip Documents Upload
+            const Text("Trip Documents Upload",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
-            SizedBox(
-              width: 350,
-              height: 220,
-              child: UploadDoc(
-                title: "POD Document",
-                hintText: "Upload POD file",
-                AllowedDcoments: [
-                  AllowedDocList.pdf,
-                  AllowedDocList.document,
-                  AllowedDocList.docx,
-                ],
+
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: tripDocs.map((doc) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: SizedBox(
+                      width: 320,
+                      height: 200,
+                      child: UploadDoc(
+                        docModel: doc,
+                        dataController: TextEditingController(),
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
             ),
 

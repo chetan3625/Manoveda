@@ -106,7 +106,7 @@ class _DriverScreenState extends State<DriverScreen> {
 
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
 
-      appBar: CommonAppBar(title: Text("DriverScreen")),
+      appBar: CommonAppBar(title: Text("Employee Management")),
       drawer: const Sidebar(),
       floatingActionButton: SizedBox(
         height: 70,

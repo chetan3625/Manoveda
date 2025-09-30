@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:convert';
 
+import '../../widgets/sidebar.dart';
+
 /// Models
 class Vehicle {
   final String id;
@@ -317,6 +319,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final vendorPerfList = vendorsPerf.values.toList()..sort((a, b) => b.totalRevenue.compareTo(a.totalRevenue));
 
     return Scaffold(
+      drawer: const Sidebar(),
+
       appBar: AppBar(
         title: const Text('Analytics & Dashboard'),
         actions: [

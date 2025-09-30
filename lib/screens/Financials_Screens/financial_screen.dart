@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../widgets/custom_form_filed.dart';
+import '../../widgets/sidebar.dart';
 import '../Dashboard_Screens/dashboard_screen.dart';
 
 enum InvoiceType { perTrip, monthly, contract }
@@ -513,6 +514,8 @@ class _FinancialsScreenState extends State<FinancialsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const Sidebar(),
+
       appBar: AppBar(
         title: const Text('Financials & Billing'),
         leading: IconButton(

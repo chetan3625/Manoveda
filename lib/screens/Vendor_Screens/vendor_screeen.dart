@@ -100,13 +100,15 @@ class _VendorScreenState extends State<VendorScreen> {
       });
     }
     return Scaffold(
+      drawer: const Sidebar(),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: common_Colors.primaryColor,
         title: const Text("Vendor Screen", style: TextStyle(color: Colors.white)),
       ),
-      drawer: const Sidebar(),
       floatingActionButton: SizedBox(
         height: 70,
         width: 150,
@@ -177,7 +179,7 @@ class _VendorScreenState extends State<VendorScreen> {
                         InkWell(
                           onTap: () {
 
-                            Navigator.push(context, MaterialPageRoute(builder: (context) =>  AddNewVendorForm(isVendorEditable:true)));
+                            Navigator.push(context, MaterialPageRoute(builder: (context) =>  AddNewVendorForm(isVendorEditable: true,)));
 
                               isVendorEditable:false;
 

@@ -1,11 +1,8 @@
 // document_compliance_screen.dart
-import 'dart:io';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import '../../widgets/custom_form_filed.dart';
+import '../../widgets/sidebar.dart';
 import '../Dashboard_Screens/dashboard_screen.dart';
 
 enum DocType { insurance, permit, driverLicense, other }
@@ -124,6 +121,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const Sidebar(),
       appBar: AppBar(
         title: const Text('Document & Compliance'),
         leading: IconButton(
@@ -250,7 +248,4 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       ),
     );
   }
-
-
-
 }

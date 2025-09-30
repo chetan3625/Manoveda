@@ -32,7 +32,7 @@ flutter:
 
   assets:
     - assets/images/
-
+    - assets/images/filetypeicons/
   fonts:
     - family: Merriweather
       fonts:

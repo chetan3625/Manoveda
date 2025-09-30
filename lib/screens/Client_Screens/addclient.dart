@@ -1,8 +1,10 @@
+import 'package:erptransportexpress/Common%20Widgets/Common_DropdownWidget.dart';
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:erptransportexpress/utils/Colors.dart';
 import 'package:flutter/material.dart';
 
 import '../../widgets/custom_form_filed.dart';
+
 
 class AddClient extends StatefulWidget {
   final isClientEditable;
@@ -14,13 +16,18 @@ class AddClient extends StatefulWidget {
 
 class _AddClientState extends State<AddClient> {
   // Controllers
+  String? selectedType; // <-- Use this for dropdown value
+  selectedType = widget.vehicle!.type; // Pre-select dropdown if editing
+
   final clientNameController = TextEditingController();
   final addressController = TextEditingController();
-  final websiteController = TextEditingController();
-  final contactNumberController = TextEditingController();
-  final rateKmController = TextEditingController();
+  final logisticsHeadName = TextEditingController();
+  final logisticsHeadMobile = TextEditingController();
+  final logisticsHeadEmail = TextEditingController();
   final rateTonController = TextEditingController();
   final rateTripController = TextEditingController();
+  final TextEditingController typeController = TextEditingController();
+
   final rateRouteController = TextEditingController();
   final emailController = TextEditingController();
   final gstNumberController = TextEditingController();
@@ -35,9 +42,9 @@ class _AddClientState extends State<AddClient> {
     // Dispose controllers to avoid memory leaks
     clientNameController.dispose();
     addressController.dispose();
-    websiteController.dispose();
-    contactNumberController.dispose();
-    rateKmController.dispose();
+    logisticsHeadName.dispose();
+    logisticsHeadMobile.dispose();
+    logisticsHeadEmail.dispose();
     rateTonController.dispose();
     rateTripController.dispose();
     rateRouteController.dispose();
@@ -72,6 +79,11 @@ class _AddClientState extends State<AddClient> {
                   children: [
                     Expanded(
                         child: CustomFormField(
+                          prefixIcon:
+                          Icon(
+                            color: Colors.blueGrey,
+                              Icons.person
+                          ),
                           isEditable: widget.isClientEditable,
                           caplebal: 'Client/Company Name',
                           label: '',
@@ -82,6 +94,9 @@ class _AddClientState extends State<AddClient> {
                     const SizedBox(width: 20),
                     Expanded(
                         child: CustomFormField(
+                          prefixIcon: Icon(
+                            color: Colors.blueGrey,
+                              Icons.location_on),
                           isEditable: widget.isClientEditable,
                           caplebal: 'Address',
                           label: '',
@@ -95,14 +110,21 @@ class _AddClientState extends State<AddClient> {
                 Row(
                   children: [
                     Expanded(
-                        child: CustomFormField(
-                          isEditable: widget.isClientEditable,
-                          caplebal: 'Website (Optional)',
-                          label: '',
-                          hint: 'Enter Your Website',
-                          controller: websiteController,
-                          backgroundColor: Colors.white,
-                        )),
+                        child: CommonDropDownWidget<String>(items: [
+                          DropdownMenuItem(child: Text("Courier")),
+                          DropdownMenuItem(child: Text("PTL")),
+                          DropdownMenuItem(child: Text("FTL")),
+                        ],
+                          value: selectedType,
+                          onChanged: (val) {
+                            setState(() {
+                              selectedType = val;
+                              typeController.text = val ?? '';
+                            });
+
+                          },
+                           ),
+                    
                     const SizedBox(width: 20),
                     Expanded(
                         child: CustomFormField(
@@ -110,7 +132,7 @@ class _AddClientState extends State<AddClient> {
                           caplebal: 'Contact Number',
                           label: '',
                           hint: 'Enter Contact Number',
-                          controller: contactNumberController,
+                          controller: logisticsHeadMobile,
                           backgroundColor: Colors.white,
                         )),
                   ],
@@ -124,7 +146,7 @@ class _AddClientState extends State<AddClient> {
                           caplebal: 'Rate Per KM',
                           label: '',
                           hint: 'Enter Above Rate',
-                          controller: rateKmController,
+                          controller: logisticsHeadEmail,
                           backgroundColor: Colors.white,
                         )),
                     const SizedBox(width: 10),

@@ -1,4 +1,6 @@
+import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:flutter/material.dart';
+import '../loginpage.dart';
 import '../screens/Dashboard_Screens/dashboard_screen.dart';
 
 import '../screens/Documents_Screens/documents_screen.dart';
@@ -13,9 +15,14 @@ import '../screens/Trip_Screens/trip_screen.dart';
 import '../screens/Analytics_Screens/analytics_screen.dart';
 import '../screens/Vendor_Screens/vendor_screeen.dart';
 
-class Sidebar extends StatelessWidget {
+class Sidebar extends StatefulWidget {
   const Sidebar({super.key});
 
+  @override
+  State<Sidebar> createState() => _SidebarState();
+}
+
+class _SidebarState extends State<Sidebar> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -30,7 +37,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.dashboard),
             title: const Text("Dashboard"),
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const DashboardScreen()),
               );
@@ -40,7 +47,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.local_shipping),
             title: const Text("Fleet"),
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const FleetScreen()),
               );
@@ -50,7 +57,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.store),
             title: const Text("Vendor"),
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const VendorScreen()),
               );
@@ -58,7 +65,7 @@ class Sidebar extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.person),
-            title: const Text("Driver"),
+            title: const Text("Employee management "),
             onTap: () {
               Navigator.pushReplacement(
                 context,
@@ -70,7 +77,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.people),
             title: const Text("Client"),
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const ClientScreen()),
               );
@@ -80,7 +87,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.route),
             title: const Text("Trip"),
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const TripScreen()),
               );
@@ -90,7 +97,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.account_balance),
             title: const Text("Financials"),
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const FinancialsScreen()),
               );
@@ -100,7 +107,7 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.description),
             title: const Text("Documents"),
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const DocumentsScreen()),
               );
@@ -110,12 +117,28 @@ class Sidebar extends StatelessWidget {
             leading: const Icon(Icons.analytics),
             title: const Text("Analytics"),
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const AnalyticsScreen()),
               );
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.logout,color: Colors.red,),
+            title: const Text("Log out",style: TextStyle(color: Colors.red),),
+            onTap: () {
+              setState(() {
+                bool isLoggedin=false;
+              });
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage(
+                )),
+              );
+            },
+          ),
+
+
         ],
       ),
     );

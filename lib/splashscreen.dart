@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> checkLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
-    bool isLoggedIn = prefs.getBool(PrefKeys.isLoggedIn) ?? false;
+    final bool isLoggedIn = prefs.getBool(PrefKeys.isLoggedIn) ?? false;
 
     if (isLoggedIn) {
       Navigator.pushReplacement(
