@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 
 import '../../widgets/custom_form_filed.dart';
 
-
 class AddClient extends StatefulWidget {
-  final isClientEditable;
-  const AddClient({super.key, this.isClientEditable=false});
+  final bool isClientEditable;
+  const AddClient({super.key, this.isClientEditable = false});
 
   @override
   State<AddClient> createState() => _AddClientState();
@@ -16,8 +15,7 @@ class AddClient extends StatefulWidget {
 
 class _AddClientState extends State<AddClient> {
   // Controllers
-  String? selectedType; // <-- Use this for dropdown value
-  selectedType = widget.vehicle!.type; // Pre-select dropdown if editing
+  String? selectedType; // <-- For dropdown
 
   final clientNameController = TextEditingController();
   final addressController = TextEditingController();
@@ -36,6 +34,27 @@ class _AddClientState extends State<AddClient> {
   final contractEndController = TextEditingController();
   final billingEmailController = TextEditingController();
   final billingAddressController = TextEditingController();
+
+
+
+
+  //rateslabs  controller
+
+  final TextEditingController fifty_to_hundred = TextEditingController();
+  final TextEditingController hundred_to_fivehundred=TextEditingController();
+  final TextEditingController five_hundred_to_one_thousand=TextEditingController();
+  final TextEditingController one_thousand_to_one_thousand_fivehundred=TextEditingController();
+  final TextEditingController one_thousand_five_hundred_to_three_thousand=TextEditingController();
+  final TextEditingController three_thousand_to_five_thousand=TextEditingController();
+
+  //adress
+
+
+  final TextEditingController districtController = TextEditingController();
+  final TextEditingController townController = TextEditingController();
+  final TextEditingController pincodeController = TextEditingController();
+  final TextEditingController landmark = TextEditingController();
+  final TextEditingController warehouselandmark=TextEditingController();
 
   @override
   void dispose() {
@@ -65,7 +84,7 @@ class _AddClientState extends State<AddClient> {
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: common_Colors.primaryColor,
         title: Text(
-          widget.isClientEditable?"View Client":"Edit Client",
+          widget.isClientEditable ? "View Client" : "Edit Client",
           style: TextStyle(color: common_Colors.textColor),
         ),
       ),
@@ -78,186 +97,227 @@ class _AddClientState extends State<AddClient> {
                 Row(
                   children: [
                     Expanded(
-                        child: CustomFormField(
-                          prefixIcon:
-                          Icon(
-                            color: Colors.blueGrey,
-                              Icons.person
-                          ),
-                          isEditable: widget.isClientEditable,
-                          caplebal: 'Client/Company Name',
-                          label: '',
-                          hint: 'Enter Client/Company Name',
-                          controller: clientNameController,
-                          backgroundColor: Colors.white,
-                        )),
+                      child: CustomFormField(
+                        prefixIcon: const Icon(
+                          Icons.person,
+                          color: Colors.blueGrey,
+                        ),
+                        isEditable: widget.isClientEditable,
+                        caplebal: '',
+                        label: 'Client/Company Name',
+                        hint: 'Enter Client/Company Name',
+                        controller: clientNameController,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
                     const SizedBox(width: 20),
                     Expanded(
-                        child: CustomFormField(
-                          prefixIcon: Icon(
-                            color: Colors.blueGrey,
-                              Icons.location_on),
-                          isEditable: widget.isClientEditable,
-                          caplebal: 'Address',
-                          label: '',
-                          hint: 'Enter Address',
-                          controller: addressController,
-                          backgroundColor: Colors.white,
-                        )),
+                      child: CustomFormField(
+                        prefixIcon: const Icon(
+                          Icons.location_on,
+                          color: Colors.blueGrey,
+                        ),
+                        isEditable: widget.isClientEditable,
+                        caplebal: '',
+                        label: 'Address',
+                        hint: 'Enter Address',
+                        controller: addressController,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
-
                 Row(
                   children: [
                     Expanded(
-                        child: CommonDropDownWidget<String>(items: [
-                          DropdownMenuItem(child: Text("Courier")),
-                          DropdownMenuItem(child: Text("PTL")),
-                          DropdownMenuItem(child: Text("FTL")),
+                      child: CommonDropDownWidget<String>(
+                        hintText: "Service Type",
+                        items: const [
+                          DropdownMenuItem(
+
+                              value: "Courier✉️", child: Text("✉️  Courier")),
+                          DropdownMenuItem(value: "PTL", child: Text("🚛  PTL")),
+                          DropdownMenuItem(value: "FTL", child: Text("🚚  FTL")),
                         ],
-                          value: selectedType,
-                          onChanged: (val) {
-                            setState(() {
-                              selectedType = val;
-                              typeController.text = val ?? '';
-                            });
-
-                          },
-                           ),
-                    
+                        value: selectedType,
+                        onChanged: (val) {
+                          setState(() {
+                            selectedType = val;
+                            typeController.text = val ?? '';
+                          });
+                        },
+                      ),
+                    ),
                     const SizedBox(width: 20),
                     Expanded(
-                        child: CustomFormField(
-                          isEditable: widget.isClientEditable,
-                          caplebal: 'Contact Number',
-                          label: '',
-                          hint: 'Enter Contact Number',
-                          controller: logisticsHeadMobile,
-                          backgroundColor: Colors.white,
-                        )),
-                  ],
-                ),
+                      child:
+                      CustomFormField(
+                        prefixIcon: Icon(Icons.call, color: Colors.blueGrey),
+                        isEditable: widget.isClientEditable,
+                        caplebal: '',
+                        label: ' Logistics Head Contact Number',
+                        hint: 'Enter Contact Number',
+                        controller: logisticsHeadMobile,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 20),
 
+                    Expanded(
+                      child:
+                      CustomFormField(
+                        prefixIcon: Icon(Icons.person_pin_circle_sharp, color: Colors.blueGrey),
+                        isEditable: widget.isClientEditable,
+                        caplebal: '',
+                        label: ' Logistics Head Name',
+                        hint: 'Enter Logistics Head Name',
+                        controller: logisticsHeadName,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+
+                    Expanded(
+                      child:
+                      CustomFormField(
+                        prefixIcon: Icon(Icons.alternate_email_outlined, color: Colors.blueGrey),
+                        isEditable: widget.isClientEditable,
+                        caplebal: '',
+                        label: ' Logistics Head Email',
+                        hint: 'Enter Logistics Head Email',
+                        controller: logisticsHeadEmail,
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+
+                  ],
+
+                ),
                 Row(
+
                   children: [
                     Expanded(
-                        child: CustomFormField(
-                          isEditable: widget.isClientEditable,
-                          caplebal: 'Rate Per KM',
-                          label: '',
-                          hint: 'Enter Above Rate',
-                          controller: logisticsHeadEmail,
-                          backgroundColor: Colors.white,
-                        )),
-                    const SizedBox(width: 10),
-                    Expanded(
-                        child: CustomFormField(
-                          isEditable: widget.isClientEditable,
-                          caplebal: 'Rate Per Ton',
-                          label: '',
-                          hint: 'Enter Above Rate',
-                          controller: rateTonController,
-                          backgroundColor: Colors.white,
-                        )),
-                    const SizedBox(width: 10),
-                    Expanded(
-                        child: CustomFormField(
-                          isEditable: widget.isClientEditable,
-                          caplebal: 'Rate Per Trip',
-                          label: '',
-                          hint: 'Enter Above Rate',
-                          controller: rateTripController,
-                          backgroundColor: Colors.white,
-                        )),
-                    const SizedBox(width: 10),
-                    Expanded(
-                        child: CustomFormField(
-                          isEditable: widget.isClientEditable,
-                          caplebal: 'Rate Fixed Route',
-                          label: '',
-                          hint: 'Enter Above Rate',
-                          controller: rateRouteController,
-                          backgroundColor: Colors.white,
-                        )),
-                  ],
-                ),
+                      child: CustomFormField(
+                        prefixIcon: Icon(Icons.currency_rupee,color:Colors.blueGrey),
+                        caplebal: '',
+                          label: 'Rate 50-100',
+                        hint: 'Rate 50-100',
+                        controller: fifty_to_hundred,
 
-                Row(
-                  children: [
-                    Expanded(
-                        child: CustomFormField(
-                          isEditable: widget.isClientEditable,
-                          caplebal: 'Email',
-                          label: '',
-                          hint: 'Enter Email',
-                          controller: emailController,
-                          backgroundColor: Colors.white,
-                        )),
+                      ),
+                    ),
                     const SizedBox(width: 20),
                     Expanded(
-                        child: CustomFormField(
-                          isEditable: widget.isClientEditable,
-                          caplebal: 'GST Number',
-                          label: '',
-                          hint: 'Enter GST Number',
-                          controller: gstNumberController,
-                          backgroundColor: Colors.white,
-                        )),
-                  ],
-                ),
+                      child: CustomFormField(
+                        prefixIcon: Icon(Icons.currency_rupee,color:Colors.blueGrey),
 
-                CustomFormField(
-                  isEditable: widget.isClientEditable,
-                  caplebal: "Business Type",
-                  label: "",
-                  hint: "Enter What Business You Are Serving",
-                  controller: businessTypeController,
-                  backgroundColor: Colors.white,
-                ),
+                        caplebal: '',
+                        label: 'Rate 100-500',
+                        hint: 'Rate 100-500',
+                        controller: hundred_to_fivehundred,
 
-                Row(
-                  children: [
-                    Expanded(
-                        child: CustomFormField(
-                          isEditable: widget.isClientEditable,
-                          caplebal: "Contract Start Date",
-                          label: "",
-                          hint: "Enter Starting Date",
-                          controller: contractStartController,
-                          backgroundColor: Colors.white,
-                        )),
+                      ),
+                    ),
                     const SizedBox(width: 20),
                     Expanded(
-                        child: CustomFormField(
-                          isEditable: widget.isClientEditable,
-                          caplebal: "Contract End Date",
-                          label: "",
-                          hint: "Enter Ending Date of Contract",
-                          controller: contractEndController,
-                          backgroundColor: Colors.white,
-                        )),
+                      child: CustomFormField(
+                        prefixIcon: Icon(Icons.currency_rupee,color:Colors.blueGrey),
+
+                        caplebal: '',
+                        label: 'Rate 500-1000',
+                        hint: 'Rate 500-1000',
+                        controller: five_hundred_to_one_thousand,
+
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: CustomFormField(
+                        prefixIcon: Icon(Icons.currency_rupee,color:Colors.blueGrey),
+
+                        caplebal: '',
+                        label: 'Rate 1000-1500',
+                        hint: 'Rate 1000-1500',
+                        controller: one_thousand_to_one_thousand_fivehundred,
+
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: CustomFormField(
+                        prefixIcon: Icon(Icons.currency_rupee,color:Colors.blueGrey),
+
+                        caplebal: '',
+                        label: 'Rate 1500-3000',
+                        hint: 'Rate 1500-3000',
+                        controller: one_thousand_five_hundred_to_three_thousand,
+
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: CustomFormField(
+                        prefixIcon: Icon(Icons.currency_rupee,color:Colors.blueGrey),
+                        caplebal: '',
+                        label: 'Rate 3000-5000',
+                        hint: 'Rate 3000-5000',
+                        controller: three_thousand_to_five_thousand,
+
+                      ),
+                    )
+
+
+
+
+
                   ],
                 ),
+                Column(
+                  children: [
+                    Row(
+                      children: [
 
-                CustomFormField(
-                  isEditable: widget.isClientEditable,
-                  caplebal: "Billing Email",
-                  label: "",
-                  hint: "Enter Billing Email",
-                  controller: billingEmailController,
-                  backgroundColor: Colors.white,
-                ),
-                CustomFormField(
-                  isEditable: widget.isClientEditable,
-                  caplebal: "Billing Address",
-                  label: "",
-                  hint: "Enter Your Billing Address",
-                  controller: billingAddressController,
-                  backgroundColor: Colors.white,
-                ),
-                const SizedBox(height: 10),
-                if(!widget.isClientEditable)
-                CommonButton(text: widget.isClientEditable?"Edit":"Save Changes", onPressed: () {}),
+                        Column(
+                          children: [
+                            Text("Location Business"),
+                            SizedBox(
+                              width: 400,
+                              child: CustomFormField(
+                                prefixIcon: Icon(Icons.search,color: Colors.blueGrey,),
+                                  suffixIcon: Icon(
+                                    color:Colors.green,
+                                      Icons.add_circle_sharp),
+                                  caplebal: "",
+                                  label: "Search Location here",
+                                  hint: "Search",
+                                  controller: districtController),
+                            ),
+                            SizedBox(
+                              width: 400,
+                              height: 80,
+                              child:
+                              Card(
+                                color: Colors.pink[90],
+                                borderOnForeground: false,
+                                elevation: 1,
+                                child: ListTile(
+                                  leading: Icon(Icons.location_on,color: Colors.blueGrey,),
+                                  title: Text("District"),
+                                  subtitle: Text("Town"),
+                                  trailing: Icon(Icons.delete,color: Colors.red,),
+
+                                )
+                              ),
+                            ),
+
+                          ],
+                        ),
+
+
+                      ],
+                    )
+                  ],
+                )
               ],
             ),
           ),
