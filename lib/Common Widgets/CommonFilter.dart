@@ -106,7 +106,7 @@ class _CommonFilterState extends State<CommonFilter> {
                         backgroundColor: Colors.red
                     ),
                     onPressed: (){
-
+                      Navigator.pop(context);
                     },
                     child: Text("Apply", style: TextStyle(
                         color: Colors.white

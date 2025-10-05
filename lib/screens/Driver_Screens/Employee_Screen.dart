@@ -13,16 +13,16 @@ import '../../models/VehicleModel.dart';
 import '../../utils/Colors.dart';
 import '../../widgets/sidebar.dart';
 import '../Dashboard_Screens/dashboard_screen.dart';
-import 'AddNewDriverForm.dart';
+import 'AddNewEmployeeForm.dart';
 
-class DriverScreen extends StatefulWidget {
-  const DriverScreen({super.key});
+class EmployeeScreen extends StatefulWidget {
+  const EmployeeScreen({super.key});
 
   @override
-  State<DriverScreen> createState() => _DriverScreenState();
+  State<EmployeeScreen> createState() => _EmployeeScreenState();
 }
 
-class _DriverScreenState extends State<DriverScreen> {
+class _EmployeeScreenState extends State<EmployeeScreen> {
   final List<VehicleModel> vehicles1 = [
     VehicleModel(
       "VH001",
@@ -116,7 +116,7 @@ class _DriverScreenState extends State<DriverScreen> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const AddNewDriverForm()),
+              MaterialPageRoute(builder: (context) => const AddNewEmployee()),
             );
           },
           child: const Text(
@@ -185,7 +185,7 @@ class _DriverScreenState extends State<DriverScreen> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const AddNewDriverForm(isDriverEditable: true,)),
+                              MaterialPageRoute(builder: (context) => const AddNewEmployee(isDriverEditable: true,)),
                             );
                           },
                           child: const Icon(
@@ -205,7 +205,7 @@ class _DriverScreenState extends State<DriverScreen> {
                                   onPositivePressed: () {
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (context) => const AddNewDriverForm(isDriverEditable: false,)),
+                                      MaterialPageRoute(builder: (context) => const AddNewEmployee(isDriverEditable: false,)),
                                     );
                                   },
                                   negativeText: "No",

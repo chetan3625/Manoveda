@@ -1,6 +1,5 @@
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:flutter/material.dart';
-import 'package:erptransportexpress/models/VehicleModel.dart';
 
 class Common_Table extends StatefulWidget {
   final List<DataRow> dataRowList;

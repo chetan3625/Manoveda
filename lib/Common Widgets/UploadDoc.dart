@@ -1,10 +1,8 @@
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
-import 'package:erptransportexpress/widgets/custom_form_filed.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:erptransportexpress/models/UploadDocsInputModel.dart';
-import '../models/UploadDocsInputModel.dart';
 
 bool hasone = false;
 bool hastow = false;
@@ -121,7 +119,7 @@ class _UploadDocState extends State<UploadDoc> {
 
     double screenWidth = MediaQuery.of(context).size.width;
     // Consider making baseWidth and widthMultiplier configurable via docModel or theme
-    double baseWidth = screenWidth < 600 ? screenWidth * 0.45 : screenWidth * 0.22; // Adjusted for multiple items
+    double baseWidth = screenWidth < 800 ? screenWidth * 0.45 : screenWidth * 0.22; // Adjusted for multiple items
 
     // Use widget.docModel.isCalendar and widget.dataController for conditions
     bool shouldShowTextField = widget.dataController != null;
@@ -205,63 +203,71 @@ class _UploadDocState extends State<UploadDoc> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                ElevatedButton.icon(
-                                  onPressed: () async {
-                                    DateTime? date = await showDatePicker(
-                                      context: context,
-                                      initialDate: pickedStartDate ?? DateTime.now(),
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime(2100),
-                                    );
-                                    if (date != null && mounted) {
-                                      setState(() {
-                                        pickedStartDate = date;
-                                      });
-                                    }
-                                  },
-                                  icon: const Icon(Icons.calendar_today_outlined, size: 16, color: Colors.white),
-                                  label: Text(
-                                    pickedStartDate != null
-                                        ? "${pickedStartDate!.day}/${pickedStartDate!.month}/${pickedStartDate!.year}"
-                                        : "Start Date",
-                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 12),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                    backgroundColor: Colors.lightBlue[400],
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    elevation: 2,
-                                    textStyle: const TextStyle(fontSize: 12),
+                                Flexible(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      DateTime? date = await showDatePicker(
+                                        context: context,
+                                        initialDate: pickedStartDate ?? DateTime.now(),
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2100),
+                                      );
+                                      if (date != null && mounted) {
+                                        setState(() {
+                                          pickedStartDate = date;
+                                        });
+                                      }
+                                    },
+                                    icon: const Icon(Icons.calendar_today_outlined, size: 16, color: Colors.white),
+                                    label: Text(
+                                      pickedStartDate != null
+                                          ? "${pickedStartDate!.day}/${pickedStartDate!.month}/${pickedStartDate!.year}"
+                                          : "Start Date",
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      backgroundColor: Colors.lightBlue[400],
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      elevation: 2,
+                                      textStyle: const TextStyle(fontSize: 12),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                ElevatedButton.icon(
-                                  onPressed: () async {
-                                    DateTime? date = await showDatePicker(
-                                      context: context,
-                                      initialDate:DateTime(2025,3,30), // Use DateTime.now() if pickedEndDate is null
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime(2100),
-                                    );
-                                    if (date != null && mounted) {
-                                      setState(() {
-                                        pickedEndDate = DateTime(2025,3,30);
-                                      });
-                                    }
-                                  },
-                                  icon: const Icon(Icons.calendar_today_outlined, size: 16, color: Colors.white),
-                                  label: Text(
-                                    pickedEndDate != null
-                                        ? "${pickedEndDate!.day}/${pickedEndDate!.month}/${pickedEndDate!.year}"
-                                        : "End Date",
-                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 12),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                    backgroundColor: Colors.blue[700],
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                    elevation: 2,
-                                    textStyle: const TextStyle(fontSize: 12),
+                                Flexible(
+                                  child: ElevatedButton.icon(
+                                    onPressed: () async {
+                                      DateTime? date = await showDatePicker(
+                                        context: context,
+                                        initialDate:DateTime(2025,3,30), // Use DateTime.now() if pickedEndDate is null
+                                        firstDate: DateTime(2000),
+                                        lastDate: DateTime(2100),
+                                      );
+                                      if (date != null && mounted) {
+                                        setState(() {
+                                          pickedEndDate = DateTime(2025,3,30);
+                                        });
+                                      }
+                                    },
+                                    icon: const Icon(Icons.calendar_today_outlined, size: 16, color: Colors.white),
+                                    label: Text(
+                                      pickedEndDate != null
+                                          ? "${pickedEndDate!.day}/${pickedEndDate!.month}/${pickedEndDate!.year}"
+                                          : "End Date",
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+
+
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      backgroundColor: Colors.blue[700],
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      elevation: 2,
+                                      textStyle: const TextStyle(fontSize: 12),
+                                    ),
                                   ),
                                 ),
                               ],

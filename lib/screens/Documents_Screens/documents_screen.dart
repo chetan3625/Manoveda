@@ -153,6 +153,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                   ]),
                   const SizedBox(height: 8),
                   CustomFormField(
+                    allowOnlyNumbers: false,
                     caplebal: 'Document name',
                     label: 'Name',
                     hint: 'E.g., Insurance policy for Truck 123',
@@ -194,6 +195,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                   ]),
                   const SizedBox(height: 8),
                   CustomFormField(
+                    allowOnlyNumbers: false,
                     caplebal: 'Notes',
                     label: 'Notes',
                     hint: 'Optional note or description',

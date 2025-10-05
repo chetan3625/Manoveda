@@ -284,17 +284,19 @@ class _FleetScreenState extends State<FleetScreen> {
                             showDialog(
                               context: context,
                               builder: (BuildContext context) {
-                                return CommonAlertBox(
+                                return
+                                  CommonAlertBox(
                                   title: "Alert !",
                                   content: "Are you sure to delete this entry?",
                                   positiveText: "Yes",
                                   onPositivePressed: () {
-                                    _deleteFromRow(vehicle.vehileNo);
-                                    Navigator.of(context).pop();
+
+                                    setState(() {
+                                      _deleteFromRow(vehicle.vehileNo);
+                                    });
                                   },
                                   negativeText: "No",
                                   onNegativePressed: () {
-                                    Navigator.of(context).pop();
                                   },
                                 );
                               },

@@ -121,23 +121,23 @@ class _EditTableVendorScreen extends State<AddNewVendorForm> {
                         children: [
                           Expanded(
                             child: CustomFormField(
+                              allowOnlyNumbers: false,
                               isEditable: widget.isVendorEditable,
                               caplebal: "",
                               label: "",
                               hint: "Enter vendor name",
                               controller: vendorNameController,
-                              backgroundColor: Colors.white,
                             ),
                           ),
                           const SizedBox(width: 12), // spacing between fields
                           Expanded(
                             child: CustomFormField(
+                              allowOnlyNumbers: false,
                               isEditable: widget.isVendorEditable,
                               caplebal: "",
                               label: "",
                               hint: "Vendor Email ID",
                               controller: vendorBusinessAddress,
-                              backgroundColor: Colors.white,
                             ),
                           ),
                         ],
@@ -147,25 +147,25 @@ class _EditTableVendorScreen extends State<AddNewVendorForm> {
                         children: [
                           Expanded(
                             child: CustomFormField(
+                              allowOnlyNumbers: false,
                               isEditable: widget.isVendorEditable,
                               caplebal: "",
                               label: "",
                               hint: "Vendor Business Address",
                               controller: vendorMobileNo,
                               keyboardType: TextInputType.number,
-                              backgroundColor: Colors.white,
                             ),
                           ),
                           const SizedBox(width: 12), // spacing between fields
                           Expanded(
                             child: CustomFormField(
+                              allowOnlyNumbers: true,
                               isEditable: widget.isVendorEditable,
                               caplebal: "",
                               label: "",
                               hint: "Mobile No",
                               controller: vendorMobileNo,
                               keyboardType: TextInputType.number,
-                              backgroundColor: Colors.white,
                             ),
                           ),
                           const SizedBox(width: 12), // spacing between fields
@@ -178,7 +178,8 @@ class _EditTableVendorScreen extends State<AddNewVendorForm> {
                               DropdownMenuItem(value: "Booking Partner", child: Text("Booking Partner")),
                               DropdownMenuItem(value: "Frenchaise Partner", child: Text("Frenchaise Partner")),
                               DropdownMenuItem(value: "Revenue Sharing", child: Text("Revenue Sharing")),
-                            ],                                 onChanged: (val) {
+                            ],
+                              onChanged: (val) {
                               setState(() {
                                 selectedType = val;
                                 typeController.text = val ?? '';
@@ -191,21 +192,24 @@ class _EditTableVendorScreen extends State<AddNewVendorForm> {
 
 
                       const SizedBox(height: 12),
-                      Row(
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
 
-                        children: [
-                          if(!widget.isVendorEditable)
-                            UploadDoc(docModel: vendorDocs[0],
-                          ),
-                            const SizedBox(width: 12), // spacing between fields
-                          if(!widget.isVendorEditable)
-                            UploadDoc(docModel: vendorDocs[1],
-                          ),
-                          if(!widget.isVendorEditable)
-                            UploadDoc(docModel: vendorDocs[2],
-                             ),
+                          children: [
+                            if(!widget.isVendorEditable)
+                              UploadDoc(docModel: vendorDocs[0],
+                            ),
+                              const SizedBox(width: 12), // spacing between fields
+                            if(!widget.isVendorEditable)
+                              UploadDoc(docModel: vendorDocs[1],
+                            ),
+                            if(!widget.isVendorEditable)
+                              UploadDoc(docModel: vendorDocs[2],
+                               ),
 
-                        ],
+                          ],
+                        ),
                       ),
 
                       const SizedBox(height: 12),

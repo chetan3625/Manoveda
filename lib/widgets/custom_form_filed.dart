@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -15,7 +18,8 @@ class CustomFormField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final double? width; // fraction of screen width (0.0 - 1.0)
   final double? height; // fraction of screen height (0.0 - 1.0)
-  final Color? backgroundColor;
+  final ValueChanged<String>? onChanged;
+  final bool allowOnlyNumbers;
 
   const CustomFormField({
     Key? key,
@@ -27,16 +31,24 @@ class CustomFormField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.validator,
     this.prefixIcon,
+
     this.suffixIcon,
     this.inputFormatters,
     this.width, // 0.8 = 80% of screen width
     this.height, // 0.08 = 8% of screen height
-    this.backgroundColor,
     this.isEditable = false,
+    this.onChanged,
+    required this.allowOnlyNumbers,
   }) : super(key: key);
+  final Color? backgroundColor=Colors.white;
+
+
 
   @override
+
   Widget build(BuildContext context) {
+    List<TextInputFormatter>? inputFormatters; // <--- Use this parameter
+
     // Get screen size
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
@@ -63,12 +75,15 @@ class CustomFormField extends StatelessWidget {
 
             // Input field
             TextFormField(
+              inputFormatters:allowOnlyNumbers!? [
+                FilteringTextInputFormatter.digitsOnly]:[],
+
+
               readOnly: isEditable,
               controller: controller,
               obscureText: isPassword,
               keyboardType: keyboardType,
               validator: validator,
-              inputFormatters: inputFormatters,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
@@ -76,7 +91,7 @@ class CustomFormField extends StatelessWidget {
               ),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: backgroundColor ?? Colors.grey.shade100,
+                fillColor: backgroundColor,
                 labelText: label.isNotEmpty ? label : null,
                 labelStyle: const TextStyle(
                   fontSize: 14,
@@ -85,6 +100,7 @@ class CustomFormField extends StatelessWidget {
                 ),
                 hintText: hint,
                 hintStyle: TextStyle(
+                  overflow: TextOverflow.ellipsis,
                   fontSize: 14,
                   color: Colors.grey.shade500,
                 ),
@@ -119,7 +135,9 @@ class CustomFormField extends StatelessWidget {
                     width: 1.8,
                   ),
                 ),
+
               ),
+
             ),
           ],
         ),

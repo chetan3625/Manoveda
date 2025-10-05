@@ -215,6 +215,7 @@ class _FinancialsScreenState extends State<FinancialsScreen>
           children: [
             // Use your CustomFormField for party
             CustomFormField(
+              allowOnlyNumbers: false,
               caplebal: 'Client / Party',
               label: 'Party name',
               hint: 'Enter client or company name',
@@ -226,6 +227,7 @@ class _FinancialsScreenState extends State<FinancialsScreen>
               children: [
                 Expanded(
                   child: CustomFormField(
+                    allowOnlyNumbers: true,
                     caplebal: 'Amount (before GST)',
                     label: 'Amount',
                     hint: 'Enter amount',
@@ -237,6 +239,7 @@ class _FinancialsScreenState extends State<FinancialsScreen>
                 SizedBox(
                   width: 240,
                   child: CustomFormField(
+                    allowOnlyNumbers: true,
                     caplebal: 'GST %',
                     label: 'GST',
                     hint: '18',
@@ -281,6 +284,7 @@ class _FinancialsScreenState extends State<FinancialsScreen>
             ),
             const SizedBox(height: 8),
             CustomFormField(
+              allowOnlyNumbers: false,
               caplebal: 'Notes',
               label: 'Notes / Description',
               hint: 'E.g., route details, contract ref',
@@ -349,6 +353,7 @@ class _FinancialsScreenState extends State<FinancialsScreen>
             child: Column(
               children: [
                 CustomFormField(
+                  allowOnlyNumbers: false,
                   caplebal: 'Category',
                   label: 'Expense category',
                   hint: 'Fuel / Toll / Rental / Maintenance',
@@ -358,6 +363,7 @@ class _FinancialsScreenState extends State<FinancialsScreen>
                   children: [
                     Expanded(
                       child: CustomFormField(
+                        allowOnlyNumbers: true,
                         caplebal: 'Amount',
                         label: 'Amount',
                         hint: 'Enter expense amount',
@@ -381,6 +387,7 @@ class _FinancialsScreenState extends State<FinancialsScreen>
                   ],
                 ),
                 CustomFormField(
+                  allowOnlyNumbers: false,
                   caplebal: 'Notes',
                   label: 'Notes',
                   hint: 'Optional notes',

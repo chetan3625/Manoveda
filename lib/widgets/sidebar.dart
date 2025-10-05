@@ -4,10 +4,10 @@ import '../loginpage.dart';
 import '../screens/Dashboard_Screens/dashboard_screen.dart';
 
 import '../screens/Documents_Screens/documents_screen.dart';
+import '../screens/Driver_Screens/Employee_Screen.dart';
 import '../screens/Financials_Screens/financial_screen.dart';
 import '../screens/Fleet_Screens/FleetScreen.dart';
 
-import '../screens/Driver_Screens/driver_screen.dart';
 import '../screens/Client_Screens/client_screen.dart';
 import '../screens/Trip_Screens/trip_screen.dart';
 
@@ -69,7 +69,7 @@ class _SidebarState extends State<Sidebar> {
             onTap: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const DriverScreen()),
+                MaterialPageRoute(builder: (context) => const EmployeeScreen()),
               );
             },
           ),

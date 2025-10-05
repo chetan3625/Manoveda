@@ -61,6 +61,7 @@ class _EditTableTripScreenState extends State<EditTableTripScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
             CustomFormField(
+              allowOnlyNumbers: false,
               caplebal: "Trip ID",
               label: "",
               hint: "Enter Trip ID",
@@ -69,6 +70,7 @@ class _EditTableTripScreenState extends State<EditTableTripScreen> {
             ),
             const SizedBox(height: 12),
             CustomFormField(
+              allowOnlyNumbers: false,
               caplebal: "LR Number",
               label: "",
               hint: "Enter LR Number",
@@ -77,6 +79,7 @@ class _EditTableTripScreenState extends State<EditTableTripScreen> {
             ),
             const SizedBox(height: 12),
             CustomFormField(
+              allowOnlyNumbers: false,
               caplebal: "Route",
               label: "",
               hint: "Enter Route",
@@ -91,6 +94,7 @@ class _EditTableTripScreenState extends State<EditTableTripScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
             CustomFormField(
+              allowOnlyNumbers: false,
               caplebal: "Vehicle",
               label: "",
               hint: "Select Vehicle",
@@ -99,6 +103,7 @@ class _EditTableTripScreenState extends State<EditTableTripScreen> {
             ),
             const SizedBox(height: 12),
             CustomFormField(
+              allowOnlyNumbers: false,
               caplebal: "Driver",
               label: "",
               hint: "Select Driver",

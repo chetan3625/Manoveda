@@ -21,7 +21,8 @@ class AddNewVehicleForm extends StatefulWidget {
 
 class _AddNewVehicleFormState extends State<AddNewVehicleForm> {
   List<VehicleModel> vehicles = [];
-  String? selectedType; // <-- Use this for dropdown value
+  String? selectedType;
+  String? selectedCapacity;// <-- Use this for dropdown value
 
   // Controllers
   final TextEditingController vehNoController = TextEditingController();
@@ -87,13 +88,15 @@ class _AddNewVehicleFormState extends State<AddNewVehicleForm> {
     setState(() {
       vehicles.add(VehicleModel(
         vehNoController.text,
-        selectedType ?? '', // Use dropdown value
+        selectedType ?? '',
+        // Use dropdown value
         capacityController.text,
         statusController.text,
         driverController.text,
         lastServiceController.text,
         startDateController.text,
         endDateController.text,
+
       ));
     });
 
@@ -113,6 +116,7 @@ class _AddNewVehicleFormState extends State<AddNewVehicleForm> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -151,23 +155,23 @@ class _AddNewVehicleFormState extends State<AddNewVehicleForm> {
 
 
                             child: CustomFormField(
+                            allowOnlyNumbers: true,
                               isEditable: widget.isEditable,
                               caplebal: "",
                               label: "Vehicle No",
                               hint: "",
                               controller: vehNoController,
-                              backgroundColor: Colors.white,
                             ),
                           ),
                           const SizedBox(width: 12),
                            Expanded(
                             child: CustomFormField(
+                              allowOnlyNumbers: false,
                               isEditable: widget.isEditable,
                               caplebal: "",
                               label: "Company Name",
                               hint: "",
                               controller:companyNameController ,
-                              backgroundColor: Colors.white,
                             ),
                           ),
 
@@ -176,68 +180,102 @@ class _AddNewVehicleFormState extends State<AddNewVehicleForm> {
                     ),
 
                     // Capacity
-                    Row(
+                    if (!widget.isEditable)
+                      Row(
                       children: [
+                        // Vehicle Type Dropdown
                         Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: CommonDropDownWidget<String>(
-                                hintText: "Select Vehicle Type",
-                                fillColor: Colors.grey[200],
-                                items: const [
-                                  DropdownMenuItem(value: "Maxi Truck", child: Text("Maxi Truck")),
-                                  DropdownMenuItem(value: "Open Body Truck", child: Text("Open Body Truck")),
-                                  DropdownMenuItem(value: "Container Truck", child: Text("Container Truck")),
-                                  DropdownMenuItem(value: "Box Truck", child: Text("Box Truck")),
-                                  DropdownMenuItem(value: "Multi-axle", child: Text("Multi-axle")),
-                                ],
-                                value: selectedType,
-                                onChanged: (val) {
-                                  setState(() {
-                                    selectedType = val;
-                                    typeController.text = val ?? '';
-                                  });
-                                },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
 
-                              ),
+                            child: CommonDropDownWidget<String>(
+                              hintText: "Select Vehicle Type",
+                              fillColor: Colors.grey[200],
+                              items: const [
+                                DropdownMenuItem(value: "Maxi Truck", child: Text("Maxi Truck")),
+                                DropdownMenuItem(value: "Open Body Truck", child: Text("Open Body Truck")),
+                                DropdownMenuItem(value: "Container Truck", child: Text("Container Truck")),
+                                DropdownMenuItem(value: "Box Truck", child: Text("Box Truck")),
+                                DropdownMenuItem(value: "Multi-axle", child: Text("Multi-axle")),
+                              ],
+                              value: [
+                                "Maxi Truck",
+                                "Open Body Truck",
+                                "Container Truck",
+                                "Box Truck",
+                                "Multi-axle"
+                              ].contains(selectedType) ? selectedType : null,
+                              onChanged: (val) {
+                                setState(() {
+                                  selectedType = val;
+                                  typeController.text = val ?? '';
+                                });
+                              },
                             ),
-                          ),
-                          SizedBox(width: 1),
-                        Expanded(
-                          child: CommonDropDownWidget(
-                            hintText: "Select Status",
-                            fillColor: Colors.grey[200],
-                            items: [
-                            DropdownMenuItem(value: "PayLoad", child: Text("Pay Load")),
-                            DropdownMenuItem(value: "GrossWeight", child: Text("Gross Weight")),
-                          ], onChanged: (String? value) { setState(() {
-                            capacityController.text = value ?? '';
-                          }); }, value: capacityController.text.isEmpty ? null : capacityController.text
                           ),
                         ),
 
+                        Expanded(
+                          child: CommonDropDownWidget<String>(
+                            hintText: "Select Status",
+                            fillColor: Colors.grey[200],
+                            items: const [
+                              DropdownMenuItem(value: "PayLoad", child: Text("Pay Load")),
+                              DropdownMenuItem(value: "GrossWeight", child: Text("Gross Weight")),
+                            ],
+                            // FIX: validate value
+                            value: ["PayLoad", "GrossWeight"].contains(capacityController.text)
+                                ? capacityController.text
+                                : null,
+                            onChanged: (val) {
+                              setState(() {
+                                selectedCapacity=val;
+                                capacityController.text = val ?? '';
+                              });
+                            },
+                          ),
+                        ),
+
+
                       ],
                     ),
+                    if(widget.isEditable)
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2.0),
-                      child: CustomFormField(
-                        isEditable: widget.isEditable,
-                        caplebal: "",
-                        label: "Driver Name",
-                        hint: "",
-                        controller: driverController,
-                        backgroundColor: Colors.white,
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Text("Selected Vehicle Type--${selectedType.toString()}",style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold
+                          ),),
+                          Text("Selected Status--${selectedCapacity.toString()}",style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold
+                          ),)
+                        ],
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2.0),
                       child: CustomFormField(
+                        allowOnlyNumbers: false,
+                        isEditable: widget.isEditable,
+                        caplebal: "",
+                        label: "Driver Name",
+                        hint: "",
+                        controller: driverController,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: CustomFormField(
+                        allowOnlyNumbers: false,
                         isEditable: widget.isEditable,
                         caplebal: "",
                         label: "Last Service",
                         hint: "",
                         controller: lastServiceController,
-                        backgroundColor: Colors.white,
                       ),
                     ),
 

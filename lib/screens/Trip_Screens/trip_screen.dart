@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../../Common Widgets/CommonAppBar.dart';
+import '../../widgets/sidebar.dart';
 import '../Dashboard_Screens/dashboard_screen.dart';
 
 class TripScreen extends StatefulWidget {
@@ -95,7 +96,9 @@ class _TripScreenState extends State<TripScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+      drawer: const Sidebar(),
       appBar: CommonAppBar(title: Text("Trip Screen")),
       body: trips.isEmpty
           ? const Center(child: Text("No trips added yet"))

@@ -5,15 +5,15 @@ import 'package:erptransportexpress/models/UploadDocsInputModel.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/custom_form_filed.dart';
 
-class AddNewDriverForm extends StatefulWidget {
+class AddNewEmployee extends StatefulWidget {
   final bool isDriverEditable; // Editable mode
-  const AddNewDriverForm({super.key, this.isDriverEditable = false});
+  const AddNewEmployee({super.key, this.isDriverEditable = false});
 
   @override
-  State<AddNewDriverForm> createState() => _AddNewDriverFormState();
+  State<AddNewEmployee> createState() => _AddNewEmployeeState();
 }
 
-class _AddNewDriverFormState extends State<AddNewDriverForm> {
+class _AddNewEmployeeState extends State<AddNewEmployee> {
   // Controllers
   final TextEditingController driverNameController = TextEditingController();
   final TextEditingController driverEmailController = TextEditingController();
@@ -81,6 +81,7 @@ class _AddNewDriverFormState extends State<AddNewDriverForm> {
                 children: [
                   Expanded(
                     child: CustomFormField(
+                      allowOnlyNumbers: false,
                       isEditable: widget.isDriverEditable,
                       caplebal: "",
                       label: "",
@@ -92,6 +93,7 @@ class _AddNewDriverFormState extends State<AddNewDriverForm> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: CustomFormField(
+                      allowOnlyNumbers: false,
                       isEditable: widget.isDriverEditable,
                       caplebal: "",
                       label: "",
@@ -111,6 +113,7 @@ class _AddNewDriverFormState extends State<AddNewDriverForm> {
                 children: [
                   Expanded(
                     child: CustomFormField(
+                      allowOnlyNumbers: true,
                       isEditable: widget.isDriverEditable,
                       caplebal: "",
                       label: "",
@@ -122,6 +125,7 @@ class _AddNewDriverFormState extends State<AddNewDriverForm> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: CustomFormField(
+                      allowOnlyNumbers: false,
                       isEditable: widget.isDriverEditable,
                       caplebal: "",
                       label: "",
