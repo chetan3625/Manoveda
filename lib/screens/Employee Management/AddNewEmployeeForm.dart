@@ -1,4 +1,5 @@
 import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
+import 'package:erptransportexpress/Common%20Widgets/Common_DropdownWidget.dart';
 import 'package:erptransportexpress/Common%20Widgets/UploadDoc.dart';
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:erptransportexpress/models/UploadDocsInputModel.dart';
@@ -135,25 +136,36 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                     ),
                   ),
                   SizedBox(width: 12),
-                  Expanded(child: DropdownButton(
-                    borderRadius: BorderRadius.circular(6),
-                    hint: Text("Select Deal Type"),
-                    value: selectedType,
-                    isExpanded: true,
-                    items: [
+                  Expanded(child:CommonDropDownWidget(
+                    hintText: "Enter the Type",
+                      items: [
+                    DropdownMenuItem(child: Text("Permenant"),value: "Permenant",),
+                    DropdownMenuItem(child: Text("Contracted"),value: "Contracted",)
+                  ], onChanged: (val){
+                    setState(() {
+                      selectedType = val as String?;
+                      typeController.text = val ?? '';
+                    });
+                  })
+                  // DropdownButton(
+                  //   borderRadius: BorderRadius.circular(6),
+                  //   hint: Text("Select Deal Type"),
+                  //   value: selectedType,
+                  //   isExpanded: true,
+                  //   items: [
+                  //
+                  //     DropdownMenuItem(value: "permenant", child: Text("Permenant")),
+                  //     DropdownMenuItem(value: "contracted", child: Text("Contracted")),
+                  //   ],
+                  //   onChanged: (val) {
+                  //     setState(() {
+                  //       selectedType = val;
+                  //       typeController.text = val ?? '';
+                  //     });
+                  //   },
+                  // )),
 
-                      DropdownMenuItem(value: "permenant", child: Text("Permenant")),
-                      DropdownMenuItem(value: "contracted", child: Text("Contracted")),
-                    ],
-                    onChanged: (val) {
-                      setState(() {
-                        selectedType = val;
-                        typeController.text = val ?? '';
-                      });
-                    },
-                  )),
-
-                ],
+                  )],
               ),
 
               const SizedBox(height: 16),
@@ -162,24 +174,17 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
               if (!widget.isDriverEditable)
                 Column(
                     children:[
-                      GridView.count(
-                        crossAxisCount: 6,
-                          shrinkWrap: true,
-                          mainAxisSpacing: 10,
-                        children: [
-                          UploadDoc(docModel: driverDocs[0]),
-                          UploadDoc(docModel: driverDocs[1]),
-                          UploadDoc(docModel: driverDocs[2]),
-                          UploadDoc(docModel: driverDocs[3]),
-                          UploadDoc(docModel: driverDocs[4]),
-                          UploadDoc(docModel: driverDocs[5]),
-                          UploadDoc(docModel: driverDocs[5]),
-                          UploadDoc(docModel: driverDocs[5]),
-                          UploadDoc(docModel: driverDocs[5]),
+                      Wrap(
+                      children: [
+                        UploadDoc(docModel: driverDocs[0]),
+                        UploadDoc(docModel: driverDocs[1]),
+                        UploadDoc(docModel: driverDocs[2]),
+                        UploadDoc(docModel: driverDocs[3]),
+                        UploadDoc(docModel: driverDocs[4]),
+                        UploadDoc(docModel: driverDocs[5]),
+                      ],)
 
 
-                        ],
-                      )
                       // Container(
                       //   child: SingleChildScrollView(
                       //     scrollDirection: Axis.horizontal,

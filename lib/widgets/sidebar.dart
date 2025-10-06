@@ -1,10 +1,11 @@
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
+import 'package:erptransportexpress/screens/LR_Creation_Screen/LR_Creation_HomePage.dart';
 import 'package:flutter/material.dart';
 import '../loginpage.dart';
 import '../screens/Dashboard_Screens/dashboard_screen.dart';
 
 import '../screens/Documents_Screens/documents_screen.dart';
-import '../screens/Driver_Screens/Employee_Screen.dart';
+import '../screens/Employee Management/Employee_Screen.dart';
 import '../screens/Financials_Screens/financial_screen.dart';
 import '../screens/Fleet_Screens/FleetScreen.dart';
 
@@ -93,6 +94,17 @@ class _SidebarState extends State<Sidebar> {
               );
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.local_printshop_outlined),
+            title: const Text("LR Creation"),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LR_Creation_HomePage()),
+              );
+            },
+          ),
+
           ListTile(
             leading: const Icon(Icons.account_balance),
             title: const Text("Financials"),
