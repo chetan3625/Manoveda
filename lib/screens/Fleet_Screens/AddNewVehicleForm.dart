@@ -156,7 +156,7 @@ class _AddNewVehicleFormState extends State<AddNewVehicleForm> {
 
                             child: CustomFormField(
                             allowOnlyNumbers: true,
-                              isEditable: widget.isEditable,
+                              isDontWantToEditable: widget.isEditable,
                               caplebal: "",
                               label: "Vehicle No",
                               hint: "",
@@ -167,7 +167,7 @@ class _AddNewVehicleFormState extends State<AddNewVehicleForm> {
                            Expanded(
                             child: CustomFormField(
                               allowOnlyNumbers: false,
-                              isEditable: widget.isEditable,
+                              isDontWantToEditable: widget.isEditable,
                               caplebal: "",
                               label: "Company Name",
                               hint: "",
@@ -260,7 +260,7 @@ mainAxisAlignment: MainAxisAlignment.spaceAround,
                       padding: const EdgeInsets.symmetric(vertical: 2.0),
                       child: CustomFormField(
                         allowOnlyNumbers: false,
-                        isEditable: widget.isEditable,
+                        isDontWantToEditable: widget.isEditable,
                         caplebal: "",
                         label: "Driver Name",
                         hint: "",
@@ -271,7 +271,7 @@ mainAxisAlignment: MainAxisAlignment.spaceAround,
                       padding: const EdgeInsets.symmetric(vertical: 2.0),
                       child: CustomFormField(
                         allowOnlyNumbers: false,
-                        isEditable: widget.isEditable,
+                        isDontWantToEditable: widget.isEditable,
                         caplebal: "",
                         label: "Last Service",
                         hint: "",

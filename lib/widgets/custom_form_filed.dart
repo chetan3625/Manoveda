@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class CustomFormField extends StatelessWidget {
-  final bool isEditable;
+  final bool isDontWantToEditable;
   final String caplebal; // top label
   final String label; // inside label (optional)
   final String hint;
@@ -36,7 +36,7 @@ class CustomFormField extends StatelessWidget {
     this.inputFormatters,
     this.width, // 0.8 = 80% of screen width
     this.height, // 0.08 = 8% of screen height
-    this.isEditable = false,
+    this.isDontWantToEditable = false,
     this.onChanged,
     required this.allowOnlyNumbers,
   }) : super(key: key);
@@ -79,7 +79,7 @@ class CustomFormField extends StatelessWidget {
                 FilteringTextInputFormatter.digitsOnly]:[],
 
 
-              readOnly: isEditable,
+              readOnly: isDontWantToEditable,
               controller: controller,
               obscureText: isPassword,
               keyboardType: keyboardType,

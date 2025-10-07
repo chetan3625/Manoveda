@@ -122,7 +122,7 @@ class _EditTableVendorScreen extends State<AddNewVendorForm> {
                           Expanded(
                             child: CustomFormField(
                               allowOnlyNumbers: false,
-                              isEditable: widget.isVendorEditable,
+                              isDontWantToEditable: widget.isVendorEditable,
                               caplebal: "",
                               label: "",
                               hint: "Enter vendor name",
@@ -133,7 +133,7 @@ class _EditTableVendorScreen extends State<AddNewVendorForm> {
                           Expanded(
                             child: CustomFormField(
                               allowOnlyNumbers: false,
-                              isEditable: widget.isVendorEditable,
+                              isDontWantToEditable: widget.isVendorEditable,
                               caplebal: "",
                               label: "",
                               hint: "Vendor Email ID",
@@ -148,7 +148,7 @@ class _EditTableVendorScreen extends State<AddNewVendorForm> {
                           Expanded(
                             child: CustomFormField(
                               allowOnlyNumbers: false,
-                              isEditable: widget.isVendorEditable,
+                              isDontWantToEditable: widget.isVendorEditable,
                               caplebal: "",
                               label: "",
                               hint: "Vendor Business Address",
@@ -160,7 +160,7 @@ class _EditTableVendorScreen extends State<AddNewVendorForm> {
                           Expanded(
                             child: CustomFormField(
                               allowOnlyNumbers: true,
-                              isEditable: widget.isVendorEditable,
+                              isDontWantToEditable: widget.isVendorEditable,
                               caplebal: "",
                               label: "",
                               hint: "Mobile No",

@@ -83,7 +83,7 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                   Expanded(
                     child: CustomFormField(
                       allowOnlyNumbers: false,
-                      isEditable: widget.isDriverEditable,
+                      isDontWantToEditable: widget.isDriverEditable,
                       caplebal: "",
                       label: "",
                       hint: "Enter Employee name",
@@ -95,7 +95,7 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                   Expanded(
                     child: CustomFormField(
                       allowOnlyNumbers: false,
-                      isEditable: widget.isDriverEditable,
+                      isDontWantToEditable: widget.isDriverEditable,
                       caplebal: "",
                       label: "",
                       hint: "Enter Driver Email",
@@ -115,7 +115,7 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                   Expanded(
                     child: CustomFormField(
                       allowOnlyNumbers: true,
-                      isEditable: widget.isDriverEditable,
+                      isDontWantToEditable: widget.isDriverEditable,
                       caplebal: "",
                       label: "",
                       hint: "Mobile No",
@@ -127,7 +127,7 @@ class _AddNewEmployeeState extends State<AddNewEmployee> {
                   Expanded(
                     child: CustomFormField(
                       allowOnlyNumbers: false,
-                      isEditable: widget.isDriverEditable,
+                      isDontWantToEditable: widget.isDriverEditable,
                       caplebal: "",
                       label: "",
                       hint: "Enter Address ",

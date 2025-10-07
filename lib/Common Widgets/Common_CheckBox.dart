@@ -5,6 +5,7 @@ class CommonCheckbox extends StatefulWidget {
   bool CheckboxBool;
   bool isInputNedded;
   TextEditingController InputController;
+  String? hintText;
 
   CommonCheckbox({
     super.key,
@@ -12,6 +13,7 @@ class CommonCheckbox extends StatefulWidget {
     required this.CheckboxBool,
     required this.isInputNedded,
     required this.InputController,
+    this.hintText
   });
 
   @override
@@ -24,7 +26,7 @@ class _CommonCheckboxState extends State<CommonCheckbox> {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(60),
+        borderRadius: BorderRadius.circular(10),
       ),
       shadowColor: Colors.grey.withOpacity(0.5),
       child: ListTile(
@@ -35,6 +37,8 @@ class _CommonCheckboxState extends State<CommonCheckbox> {
               widget.CheckboxBool = val!;
             });
           },
+          activeColor: Colors.green,
+          checkColor: Colors.white,
         ),
         title: Text(
           widget.title,
@@ -48,7 +52,7 @@ class _CommonCheckboxState extends State<CommonCheckbox> {
           child: TextField(
             controller: widget.InputController,
             decoration: InputDecoration(
-              hintText: "Enter value",
+              hintText: widget.hintText,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),

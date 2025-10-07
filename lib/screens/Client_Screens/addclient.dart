@@ -473,7 +473,7 @@ class _AddClientState extends State<AddClient> {
                         prefixIcon: const Icon(
                           Icons.person,
                         ),
-                        isEditable: widget.isClientEditable,
+                        isDontWantToEditable: widget.isClientEditable,
                         caplebal: '',
                         label: 'Client/Company Name',
                         hint: 'Enter Client/Company Name',
@@ -487,7 +487,7 @@ class _AddClientState extends State<AddClient> {
                         prefixIcon: const Icon(
                           Icons.location_on,
                         ),
-                        isEditable: widget.isClientEditable,
+                        isDontWantToEditable: widget.isClientEditable,
                         caplebal: '',
                         label: 'Address',
                         hint: 'Enter Address',
@@ -542,7 +542,7 @@ class _AddClientState extends State<AddClient> {
                         prefixIcon: const Icon(
                           Icons.call,
                         ),
-                        isEditable: widget.isClientEditable,
+                        isDontWantToEditable: widget.isClientEditable,
                         caplebal: '',
                         label: ' Logistics Head Contact Number',
                         hint: 'Enter Contact Number',
@@ -556,7 +556,7 @@ class _AddClientState extends State<AddClient> {
                         prefixIcon: const Icon(
                           Icons.person_pin_circle_sharp,
                         ),
-                        isEditable: widget.isClientEditable,
+                        isDontWantToEditable: widget.isClientEditable,
                         caplebal: '',
                         label: ' Logistics Head Name',
                         hint: 'Enter Logistics Head Name',
@@ -570,7 +570,7 @@ class _AddClientState extends State<AddClient> {
                         prefixIcon: const Icon(
                           Icons.alternate_email_outlined,
                         ),
-                        isEditable: widget.isClientEditable,
+                        isDontWantToEditable: widget.isClientEditable,
                         caplebal: '',
                         label: ' Logistics Head Email',
                         hint: 'Enter Logistics Head Email',
