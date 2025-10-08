@@ -1,0 +1,85 @@
+import 'package:flutter/material.dart';
+
+import 'homepage.dart';
+
+class Loginpage extends StatefulWidget {
+  const Loginpage({super.key});
+
+  @override
+  State<Loginpage> createState() => _LoginpageState();
+}
+
+class _LoginpageState extends State<Loginpage> {
+  @override
+  void initState() {
+    super.initState();
+
+    Future.delayed(const Duration(seconds: 3), () {
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Homepage()),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Full-screen background image aligned to the right
+          Positioned.fill(
+            child: Image.asset(
+              "assets/splashscreen.jpg",
+              fit: BoxFit.cover,
+              alignment: Alignment.centerRight,
+            ),
+          ),
+
+          // Semi-transparent overlay for better text readability
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.4),
+            ),
+          ),
+
+          // Content placed at the top of the screen
+          Padding(
+            padding: const EdgeInsets.only(top: 100), // Adjust padding as needed
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  // "My App" text
+                  const Text(
+                    'Manoveda',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 600),
+
+                  // "designed by team manoveda" text
+                  const Text(
+                    'Designed by team Manoveda',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
