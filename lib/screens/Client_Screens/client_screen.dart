@@ -212,7 +212,7 @@ class _ClientScreenState extends State<ClientScreen> {
                         InkWell(
                           onTap: () {
                             showDialog(context: context, builder: (BuildContext context){
-                              return CommonAlertBox(title: "Alert !", content: "Are you sure to edit this entry ?", positiveText: "Yes", onPositivePressed: (){
+                              return CommonAlertBox(title: "Alert !", content: Text("Are you sure to edit this entry ?"), positiveText: "Yes", onPositivePressed: (){
                                 Navigator.push(context, MaterialPageRoute(builder: (context)=>AddClient(isClientEditable: false,)));
                               }, negativeText: "No", onNegativePressed: (){});
 
@@ -227,7 +227,7 @@ class _ClientScreenState extends State<ClientScreen> {
                         InkWell(
                           onTap: () {
                             showDialog(context: context, builder: (BuildContext context){
-                              return CommonAlertBox(title: "Alert !", content: "Are You Sure to delete this client ?", positiveText: "Yes", onPositivePressed: (){}, negativeText: "No", onNegativePressed: (){});
+                              return CommonAlertBox(title: "Alert !", content: Text("Are You Sure to delete this client ?"), positiveText: "Yes", onPositivePressed: (){}, negativeText: "No", onNegativePressed: (){});
 
                             });
                             print("delete tapped");

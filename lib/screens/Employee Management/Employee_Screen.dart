@@ -200,7 +200,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                               builder: (BuildContext context) {
                                 return CommonAlertBox(
                                   title: "Alert",
-                                  content: "Do you want to edit this entry?",
+                                  content: Text("Do you want to edit this entry?"),
                                   positiveText: "Yes",
                                   onPositivePressed: () {
                                     Navigator.push(

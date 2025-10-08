@@ -10,7 +10,6 @@ class ERP extends StatelessWidget {
   @override  Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-
       ),
       debugShowCheckedModeBanner: false,
       home:SplashScreen(),

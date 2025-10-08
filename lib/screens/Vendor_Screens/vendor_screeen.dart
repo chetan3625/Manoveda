@@ -198,7 +198,7 @@ class _VendorScreenState extends State<VendorScreen> {
                               builder: (BuildContext context) {
                                 return CommonAlertBox(
                                   title: "Alert !",
-                                  content: "Are You Sure to Edit Vendor Entry",
+                                  content: Text("Are You Sure to Edit Vendor Entry"),
                                   positiveText: "Yes",
                                   onPositivePressed: () {
                                     Navigator.push(context, MaterialPageRoute(builder: (context) =>  AddNewVendorForm(isVendorEditable: false,)));
@@ -222,7 +222,7 @@ class _VendorScreenState extends State<VendorScreen> {
                             showDialog(context: context, builder: (BuildContext context) {
                               return CommonAlertBox(
                                 title: "Alert !",
-                                content: "Are You Sure to Delete Vendor Entry",
+                                content: Text("Are You Sure to Delete Vendor Entry"),
                                 positiveText: "Yes",
                                 onPositivePressed: () {},
                                 negativeText: "No",

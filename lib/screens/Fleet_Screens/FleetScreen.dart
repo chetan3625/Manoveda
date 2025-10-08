@@ -287,7 +287,7 @@ class _FleetScreenState extends State<FleetScreen> {
                                 return
                                   CommonAlertBox(
                                   title: "Alert !",
-                                  content: "Are you sure to delete this entry?",
+                                  content: Text("Are you sure to delete this entry?"),
                                   positiveText: "Yes",
                                   onPositivePressed: () {
 

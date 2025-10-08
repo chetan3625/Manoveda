@@ -41,3 +41,10 @@ flutter:
       fonts:
         - asset: assets/fonts/Merriweather-Italic-VariableFont_opsz,wdth,wght.ttf
           style: italic
+    - family: WinkRough
+      fonts:
+        - asset: assets/fonts/WinkyRough-VariableFont_wght.ttf
+    - family: UbuntuLight
+      fonts:
+        - asset: assets/fonts/Ubuntu-Light.ttf
+

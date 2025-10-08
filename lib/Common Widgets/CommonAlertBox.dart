@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class CommonAlertBox extends StatelessWidget {
   final String title;
-  final String content;
+  final Widget content;
   final String positiveText;
   final VoidCallback onPositivePressed;
   final String negativeText;
@@ -23,7 +23,7 @@ class CommonAlertBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(title),
-      content: Text(content),
+      content: SingleChildScrollView(child: content),
       actions: <Widget>[
         CommonButton(
           text: negativeText,

@@ -1,28 +1,29 @@
 import 'package:flutter/material.dart';
 
-class CommonCheckbox extends StatefulWidget {
-  String title;
-  bool CheckboxBool;
-  bool isInputNedded;
-  TextEditingController InputController;
-  String? hintText;
+class CommonCheckbox extends StatelessWidget {
+  final String title;
+  final bool CheckboxBool;
+  final bool isInputNedded;
+  final TextEditingController InputController;
+  final String? hintText;
+  // FIX 1: Add the required callback to notify the parent
+  final ValueChanged<bool?>? onChanged;
 
-  CommonCheckbox({
+  const CommonCheckbox({
     super.key,
     required this.title,
     required this.CheckboxBool,
     required this.isInputNedded,
     required this.InputController,
-    this.hintText
+    this.hintText,
+    this.onChanged, // FIX 2: Include it in the constructor
   });
 
   @override
-  State<CommonCheckbox> createState() => _CommonCheckboxState();
-}
-
-class _CommonCheckboxState extends State<CommonCheckbox> {
-  @override
   Widget build(BuildContext context) {
+    // Note: Changed to StatelessWidget as state management is delegated to the parent
+    // but kept the build method structure the same.
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
@@ -31,33 +32,30 @@ class _CommonCheckboxState extends State<CommonCheckbox> {
       shadowColor: Colors.grey.withOpacity(0.5),
       child: ListTile(
         leading: Checkbox(
-          value: widget.CheckboxBool,
-          onChanged: (val) {
-            setState(() {
-              widget.CheckboxBool = val!;
-            });
-          },
+          value: CheckboxBool, // Use the value passed from the parent
+          // FIX 3: Call the provided onChanged callback to inform the parent
+          onChanged: onChanged,
           activeColor: Colors.green,
           checkColor: Colors.white,
         ),
         title: Text(
-          widget.title,
-          style: TextStyle(
+          title,
+          style: const TextStyle(
             fontSize: 16,
           ),
         ),
-        subtitle: widget.CheckboxBool
+        subtitle: CheckboxBool && isInputNedded
             ? SizedBox(
           width: MediaQuery.of(context).size.width * 0.6,
           child: TextField(
-            controller: widget.InputController,
+            controller: InputController,
             decoration: InputDecoration(
-              hintText: widget.hintText,
+              hintText: hintText,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
               contentPadding:
-              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             ),
           ),
         )
