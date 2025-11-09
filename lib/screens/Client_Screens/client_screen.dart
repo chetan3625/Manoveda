@@ -2,7 +2,6 @@ import 'package:erptransportexpress/Common%20Widgets/CommonAlertBox.dart';
 import 'package:erptransportexpress/Common%20Widgets/CommonAppBar.dart';
 import 'package:erptransportexpress/Common%20Widgets/common_buttons.dart';
 import 'package:erptransportexpress/Common%20Widgets/serachbar.dart';
-
 import 'package:erptransportexpress/screens/Client_Screens/addclient.dart';
 import 'package:flutter/material.dart';
 import 'package:erptransportexpress/models/FilterModel.dart';

@@ -30,7 +30,9 @@ class _AddNewLRState extends State<AddNewLR> {
   TextEditingController noOfItemsController = TextEditingController();
   TextEditingController descriptionOfItemsController = TextEditingController();
   TextEditingController actualWeightController = TextEditingController();
-  TextEditingController chargedWeightController = TextEditingController();
+  TextEditingController lengthController = TextEditingController();
+  TextEditingController widthController=TextEditingController();
+  TextEditingController breathController=TextEditingController();
 
   DateTime? expectedDate;
   bool isgreaterthan50 = false; // State variable for the checkbox
@@ -296,9 +298,7 @@ class _AddNewLRState extends State<AddNewLR> {
                       borderRadius: 55,
                     ),
                   ),
-                  SizedBox(
-                    width: 12,
-                  ),
+                  SizedBox(width: 12),
                   Expanded(
                     child: CommonDropDownWidget<String>(
                       hintText: "Enter Delivery Type",
@@ -329,9 +329,7 @@ class _AddNewLRState extends State<AddNewLR> {
                       onChanged: (val) {},
                     ),
                   ),
-                  SizedBox(
-                    width: 12,
-                  ),
+                  SizedBox(width: 12),
                   Expanded(
                     child: CustomFormField(
                       prefixIcon: Icon(Icons.line_weight_outlined),
@@ -342,18 +340,124 @@ class _AddNewLRState extends State<AddNewLR> {
                       allowOnlyNumbers: true,
                     ),
                   ),
-                  SizedBox(
-                    width: 12,
-                  ),
-                  SizedBox(
-                    height: 100,
-                    width: 100,
-                    child: CommonButton(text: "", onPressed: (){
-                      showDialog(context: context, builder: (BuildContext context){
-                        return CommonAlertBox(title: "Alert !", content: Text("Are you sure to save this entry ?"), positiveText: "Yes", onPositivePressed: (){}, negativeText: '', onNegativePressed: () {  },);
-                      });
-                    }),
-                  )
+                  SizedBox(width: 12),
+        SizedBox(
+          width: 200,
+          child: CommonButton(
+            text: (lengthController.text.isNotEmpty &&
+                widthController.text.isNotEmpty &&
+                breathController.text.isNotEmpty)
+                ? "Volume: ${((int.tryParse(lengthController.text) ?? 0) *
+                (int.tryParse(widthController.text) ?? 0) *
+                (int.tryParse(breathController.text) ?? 0)) / 5000}"
+                : "Calculate Volume",
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  // Use StatefulBuilder to allow real-time input updates
+                  return StatefulBuilder(
+                    builder: (context, setInnerState) {
+                      return CommonAlertBox(
+                        title: "Calculate Volume",
+                        content: Column(
+                          children: [
+                            TextField(
+                              controller: lengthController,
+                              keyboardType: TextInputType.number,
+                              onChanged: (_) => setInnerState(() {}),
+                              decoration: InputDecoration(
+                                labelText: "Length (in inches)",
+                                prefixIcon: Icon(Icons.straighten, color: Colors.blueAccent),
+                                filled: true,
+                                fillColor: Colors.blue[50],
+                                contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.blueAccent, width: 1.2),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            TextField(
+                              controller: breathController,
+                              keyboardType: TextInputType.number,
+                              onChanged: (_) => setInnerState(() {}),
+                              decoration: InputDecoration(
+                                labelText: "Breadth (in inches)",
+                                prefixIcon: Icon(Icons.straighten, color: Colors.blueAccent),
+                                filled: true,
+                                fillColor: Colors.blue[50],
+                                contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.blueAccent, width: 1.2),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            TextField(
+                              controller: widthController,
+                              keyboardType: TextInputType.number,
+                              onChanged: (_) => setInnerState(() {}),
+                              decoration: InputDecoration(
+                                labelText: "Width (in inches)",
+                                prefixIcon: Icon(Icons.straighten, color: Colors.blueAccent),
+                                filled: true,
+                                fillColor: Colors.blue[50],
+                                contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.blueAccent, width: 1.2),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: BorderSide(color: Colors.blue, width: 2),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        positiveText: "Calculate",
+                        onPositivePressed: () {
+                          final length = int.tryParse(lengthController.text) ?? 0;
+                          final width = int.tryParse(widthController.text) ?? 0;
+                          final breath = int.tryParse(breathController.text) ?? 0;
+
+                          final volume = (length * width * breath) / 5000;
+
+                          // Update the main UI
+                          setState(() {});
+
+                          // Close the dialog
+
+                          // Optional feedback
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Volume Calculated: $volume"),
+                              backgroundColor: Colors.green,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        },
+                        negativeText: "Cancel",
+                        onNegativePressed: () => Navigator.pop(context),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
 
                 ],
               ),
