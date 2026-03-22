@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'homepage.dart';
@@ -10,12 +12,13 @@ class Loginpage extends StatefulWidget {
 }
 
 class _LoginpageState extends State<Loginpage> {
+  Timer? _redirectTimer;
+
   @override
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 3), () {
-
+    _redirectTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -23,6 +26,12 @@ class _LoginpageState extends State<Loginpage> {
         );
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _redirectTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -41,14 +50,14 @@ class _LoginpageState extends State<Loginpage> {
 
           // Semi-transparent overlay for better text readability
           Positioned.fill(
-            child: Container(
-              color: Colors.black.withOpacity(0.4),
-            ),
+            child: Container(color: Colors.black.withValues(alpha: 0.4)),
           ),
 
           // Content placed at the top of the screen
           Padding(
-            padding: const EdgeInsets.only(top: 100), // Adjust padding as needed
+            padding: const EdgeInsets.only(
+              top: 100,
+            ), // Adjust padding as needed
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -63,7 +72,7 @@ class _LoginpageState extends State<Loginpage> {
                       letterSpacing: 2,
                     ),
                   ),
-                  const SizedBox(height: 600),
+                  const Spacer(),
 
                   // "designed by team manoveda" text
                   const Text(

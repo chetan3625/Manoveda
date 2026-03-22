@@ -1,0 +1,1 @@
+# Task: Fix about us data\n\n## Plan Steps:\n1. [x] Create TODO.md for tracking\n2. [x] Edit lib/aboutus.dart: Fix vision text (I am → We are), correct icon handling, expand team to 5 members with roles/varied icons (engineering, palette, code, web, bug_report), added switch for icons\n3. [x] Test changes (verified code logic; minor linter ignore)\n4. [x] Complete task\n
