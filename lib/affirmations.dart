@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
+
+import 'wellness_repository.dart';
 
 class AffirmationsScreen extends StatefulWidget {
   const AffirmationsScreen({super.key});
@@ -28,22 +31,24 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
 
   int _currentIndex = 0;
 
+  Future<void> _logAffirmation(String action) async {
+    await WellnessRepository.instance.logEvent(
+      taskKey: 'reading_affirmation',
+      title: 'Reading Affirmation',
+      details: '$action: ${_affirmations[_currentIndex]}',
+      score: 5,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Daily Affirmations'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
+      body: SafeArea(
           child: Column(
             children: [
               const SizedBox(height: 40),
@@ -58,7 +63,7 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 30),
@@ -66,11 +71,7 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                 padding: const EdgeInsets.all(30),
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.white, Colors.lightBlue.shade50],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: Colors.white.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(24),
                   boxShadow: [
                     BoxShadow(
@@ -88,7 +89,7 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                         fontSize: 22,
                         fontWeight: FontWeight.w600,
                         height: 1.3,
-                        color: Colors.indigo,
+                        color: Colors.white,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -97,7 +98,7 @@ class _AffirmationsScreenState extends State<AffirmationsScreen> {
                       'Say it 3 times slowly.',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.grey,
+                        color: Colors.white70,
                       ),
                     ),
                   ],
@@ -112,7 +113,10 @@ mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: _currentIndex > 0
-                            ? () => setState(() => _currentIndex--)
+                            ? () {
+                                setState(() => _currentIndex--);
+                                _logAffirmation('Previous');
+                              }
                             : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.grey,
@@ -129,7 +133,10 @@ mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () => setState(() => _currentIndex = (_currentIndex + 1) % _affirmations.length),
+                        onPressed: () {
+                          setState(() => _currentIndex = (_currentIndex + 1) % _affirmations.length);
+                          _logAffirmation('Next');
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
@@ -148,17 +155,18 @@ mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: TextButton.icon(
-                  onPressed: () => setState(() => _currentIndex = DateTime.now().millisecondsSinceEpoch ~/ 86400000 % _affirmations.length),
+                  onPressed: () {
+                    setState(() => _currentIndex = DateTime.now().millisecondsSinceEpoch ~/ 86400000 % _affirmations.length);
+                    _logAffirmation('Random');
+                  },
                   icon: const Icon(Icons.shuffle),
                   label: const Text('Random'),
-                  style: TextButton.styleFrom(foregroundColor: Colors.blue),
+                  style: TextButton.styleFrom(foregroundColor: Colors.white),
                 ),
               ),
             ],
           ),
         ),
-      ),
     );
   }
 }
-

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ide__getDiagnostics",
+      "Bash(flutter pub:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(awk 'NR>=450 && NR<=466' \"lib/mood_detection_screen.dart\")",
+      "Bash(flutter build:*)",
+      "Bash(flutter clean:*)",
+      "WebSearch",
+      "Bash(flutter:*)"
+    ]
+  }
+}

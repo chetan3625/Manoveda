@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
-// import 'package:path/path.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
 import 'package:intl/intl.dart';
+
+import 'wellness_repository.dart';
 
 class MoodEntry {
   final int id;
@@ -43,7 +44,6 @@ class MoodTrackerScreen extends StatefulWidget {
 }
 
 class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
-  Database? _database;
   int _currentMood = 5;
   final TextEditingController _noteController = TextEditingController();
   List<MoodEntry> _history = [];
@@ -55,40 +55,16 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
   }
 
   Future<void> _initializeApp() async {
-    await _initDatabase();
     await _loadHistory();
-  }
-
-  Future<void> _initDatabase() async {
-    try {
-      _database = await openDatabase(
-        await getDatabasesPath() + '/mood_database.db',
-        onCreate: (db, version) async {
-          await db.execute(
-            'CREATE TABLE moods(id INTEGER PRIMARY KEY, date INTEGER, mood INTEGER, note TEXT)',
-          );
-        },
-        version: 1,
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Database init error: $e')),
-        );
-      }
-    }
   }
 
   Future<void> _loadHistory() async {
     try {
-      final db = _database;
-      if (db != null) {
-        final List<Map<String, dynamic>> maps = await db.query('moods', orderBy: 'date DESC', limit: 30);
-        if (mounted) {
-          setState(() {
-            _history = maps.map((map) => MoodEntry.fromMap(map)).toList();
-          });
-        }
+      final maps = await WellnessRepository.instance.getMoodHistory(limit: 30);
+      if (mounted) {
+        setState(() {
+          _history = maps.map((map) => MoodEntry.fromMap(map)).toList();
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -101,19 +77,12 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
 
   Future<void> _saveMood() async {
     try {
-      final db = _database;
-      if (db != null) {
-        await db.insert(
-          'moods',
-          {
-            'date': DateTime.now().millisecondsSinceEpoch,
-            'mood': _currentMood,
-            'note': _noteController.text.isEmpty ? null : _noteController.text,
-          },
-        );
-        _noteController.clear();
-        await _loadHistory();
-      }
+      await WellnessRepository.instance.saveMood(
+        mood: _currentMood,
+        note: _noteController.text.isEmpty ? null : _noteController.text,
+      );
+      _noteController.clear();
+      await _loadHistory();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Mood saved!')),
@@ -146,27 +115,20 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Mood Tracker'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Column(
+      body: Column(
           children: [
             // Current Mood Entry
             Container(
               padding: const EdgeInsets.all(24),
               margin: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -183,7 +145,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -205,20 +167,22 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                           },
                         ),
                       ),
-                      Text('$_currentMood'),
+                      Text('$_currentMood', style: const TextStyle(color: Colors.white)),
                     ],
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: _noteController,
                     maxLines: 2,
+                    style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: r"Whats on your mind? (optional)",
+                      hintStyle: const TextStyle(color: Colors.white70),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: Colors.white.withOpacity(0.1),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -248,7 +212,7 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
                         child: Text(
                           'No mood entries yet.\nStart tracking your feelings!',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                          style: TextStyle(fontSize: 18, color: Colors.white70),
                         ),
                       )
                     : ListView.builder(
@@ -275,7 +239,6 @@ class _MoodTrackerScreenState extends State<MoodTrackerScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 

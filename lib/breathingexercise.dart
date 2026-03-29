@@ -1,7 +1,9 @@
-import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
+
+import 'wellness_repository.dart';
 
 class BreathingExerciseScreen extends StatefulWidget {
   const BreathingExerciseScreen({super.key});
@@ -17,6 +19,8 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen> with 
   String _selectedLanguage = "English";
   bool _languageDialogShown = false;
   int _lastPhase = -1;
+  DateTime? _sessionStartedAt;
+  bool _isBreathingActive = false;
 
   // Exact asset paths provided by user.
   final Map<String, Map<String, String>> _languageSounds = {
@@ -95,6 +99,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen> with 
 
   @override
   void dispose() {
+    _logSessionIfNeeded();
     _voicePlayer.dispose();
     _controller.dispose();
     super.dispose();
@@ -176,7 +181,9 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen> with 
     setState(() {
       _lastPhase = -1;
       _instruction = "Ready?";
+      _isBreathingActive = true;
     });
+    _sessionStartedAt = DateTime.now();
     _ensureAudioForLanguage(_selectedLanguage);
     // Trigger first inhale immediately so the cue is heard as soon as user starts.
     _handlePhaseChange(0);
@@ -184,12 +191,36 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen> with 
   }
 
   void _stopBreathing() {
+    _logSessionIfNeeded();
     _controller.stop();
     _voicePlayer.stop();
     setState(() {
       _instruction = "Ready?";
       _lastPhase = -1;
+      _isBreathingActive = false;
     });
+  }
+
+  Future<void> _logSessionIfNeeded() async {
+    if (!_isBreathingActive || _sessionStartedAt == null) {
+      return;
+    }
+
+    final elapsed = DateTime.now().difference(_sessionStartedAt!);
+    _sessionStartedAt = null;
+    _isBreathingActive = false;
+
+    final minutes = (elapsed.inSeconds / 60).round();
+    if (elapsed.inSeconds < 20) {
+      return;
+    }
+
+    await WellnessRepository.instance.logEvent(
+      taskKey: 'breathing_exercise',
+      title: 'Breathing Exercise',
+      durationMinutes: minutes <= 0 ? 1 : minutes,
+      details: 'Language: $_selectedLanguage',
+    );
   }
 
   Future<void> _showLanguageDialog() async {
@@ -247,10 +278,12 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen> with 
       });
     }
 
-    return Scaffold(
+//... (rest of the imports)
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Guided Breathing'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.translate),
@@ -261,15 +294,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen> with 
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
+      body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -280,7 +305,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen> with 
                     width: 100.0 + (_animation.value * 150.0),
                     height: 100.0 + (_animation.value * 150.0),
                     decoration: BoxDecoration(
-                      color: Colors.blue.shade700,
+                      color: Colors.blue.shade700.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(10.0),
                       boxShadow: [
                         BoxShadow(
@@ -351,7 +376,6 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen> with 
             ],
           ),
         ),
-      ),
     );
   }
 }

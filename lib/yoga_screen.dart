@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
 import 'yoga_player.dart';
 
 class YogaScreen extends StatefulWidget {
@@ -14,20 +15,13 @@ class _YogaScreenState extends State<YogaScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Yoga Asanas'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: GridView.builder(
+      body: GridView.builder(
           padding: const EdgeInsets.all(16),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
@@ -48,7 +42,7 @@ class _YogaScreenState extends State<YogaScreen> {
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.orange.shade400, Colors.orange.shade700],
+                    colors: [Colors.orange.shade400.withOpacity(0.5), Colors.orange.shade700.withOpacity(0.5)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -68,6 +62,20 @@ class _YogaScreenState extends State<YogaScreen> {
                       'assets/yoga/$file',
                       height: 120,
                       repeat: true,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 120,
+                          color: Colors.grey[300],
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.error_outline, size: 32, color: Colors.red),
+                              const SizedBox(height: 4),
+                              Text('Yoga ${index + 1}', style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -84,7 +92,6 @@ class _YogaScreenState extends State<YogaScreen> {
             );
           },
         ),
-      ),
     );
   }
 }

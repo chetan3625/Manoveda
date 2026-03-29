@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
+
+import 'wellness_repository.dart';
 
 class MeditationScreen extends StatefulWidget {
   const MeditationScreen({super.key});
@@ -13,8 +16,9 @@ class _MeditationScreenState extends State<MeditationScreen> {
   int _selectedMinutes = 5; // User-selectable duration in minutes
   int _currentTime = 0;
   bool _isMeditationActive = false;
-  late Timer _timer;
+  Timer? _timer;
   final AudioPlayer _audioPlayer = AudioPlayer();
+  DateTime? _sessionStartedAt;
 
   @override
   void initState() {
@@ -35,16 +39,18 @@ class _MeditationScreenState extends State<MeditationScreen> {
     setState(() {
       _isMeditationActive = true;
     });
+    _sessionStartedAt ??= DateTime.now();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_currentTime > 0) {
         setState(() {
           _currentTime--;
         });
       } else {
-        _timer.cancel();
+        _timer?.cancel();
         setState(() {
           _isMeditationActive = false;
         });
+        _logSession(completed: true);
         playAlarm();
         showDialog(
           context: context,
@@ -69,8 +75,9 @@ class _MeditationScreenState extends State<MeditationScreen> {
   }
 
   void pauseMeditation() {
-    if (_timer.isActive) {
-      _timer.cancel();
+    if (_timer?.isActive ?? false) {
+      _timer?.cancel();
+      _logSession();
       setState(() {
         _isMeditationActive = false;
       });
@@ -78,13 +85,36 @@ class _MeditationScreenState extends State<MeditationScreen> {
   }
 
   void resetMeditation() {
-    if (_timer.isActive) {
-      _timer.cancel();
+    if (_timer?.isActive ?? false) {
+      _timer?.cancel();
+      _logSession();
     }
     setState(() {
       _currentTime = _selectedMinutes * 60; // Reset to the currently selected duration
       _isMeditationActive = false;
     });
+  }
+
+  Future<void> _logSession({bool completed = false}) async {
+    if (_sessionStartedAt == null) {
+      return;
+    }
+
+    final elapsedMinutes =
+        ((_selectedMinutes * 60) - _currentTime).clamp(0, _selectedMinutes * 60) ~/ 60;
+    _sessionStartedAt = null;
+
+    if (!completed && elapsedMinutes <= 0) {
+      return;
+    }
+
+    final minutes = completed ? _selectedMinutes : (elapsedMinutes <= 0 ? 1 : elapsedMinutes);
+    await WellnessRepository.instance.logEvent(
+      taskKey: 'meditation',
+      title: 'Meditation',
+      durationMinutes: minutes,
+      details: completed ? 'Completed session' : 'Partial session',
+    );
   }
 
   String get timerText {
@@ -95,8 +125,9 @@ class _MeditationScreenState extends State<MeditationScreen> {
 
   @override
   void dispose() {
-    if (_timer.isActive) {
-      _timer.cancel();
+    if (_timer?.isActive ?? false) {
+      _timer?.cancel();
+      _logSession();
     }
     _audioPlayer.dispose();
     super.dispose();
@@ -104,20 +135,13 @@ class _MeditationScreenState extends State<MeditationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Meditation Timer'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
+      body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -130,16 +154,16 @@ class _MeditationScreenState extends State<MeditationScreen> {
                     child: CircularProgressIndicator(
                       value: _currentTime / (_selectedMinutes * 60), // Use selected minutes for calculation
                       strokeWidth: 10,
-                      backgroundColor: Colors.blue.shade100,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   ),
                   Text(
                     timerText,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 60,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue.shade900,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -149,7 +173,7 @@ class _MeditationScreenState extends State<MeditationScreen> {
               if (!_isMeditationActive) ...[
                 Text(
                   "Set Duration: $_selectedMinutes minutes",
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.indigo),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
                 Slider(
                   value: _selectedMinutes.toDouble(),
@@ -210,7 +234,6 @@ class _MeditationScreenState extends State<MeditationScreen> {
             ],
           ),
         ),
-      ),
     );
   }
 }

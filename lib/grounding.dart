@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
+
+import 'wellness_repository.dart';
 
 class GroundingScreen extends StatefulWidget {
   const GroundingScreen({super.key});
@@ -26,6 +29,11 @@ class _GroundingScreenState extends State<GroundingScreen> {
   }
 
   void _showCompleteDialog() {
+    WellnessRepository.instance.logEvent(
+      taskKey: 'grounding',
+      title: 'Grounding',
+      details: 'Completed 5-4-3-2-1 exercise',
+    );
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -59,20 +67,13 @@ class _GroundingScreenState extends State<GroundingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Grounding Exercise'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
+      body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -82,14 +83,14 @@ class _GroundingScreenState extends State<GroundingScreen> {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.green.shade400, Colors.green.shade600],
+                      colors: [Colors.green.shade400.withOpacity(0.5), Colors.green.shade600.withOpacity(0.5)],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.green.withAlpha(77), // 0.3 * 255 ≈ 77
+                        color: Colors.green.withAlpha(30), // 0.3 * 255 ≈ 77
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -128,7 +129,7 @@ class _GroundingScreenState extends State<GroundingScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: const [
                       BoxShadow(
@@ -145,7 +146,7 @@ class _GroundingScreenState extends State<GroundingScreen> {
                         style: const TextStyle(
                           fontSize: 18,
                           height: 1.4,
-color: Color(0xFF424242), // Colors.grey.shade800
+                          color: Colors.white,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -181,7 +182,6 @@ color: Color(0xFF424242), // Colors.grey.shade800
             ),
           ),
         ),
-      ),
     );
   }
 }

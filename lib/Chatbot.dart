@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebViewExample extends StatefulWidget {
@@ -25,7 +26,7 @@ class _WebViewExampleState extends State<WebViewExample> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       body: SafeArea(child: WebViewWidget(controller: _controller)),
     );
   }

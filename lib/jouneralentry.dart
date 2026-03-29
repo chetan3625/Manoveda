@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
 import 'dbhelper.dart';
 import 'package:intl/intl.dart';
+
+import 'wellness_repository.dart';
 
 class JournalEntryScreen extends StatefulWidget {
   const JournalEntryScreen({super.key});
@@ -34,6 +37,11 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
       };
 
       await DatabaseHelper().insertEntry(entry);
+      await WellnessRepository.instance.logEvent(
+        taskKey: 'writing_journal',
+        title: 'Writing Journal',
+        details: entryText,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -57,21 +65,13 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('My Journal'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Padding(
+      body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
@@ -80,7 +80,7 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(12.0),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
@@ -94,9 +94,10 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                     controller: _textController,
                     maxLines: null,
                     expands: true,
-                    style: const TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 18, color: Colors.white),
                     decoration: const InputDecoration(
                       hintText: 'How are you feeling today?',
+                      hintStyle: TextStyle(color: Colors.white70),
                       border: InputBorder.none,
                     ),
                   ),
@@ -118,12 +119,12 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                 ),
               ),
               const SizedBox(height: 30),
-              Text(
+              const Text(
                 "My Entries",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.indigo,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 10),
@@ -133,11 +134,11 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                   future: _journalEntries,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
+                      return const Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('No entries found. Start by writing one!', style: TextStyle(color: Colors.white70)));
+                      return const Center(child: Text('No entries found. Start by writing one!', style: TextStyle(color: Colors.white70)));
                     } else {
                       return ListView.builder(
                         itemCount: snapshot.data!.length,
@@ -145,13 +146,13 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                           var entry = snapshot.data![index];
                           String formattedDate = DateFormat.yMMMd().add_jm().format(DateTime.parse(entry['timestamp']));
                           return Card(
-                            margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                            margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                             color: Colors.white.withOpacity(0.9),
                             child: ListTile(
-                              title: Text(entry['content'], style: TextStyle(fontSize: 16)),
+                              title: Text(entry['content'], style: const TextStyle(fontSize: 16)),
                               subtitle: Text(
                                 formattedDate,
-                                style: TextStyle(color: Colors.black54),
+                                style: const TextStyle(color: Colors.black54),
                               ),
                             ),
                           );
@@ -164,7 +165,6 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
             ],
           ),
         ),
-      ),
     );
   }
 }

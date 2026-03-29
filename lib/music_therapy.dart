@@ -1,5 +1,8 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
+
+import 'wellness_repository.dart';
 
 class MusicTherapyScreen extends StatefulWidget {
   const MusicTherapyScreen({super.key});
@@ -33,6 +36,7 @@ class _MusicTherapyScreenState extends State<MusicTherapyScreen> {
   String? _currentAsset;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
+  DateTime? _listeningStartedAt;
 
   @override
   void initState() {
@@ -66,6 +70,7 @@ class _MusicTherapyScreenState extends State<MusicTherapyScreen> {
   bool _isCurrent(_Track track) => _currentAsset == track.asset;
 
   Future<void> _playTrack(_Track track) async {
+    await _logListeningSession();
     if (_isCurrent(track) && _playerState == PlayerState.playing) {
       await _player.pause();
       return;
@@ -78,17 +83,47 @@ class _MusicTherapyScreenState extends State<MusicTherapyScreen> {
       _currentAsset = track.asset;
       _position = Duration.zero;
     });
+    _listeningStartedAt = DateTime.now();
     await _player.stop();
     await _player.setSource(AssetSource(track.asset));
     await _player.resume();
   }
 
   Future<void> _stopPlayback() async {
+    await _logListeningSession();
     await _player.stop();
     setState(() {
       _playerState = PlayerState.stopped;
       _position = Duration.zero;
     });
+  }
+
+  Future<void> _logListeningSession() async {
+    if (_currentAsset == null || _listeningStartedAt == null) {
+      return;
+    }
+
+    final elapsed = DateTime.now().difference(_listeningStartedAt!);
+    _Track? track;
+    for (final item in _tracks) {
+      if (item.asset == _currentAsset) {
+        track = item;
+        break;
+      }
+    }
+    _listeningStartedAt = null;
+
+    if (elapsed.inSeconds < 20 || track == null) {
+      return;
+    }
+
+    final minutes = (elapsed.inSeconds / 60).round();
+    await WellnessRepository.instance.logEvent(
+      taskKey: 'music_therapy',
+      title: 'Music Therapy',
+      durationMinutes: minutes <= 0 ? 1 : minutes,
+      details: track.title,
+    );
   }
 
   String _formatDuration(Duration duration) {
@@ -100,26 +135,20 @@ class _MusicTherapyScreenState extends State<MusicTherapyScreen> {
 
   @override
   void dispose() {
+    _logListeningSession();
     _player.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('Music Therapy'),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Column(
+      body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
@@ -132,7 +161,7 @@ class _MusicTherapyScreenState extends State<MusicTherapyScreen> {
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: Colors.indigo,
+                      color: Colors.white,
                     ),
                   ),
                   SizedBox(height: 6),
@@ -140,7 +169,7 @@ class _MusicTherapyScreenState extends State<MusicTherapyScreen> {
                     'Listen to calming tracks curated to ease stress.',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.indigo,
+                      color: Colors.white70,
                     ),
                   ),
                 ],
@@ -166,8 +195,8 @@ class _MusicTherapyScreenState extends State<MusicTherapyScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Colors.indigo.shade400,
-                            Colors.indigo.shade700,
+                            Colors.indigo.shade400.withOpacity(0.5),
+                            Colors.indigo.shade700.withOpacity(0.5),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -280,7 +309,6 @@ class _MusicTherapyScreenState extends State<MusicTherapyScreen> {
               ),
           ],
         ),
-      ),
     );
   }
 }

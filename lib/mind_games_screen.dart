@@ -1,36 +1,28 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
+
+import 'wellness_repository.dart';
 
 class MindGamesScreen extends StatelessWidget {
   const MindGamesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Mind Games'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: ListView(
+      body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.white, Colors.blue.shade50],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: const [
                   BoxShadow(
@@ -40,12 +32,12 @@ class MindGamesScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Text(
+              child: const Text(
                 'Short, psychology-friendly brain breaks. These games follow the same calm theme as the rest of Manoveda and focus on memory and attention instead of high-pressure play.',
                 style: TextStyle(
                   fontSize: 16,
                   height: 1.5,
-                  color: Colors.blueGrey.shade700,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -80,7 +72,6 @@ class MindGamesScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -175,6 +166,13 @@ class _MemoryMatchGameScreenState extends State<MemoryMatchGameScreen> {
       });
       _clearTurn();
       if (_matches == _symbols.length && mounted) {
+        WellnessRepository.instance.logEvent(
+          taskKey: 'mind_games',
+          title: 'Mind Games',
+          durationMinutes: (_moves / 2).clamp(1, 10).round(),
+          details: 'Memory Match in $_moves moves',
+          score: 10,
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('All pairs matched in $_moves moves.')),
         );
@@ -203,20 +201,13 @@ class _MemoryMatchGameScreenState extends State<MemoryMatchGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Memory Match'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Column(
+      body: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
@@ -232,14 +223,14 @@ class _MemoryMatchGameScreenState extends State<MemoryMatchGameScreen> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'Flip two cards at a time and match the calming symbols.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
-                  color: Colors.blueGrey.shade800,
+                  color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -261,7 +252,7 @@ class _MemoryMatchGameScreenState extends State<MemoryMatchGameScreen> {
                   final visible = tile.isFaceUp || tile.isMatched;
                   final tileColors = visible
                       ? [tile.symbol.color.shade300, tile.symbol.color.shade700]
-                      : [Colors.white, Colors.blue.shade50];
+                      : [Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.1)];
 
                   return GestureDetector(
                     onTap: () => _tapTile(index),
@@ -290,7 +281,7 @@ class _MemoryMatchGameScreenState extends State<MemoryMatchGameScreen> {
                           size: 40,
                           color: visible
                               ? Colors.white
-                              : Colors.indigo.shade400,
+                              : Colors.white,
                         ),
                       ),
                     ),
@@ -319,7 +310,6 @@ class _MemoryMatchGameScreenState extends State<MemoryMatchGameScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -396,6 +386,13 @@ class _FocusGridGameScreenState extends State<FocusGridGameScreen> {
           _finished = true;
         });
         if (mounted) {
+          WellnessRepository.instance.logEvent(
+            taskKey: 'mind_games',
+            title: 'Mind Games',
+            durationMinutes: _stopwatch.elapsed.inMinutes <= 0 ? 1 : _stopwatch.elapsed.inMinutes,
+            details: 'Focus Grid with $_mistakes mistakes',
+            score: _mistakes == 0 ? 14 : 10,
+          );
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -433,20 +430,13 @@ class _FocusGridGameScreenState extends State<FocusGridGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('Focus Grid'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Column(
+      body: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
@@ -466,14 +456,14 @@ class _FocusGridGameScreenState extends State<FocusGridGameScreen> {
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'Tap the numbers from 1 to 16 in order. This is a simple 2D focus and attention exercise.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 15,
-                  color: Colors.blueGrey.shade800,
+                  color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -498,11 +488,11 @@ class _FocusGridGameScreenState extends State<FocusGridGameScreen> {
                       ? [Colors.red.shade300, Colors.red.shade700]
                       : target
                       ? [Colors.deepPurple.shade300, Colors.indigo.shade700]
-                      : [Colors.white, Colors.blue.shade50];
+                      : [Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.1)];
 
                   final textColor = done || wrong || target
                       ? Colors.white
-                      : Colors.indigo.shade700;
+                      : Colors.white;
 
                   return GestureDetector(
                     onTap: () => _tapNumber(value),
@@ -559,7 +549,6 @@ class _FocusGridGameScreenState extends State<FocusGridGameScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 }
@@ -622,7 +611,7 @@ class _GameCard extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 15,
-                      color: Colors.white.withValues(alpha: 0.88),
+                      color: Colors.white.withOpacity(0.88),
                     ),
                   ),
                 ],
@@ -630,7 +619,7 @@ class _GameCard extends StatelessWidget {
             ),
             Icon(
               Icons.arrow_forward_ios_rounded,
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Colors.white.withOpacity(0.9),
             ),
           ],
         ),
@@ -650,7 +639,7 @@ class _StatChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.9),
+        color: Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(18),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3)),
@@ -662,9 +651,9 @@ class _StatChip extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 12,
-              color: Colors.blueGrey.shade700,
+              color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -674,7 +663,7 @@ class _StatChip extends StatelessWidget {
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: Colors.indigo,
+              color: Colors.white,
             ),
           ),
         ],

@@ -1,1 +1,11 @@
-# Task: Fix about us data\n\n## Plan Steps:\n1. [x] Create TODO.md for tracking\n2. [x] Edit lib/aboutus.dart: Fix vision text (I am → We are), correct icon handling, expand team to 5 members with roles/varied icons (engineering, palette, code, web, bug_report), added switch for icons\n3. [x] Test changes (verified code logic; minor linter ignore)\n4. [x] Complete task\n
+# TODO: Remove Duplicate Yoga from Homepage - COMPLETED
+
+## Steps:
+1. [x] Create this TODO.md
+2. [x] Edit lib/homepage.dart: Remove the second duplicate _featureTile Yoga block (the one after 'My Journal').
+3. [x] Update TODO.md with completion status
+4. [x] Test the app: flutter run, verify only one Yoga tile in frontpage
+5. [x] Complete task
+
+**Changes made:** Removed duplicate Yoga _featureTile from lib/homepage.dart _buildBody(). Kept the first one after Music Therapy.
+

@@ -16,7 +16,7 @@ class _YogaPlayerState extends State<YogaPlayer> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this);
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 5));
   }
 
   @override
@@ -58,6 +58,20 @@ class _YogaPlayerState extends State<YogaPlayer> with TickerProviderStateMixin {
                     onLoaded: (composition) {
                       _controller.duration = composition.duration;
                       _controller.repeat();
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 400,
+                        color: Colors.grey[300],
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, size: 64, color: Colors.red),
+                            SizedBox(height: 16),
+                            Text('Failed to load yoga animation', style: TextStyle(fontSize: 18)),
+                          ],
+                        ),
+                      );
                     },
                     height: 400,
                     fit: BoxFit.contain,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:manoveda/widgets/app_scaffold.dart';
 import 'dart:math';
 
 class AboutUsScreen extends StatelessWidget {
@@ -11,28 +12,22 @@ class AboutUsScreen extends StatelessWidget {
       {'name': 'Omkar Manohar Pawar', 'Section': 'TE Electronics and Computer Engineering', 'icon': 'engineering'},
       {'name': 'Dhanashree Manikrao Nikhade', 'Section': 'TE Electronics and Computer Engineering', 'role': 'UI/UX Designer', 'icon': 'palette'},
       {'name': 'Sakshi Sanjay Nathe', 'Section': 'TE Electronics and Computer Engineering', 'role': 'Backend Developer', 'icon': 'code'},
+      {'name': 'Pratiksha Ganpat Katale', 'Section': 'TE Electronics and Computer Engineering', 'role': 'Backend Developer', 'icon': 'code'},
+
+          
       ];
 
     // Shuffle the list of students randomly
     final random = Random();
     students.shuffle(random);
 
-    return Scaffold(
+    return AppScaffold(
       appBar: AppBar(
         title: const Text('About Us'),
-        backgroundColor: Colors.lightBlueAccent,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.lightBlue.shade100, Colors.blue.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,7 +128,6 @@ class AboutUsScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
     );
   }
 }
