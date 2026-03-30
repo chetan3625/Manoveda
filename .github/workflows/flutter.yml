@@ -1,28 +1,49 @@
-name: Flutter CI
+name: Flutter CI/CD
 
 on:
   push:
     branches:
       - main
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # Node warning fix
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.41.6'
 
-      - run: flutter pub get
+      - name: Install Dependencies
+        run: flutter pub get
 
+      # 🔹 APK build (testing साठी)
       - name: Build APK
         run: flutter build apk --release
 
+      # 🔹 AAB build (Play Store साठी)
+      - name: Build AAB
+        run: flutter build appbundle --release
+
+      # 📦 Upload APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release.apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 3   # auto delete
+
+      # 📦 Upload AAB
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release.aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 3   # auto delete
