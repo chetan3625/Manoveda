@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'api_service.dart';
 import 'affirmations.dart';
 import 'breathingexercise.dart';
 import 'grounding.dart';
@@ -18,6 +19,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize notification service with the global navigator key
   await NotificationService().init(navigatorKey);
+  await ApiService.init();
   runApp(const Manoveda());
 }
 
