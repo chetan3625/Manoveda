@@ -405,17 +405,26 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
         ],
       ),
       drawer: Drawer(
-        child: SafeArea(
-          child: ListView(
-            children: [
-              UserAccountsDrawerHeader(
-                accountName: Text(_profile?['name']?.toString() ?? 'Patient'),
-                accountEmail: Text(_profile?['email']?.toString() ?? ''),
-                currentAccountPicture: const CircleAvatar(
-                  child: Icon(Icons.person),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF0F172A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: SafeArea(
+            child: ListView(
+              children: [
+                UserAccountsDrawerHeader(
+                  accountName: Text(_profile?['name']?.toString() ?? 'Patient', style: const TextStyle(color: Colors.white)),
+                  accountEmail: Text(_profile?['email']?.toString() ?? '', style: const TextStyle(color: Colors.white70)),
+                  currentAccountPicture: const CircleAvatar(
+                    backgroundColor: Colors.white24,
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
                 ),
-              ),
-              _patientDrawerTile(
+                _patientDrawerTile(
                 PatientSection.overview,
                 Icons.dashboard_outlined,
                 'Dashboard',
@@ -458,7 +467,7 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
               const Divider(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text('Wellness Tools', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.bold)),
+                child: Text('Wellness Tools', style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
               ),
               _wellnessToolTile(Icons.self_improvement, 'Meditation', () => _openPage(const MeditationScreen())),
               _wellnessToolTile(Icons.air, 'Breathing', () => _openPage(const BreathingExerciseScreen())),
@@ -475,11 +484,12 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
               _wellnessToolTile(Icons.info_outline, 'About Us', () => _openPage(const AboutUsScreen())),
               const Divider(),
               ListTile(
-                leading: const Icon(Icons.home, color: Color(0xFF3B82F6)),
-                title: const Text('Go to Homepage'),
+                leading: const Icon(Icons.home, color: Colors.white),
+                title: const Text('Go to Homepage', style: TextStyle(color: Colors.white)),
                 onTap: () => _goToHomepage(),
               ),
             ],
+            ),
           ),
         ),
       ),
@@ -518,8 +528,8 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
   ) {
     return ListTile(
       selected: _section == section,
-      leading: Icon(icon),
-      title: Text(label),
+      leading: Icon(icon, color: Colors.white),
+      title: Text(label, style: const TextStyle(color: Colors.white)),
       onTap: () {
         Navigator.pop(context);
         setState(() => _section = section);
@@ -529,8 +539,8 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
 
   Widget _wellnessToolTile(IconData icon, String label, VoidCallback onTap) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF3B82F6)),
-      title: Text(label),
+      leading: Icon(icon, color: Colors.white),
+      title: Text(label, style: const TextStyle(color: Colors.white)),
       onTap: () {
         Navigator.pop(context);
         onTap();
@@ -1410,16 +1420,13 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                           decoration: BoxDecoration(
                             color: mine
                                 ? const Color(0xFF0F62FE)
-                                : Colors.white,
+                                : const Color(0xFF111827),
                             borderRadius: BorderRadius.circular(16),
-                            border: mine
-                                ? null
-                                : Border.all(color: const Color(0xFFE5E7EB)),
                           ),
                           child: Text(
                             message['content']?.toString() ?? '',
-                            style: TextStyle(
-                              color: mine ? Colors.white : Colors.black87,
+                            style: const TextStyle(
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -1436,8 +1443,11 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                   Expanded(
                     child: TextField(
                       controller: _controller,
+                      style: const TextStyle(color: Colors.white),
+                      cursorColor: Colors.white,
                       decoration: const InputDecoration(
                         hintText: 'Type message',
+                        hintStyle: TextStyle(color: Colors.white54),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -1823,23 +1833,24 @@ Widget _statsWrap(List<_StatCard> cards) {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Colors.white.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFDCEBFF)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(card.icon, color: const Color(0xFF0F62FE)),
+                    Icon(card.icon, color: Colors.white),
                     const SizedBox(height: 10),
                     Text(
                       card.value,
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
-                    Text(card.label),
+                    Text(card.label, style: const TextStyle(color: Colors.white70)),
                   ],
                 ),
               ),
@@ -1858,10 +1869,10 @@ Widget _sectionHeader(String title, String subtitle) {
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 4),
-        Text(subtitle),
+        Text(subtitle, style: const TextStyle(color: Colors.white70)),
       ],
     ),
   );
@@ -1876,25 +1887,19 @@ Widget _contentCard({
     margin: const EdgeInsets.only(bottom: 14),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: Colors.white.withValues(alpha: 0.15),
       borderRadius: BorderRadius.circular(22),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x14000000),
-          blurRadius: 14,
-          offset: Offset(0, 6),
-        ),
-      ],
+      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 6),
-        Text(subtitle),
+        Text(subtitle, style: const TextStyle(color: Colors.white70)),
         if (footer != null) ...[const SizedBox(height: 14), footer],
       ],
     ),
