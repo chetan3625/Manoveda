@@ -88,23 +88,29 @@ class _MedicalKeeperStoresScreenState extends State<MedicalKeeperStoresScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          colors: [Colors.purple.shade800, Colors.blue.shade800],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.blue.shade100,
-          child: const Icon(Icons.local_pharmacy, color: Colors.blue),
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
+          child: const Icon(Icons.local_pharmacy, color: Colors.white),
         ),
         title: Text(
           keeper['name']?.toString() ?? 'Medical Store',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         subtitle: Text(
           '${address['street'] ?? ''}, ${address['city'] ?? ''}',
+          style: const TextStyle(color: Colors.white70),
+          overflow: TextOverflow.ellipsis,
         ),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: const Icon(Icons.chevron_right, color: Colors.white),
         onTap: () => _selectKeeper(keeper),
       ),
     );
@@ -116,11 +122,17 @@ class _MedicalKeeperStoresScreenState extends State<MedicalKeeperStoresScreen> {
       children: [
         Container(
           padding: const EdgeInsets.all(16),
-          color: Colors.blue.shade50,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.purple.shade800, Colors.blue.shade800],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
                 onPressed: () => setState(() => _selectedKeeper = null),
               ),
               Expanded(
@@ -132,11 +144,14 @@ class _MedicalKeeperStoresScreenState extends State<MedicalKeeperStoresScreen> {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       '${address['street'] ?? ''}, ${address['city'] ?? ''}',
-                      style: TextStyle(color: Colors.grey.shade600),
+                      style: const TextStyle(color: Colors.white70),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -170,9 +185,13 @@ class _MedicalKeeperStoresScreenState extends State<MedicalKeeperStoresScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          colors: [Colors.indigo.shade800, Colors.teal.shade800],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,10 +219,10 @@ class _MedicalKeeperStoresScreenState extends State<MedicalKeeperStoresScreen> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.medication, color: Colors.grey),
+                  child: const Icon(Icons.medication, color: Colors.white),
                 ),
               const SizedBox(width: 12),
               Expanded(
@@ -215,12 +234,15 @@ class _MedicalKeeperStoresScreenState extends State<MedicalKeeperStoresScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        color: Colors.white,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       medicine['category']?.toString() ?? '',
-                      style: TextStyle(color: Colors.grey.shade600),
+                      style: const TextStyle(color: Colors.white70),
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     if (medicine['requiresPrescription'] == true)
@@ -230,7 +252,7 @@ class _MedicalKeeperStoresScreenState extends State<MedicalKeeperStoresScreen> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.orange.shade100,
+                          color: Colors.orange.shade100.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
@@ -254,7 +276,7 @@ class _MedicalKeeperStoresScreenState extends State<MedicalKeeperStoresScreen> {
                   'Rs $price',
                   style: const TextStyle(
                     decoration: TextDecoration.lineThrough,
-                    color: Colors.grey,
+                    color: Colors.white70,
                   ),
                 ),
               if (hasDiscount) const SizedBox(width: 8),
@@ -263,19 +285,23 @@ class _MedicalKeeperStoresScreenState extends State<MedicalKeeperStoresScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
-                  color: hasDiscount ? Colors.green : Colors.black,
+                  color: Colors.white,
                 ),
               ),
               const Spacer(),
               Text(
                 'Stock: ${medicine['stock'] ?? 0}',
-                style: TextStyle(color: Colors.grey.shade600),
+                style: const TextStyle(color: Colors.white70),
               ),
               const SizedBox(width: 8),
               FilledButton(
                 onPressed: medicine['stock'] > 0
                     ? () => _addToCart(medicine)
                     : null,
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  foregroundColor: Colors.white,
+                ),
                 child: const Text('Add'),
               ),
             ],

@@ -61,7 +61,7 @@ class _QuoteScreenState extends State<QuoteScreen> {
           padding: const EdgeInsets.all(20),
           margin: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.deepPurple.shade100,
+            color: Colors.black.withOpacity(0.3),
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
@@ -79,7 +79,7 @@ class _QuoteScreenState extends State<QuoteScreen> {
                 style: const TextStyle(
                   fontSize: 20,
                   fontStyle: FontStyle.italic,
-                  color: Colors.black87,
+                  color: Colors.white,
                 ),
                 textAlign: TextAlign.center,
               ),

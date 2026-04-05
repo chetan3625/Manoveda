@@ -5,7 +5,12 @@ import 'package:manoveda/splashscreen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'add_medicine_screen.dart';
 import 'api_service.dart';
@@ -25,6 +30,7 @@ import 'voice_chatbot_screen.dart';
 import 'mood_detection_screen.dart';
 import 'yoga_screen.dart';
 import 'aboutus.dart';
+import 'cart_screen.dart';
 
 class RolePortalPage extends StatefulWidget {
   const RolePortalPage({super.key});
@@ -72,6 +78,7 @@ enum PatientSection {
   prescriptions,
   notifications,
   pharmacy,
+  cart,
   wellness,
 }
 
@@ -90,10 +97,12 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
   List<Map<String, dynamic>> _appointments = [];
   List<Map<String, dynamic>> _prescriptions = [];
   List<Map<String, dynamic>> _notifications = [];
-  List<Map<String, dynamic>> _medicines = [];
+List<Map<String, dynamic>> _medicines = [];
   List<Map<String, dynamic>> _orders = [];
   List<Map<String, dynamic>> _chats = [];
-
+  int _cartCount = 0;
+  int _cartTotal = 0;
+ 
   String _quote = 'Take one calm step at a time. Progress still counts.';
   String _author = 'Mindful reminder';
   bool _loadingQuote = false;
@@ -130,28 +139,56 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
 
   Future<void> _refresh({bool silent = false}) async {
     if (!silent) setState(() => _loading = true);
-    final results = await Future.wait([
-      ApiService.getMe(),
-      ApiService.getDoctors(),
-      ApiService.getAppointments(),
-      ApiService.getPrescriptions(),
-      ApiService.getNotifications(),
-      ApiService.getMedicines(),
-      ApiService.getOrders(),
-      ApiService.getChats(),
-    ]);
-    if (!mounted) return;
-    setState(() {
-      _profile = results[0]['user'] as Map<String, dynamic>?;
-      _doctors = _list(results[1], 'doctors');
-      _appointments = _list(results[2], 'appointments');
-      _prescriptions = _list(results[3], 'prescriptions');
-      _notifications = _list(results[4], 'notifications');
-      _medicines = _list(results[5], 'medicines');
-      _orders = _list(results[6], 'orders');
-      _chats = _list(results[7], 'chats');
-      _loading = false;
-    });
+    try {
+      final results = await Future.wait([
+        ApiService.getMe(),
+        ApiService.getDoctors(),
+        ApiService.getAppointments(),
+        ApiService.getPrescriptions(),
+        ApiService.getNotifications(),
+        ApiService.getMedicalKeepers(),
+        ApiService.getOrders(),
+        ApiService.getChats(),
+        ApiService.getCart(),
+      ]);
+      if (!mounted) return;
+      
+      final order = results[8]['order'] as Map<String, dynamic>?;
+      final cartItems = order?['items'] as List? ?? [];
+      
+      // Check for API errors
+      final prescriptionsResponse = results[3];
+      final prescriptionsSuccess = prescriptionsResponse['success'] != false;
+      final prescriptions = prescriptionsSuccess ? _list(prescriptionsResponse, 'prescriptions') : <Map<String, dynamic>>[];
+      if (!prescriptionsSuccess && !silent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(prescriptionsResponse['message'] ?? 'Error loading prescriptions')),
+        );
+      }
+      
+      setState(() {
+        _profile = results[0]['user'] as Map<String, dynamic>?;
+        _doctors = _list(results[1], 'doctors');
+        _appointments = _list(results[2], 'appointments');
+        _prescriptions = prescriptions;
+        _notifications = _list(results[4], 'notifications');
+        _medicines = _list(results[5], 'keepers');
+        _cartCount = cartItems.length;
+        _cartTotal = cartItems.fold(0, (sum, item) => sum + ((item['totalPrice'] ?? 0) as int));
+        _medicines = _list(results[5], 'medicines');
+        _orders = _list(results[6], 'orders');
+        _chats = _list(results[7], 'chats');
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      if (!silent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+      setState(() => _loading = false);
+    }
     setState(() => _loadingDashboard = true);
     final summary = await WellnessRepository.instance.buildDashboardSummary();
     if (!mounted) return;
@@ -408,7 +445,7 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
         child: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF0F172A)],
+              colors: [Color(0xFF4A148C), Color(0xFF0D47A1)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -417,11 +454,16 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
             child: ListView(
               children: [
                 UserAccountsDrawerHeader(
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent,
+                  ),
                   accountName: Text(_profile?['name']?.toString() ?? 'Patient', style: const TextStyle(color: Colors.white)),
-                  accountEmail: Text(_profile?['email']?.toString() ?? '', style: const TextStyle(color: Colors.white70)),
-                  currentAccountPicture: const CircleAvatar(
-                    backgroundColor: Colors.white24,
-                    child: Icon(Icons.person, color: Colors.white),
+                  accountEmail: Text(_profile?['email']?.toString() ?? '', style: const TextStyle(color: Colors.white)),
+                  currentAccountPicture: CircleAvatar(
+                    child: Image.asset(
+                      'assets/Icons/patient.jpg',
+                      errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white, size: 30),
+                    ),
                   ),
                 ),
                 _patientDrawerTile(
@@ -455,11 +497,6 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
                 'Notifications',
               ),
               _patientDrawerTile(
-                PatientSection.pharmacy,
-                Icons.local_pharmacy_outlined,
-                'Pharmacy',
-              ),
-              _patientDrawerTile(
                 PatientSection.wellness,
                 Icons.favorite,
                 'Wellness Features',
@@ -467,7 +504,7 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
               const Divider(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text('Wellness Tools', style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                child: Text('Wellness Tools', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
               _wellnessToolTile(Icons.self_improvement, 'Meditation', () => _openPage(const MeditationScreen())),
               _wellnessToolTile(Icons.air, 'Breathing', () => _openPage(const BreathingExerciseScreen())),
@@ -482,6 +519,21 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
               _wellnessToolTile(Icons.smart_toy, 'AI Voice Assistant', () => _openPage(const VoiceChatbotScreen())),
               _wellnessToolTile(Icons.history_toggle_off, 'Wellness Timeline', () => _openPage(const ScheduleScreen())),
               _wellnessToolTile(Icons.info_outline, 'About Us', () => _openPage(const AboutUsScreen())),
+              const Divider(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text('Cart & Pharmacy', style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+              ),
+              _patientDrawerTile(
+                PatientSection.pharmacy,
+                Icons.local_pharmacy_outlined,
+                'Pharmacy',
+              ),
+              ListTile(
+                leading: const Icon(Icons.shopping_cart, color: Colors.white),
+                title: const Text('Cart', style: TextStyle(color: Colors.white)),
+                onTap: () => _openCart(),
+              ),
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.home, color: Colors.white),
@@ -513,6 +565,7 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
                   onRefresh: _refresh,
                   child: ListView(
                     padding: const EdgeInsets.all(16),
+                    clipBehavior: Clip.antiAlias,
                     children: _patientBody(),
                   ),
                 ),
@@ -550,6 +603,10 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
 
   Future<void> _openPage(Widget page) async {
     await Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  }
+
+  Future<void> _openCart() async {
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
   }
 
   Future<void> _goToHomepage() async {
@@ -609,10 +666,26 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
     if (_section == PatientSection.pharmacy) {
       return _pharmacyCards();
     }
+    if (_section == PatientSection.cart) {
+      return _cartBody();
+    }
     if (_section == PatientSection.wellness) {
       return _wellnessBody();
     }
     return [];
+  }
+
+  List<Widget> _cartBody() {
+    return [
+      _sectionHeader('Shopping Cart', 'View items and proceed to checkout'),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () => _openPage(const CartScreen()),
+          child: const Text('Open Cart'),
+        ),
+      ),
+    ];
   }
 
   List<Widget> _wellnessBody() {
@@ -671,23 +744,30 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
     return [
       _sectionHeader(
         'Doctors',
-        'Dynamically fetched doctors available for consultation.',
+        ''
       ),
       ...items.map(
         (doctor) => _contentCard(
-          title: doctor['name']?.toString() ?? 'Doctor',
-          subtitle:
+          title: Text(doctor['name']?.toString() ?? 'Doctor', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          subtitle: Text(
               '${doctor['specialization'] ?? 'General'}\nExperience: ${doctor['experience'] ?? 0} years\nAvailability: ${doctor['isAvailable'] == true ? 'Available' : 'Offline'}',
-          footer: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              Chip(label: Text('Fee Rs ${doctor['consultationFee'] ?? 0}')),
-              FilledButton(
-                onPressed: () => _requestAppointment(doctor),
-                child: const Text('Request Appointment'),
-              ),
-            ],
+              style: const TextStyle(color: Colors.white70),
+          ),
+          avatarPath: 'assets/Icons/doctor.png',
+          footer: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                Chip(label: Text('Fee Rs ${doctor['consultationFee'] ?? 0}')),
+                FilledButton(
+                  onPressed: () => _requestAppointment(doctor),
+                  child: const Text('Request'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -702,7 +782,7 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
     return [
       _sectionHeader(
         'Appointments',
-        'Track approval, payment, chat, and consultation status.',
+        '',
       ),
       ...items.map((appointment) {
         final doctor = appointment['doctor'] as Map<String, dynamic>? ?? {};
@@ -715,9 +795,10 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
         final prescription =
             appointment['prescription'] as Map<String, dynamic>?;
         return _contentCard(
-          title: doctor['name']?.toString() ?? 'Doctor',
-          subtitle:
+          title: Text(doctor['name']?.toString() ?? 'Doctor'),
+          subtitle: Text(
               '${appointment['type']} • ${appointment['consultationMode'] ?? 'scheduled'}\n${_formatAppointmentDate(appointment)}\nStatus: ${appointment['status']} | Payment: ${appointment['paymentStatus']}',
+          ),
           footer: Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -770,8 +851,9 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
       ),
       ..._chats.map(
         (chat) => _contentCard(
-          title: _chatTitle(chat),
-          subtitle: chat['lastMessage']?.toString() ?? 'No messages yet',
+          title: Text(_chatTitle(chat), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          subtitle: Text(chat['lastMessage']?.toString() ?? 'No messages yet', style: const TextStyle(color: Colors.white70)),
+          avatarPath: 'assets/Icons/patient.jpg',
           footer: OutlinedButton(
             onPressed: () => Navigator.push(
               context,
@@ -785,6 +867,80 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
         ),
       ),
     ];
+  }
+
+  Future<void> _generateAndShowPdf(Map<String, dynamic> prescription) async {
+    try {
+      print('Generating PDF for prescription: $prescription');
+      final pdf = pw.Document();
+      final doctor = prescription['doctor'] as Map<String, dynamic>? ?? {};
+      final medicines = _listFromValue(prescription['medicines']);
+
+      print('Doctor: $doctor');
+      print('Medicines: $medicines');
+
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Prescription', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 20),
+                pw.Text('Doctor: Dr. ${doctor['name'] ?? 'Doctor'}'),
+                pw.Text('Patient: ${_profile?['name'] ?? 'Patient'}'),
+                pw.Text('Date: ${DateFormat('yyyy-MM-dd').format(DateTime.now())}'),
+                pw.SizedBox(height: 20),
+                pw.Text('Diagnosis: ${prescription['diagnosis'] ?? 'Not provided'}'),
+                pw.SizedBox(height: 20),
+                pw.Text('Medicines:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                ...medicines.map((m) => pw.Text('- ${m['name'] ?? ''} ${m['dosage'] ?? ''} ${m['frequency'] ?? ''}')),
+                pw.SizedBox(height: 20),
+                pw.Text('Instructions: ${prescription['instructions'] ?? 'Follow prescribed dosage.'}'),
+              ],
+            );
+          },
+        ),
+      );
+
+      print('PDF document created, saving to file...');
+      
+      // Get the documents directory
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/prescription_${prescription['_id']}.pdf');
+      
+      // Save PDF to file
+      await file.writeAsBytes(await pdf.save());
+      print('PDF saved to: ${file.path}');
+      
+      // Open the PDF file
+      print('Opening PDF...');
+      final uri = Uri.file(file.path);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+        print('PDF opened successfully');
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✓ PDF saved to:\n${file.path}'),
+            duration: const Duration(seconds: 4),
+            backgroundColor: Colors.green[700],
+          ),
+        );
+      }
+      
+    } catch (e) {
+      print('ERROR generating PDF: $e');
+      print('Stack trace: ${StackTrace.current}');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error generating PDF: $e'),
+          backgroundColor: Colors.red[700],
+        ),
+      );
+    }
   }
 
   List<Widget> _prescriptionCards() {
@@ -802,15 +958,13 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
           item['medicines'],
         ).map((m) => m['name']).join(', ');
         return _contentCard(
-          title: 'Dr. ${doctor['name'] ?? 'Doctor'}',
-          subtitle:
+          title: Text('Dr. ${doctor['name'] ?? 'Doctor'}'),
+          subtitle: Text(
               'Diagnosis: ${item['diagnosis'] ?? 'Not provided'}\nMedicines: $medicines',
-          footer: OutlinedButton(
-            onPressed: () => _openLink(
-              'Prescription PDF',
-              ApiService.absoluteUrl(item['pdfUrl']?.toString()),
-            ),
-            child: const Text('View / Download'),
+          ),
+          footer: ElevatedButton(
+            onPressed: () => _generateAndShowPdf(item),
+            child: const Text('View PDF'),
           ),
         );
       }),
@@ -829,9 +983,9 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
       ),
       ...items.map(
         (item) => _contentCard(
-          title: item['title']?.toString() ?? 'Notification',
-          subtitle:
-              '${item['message'] ?? ''}\n${_formatDate(item['createdAt']?.toString())}',
+          title: Text(item['title']?.toString() ?? 'Notification'),
+          subtitle: Text(
+              '${item['message'] ?? ''}\n${_formatDate(item['createdAt']?.toString())}'),
           footer: item['isRead'] == true
               ? null
               : TextButton(
@@ -854,37 +1008,38 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
     return [
       _sectionHeader(
         'Pharmacy',
-        'Continue medicine ordering from the patient dashboard.',
+        'Browse medical stores and order medicines.',
       ),
-      ..._medicines
-          .take(6)
-          .map(
-            (medicine) => _contentCard(
-              title: medicine['name']?.toString() ?? 'Medicine',
-              subtitle:
-                  '${medicine['category'] ?? 'General'} • Stock ${medicine['stock'] ?? 0}\nRs ${medicine['discountedPrice'] ?? medicine['price'] ?? 0}',
-              footer: OutlinedButton(
-                onPressed: () async {
-                  await ApiService.addToCart(medicineId: _idOf(medicine));
-                  _snack('Added to cart');
-                },
-                child: const Text('Add to Cart'),
-              ),
-            ),
+      SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const MedicalKeeperStoresScreen()),
           ),
-      FilledButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const MedicalKeeperStoresScreen()),
+          icon: const Icon(Icons.store),
+          label: const Text('Browse Medical Stores'),
         ),
-        child: const Text('Browse Stores'),
+      ),
+      const SizedBox(height: 16),
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () {
+            setState(() => _section = PatientSection.cart);
+          },
+          icon: const Icon(Icons.shopping_cart),
+          label: const Text('Go to Cart'),
+        ),
       ),
       const SizedBox(height: 12),
       ..._orders.map(
         (order) => _contentCard(
-          title: 'Order ${_shortId(order)}',
-          subtitle:
+          title: Text('Order ${_shortId(order)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          subtitle: Text(
               'Status: ${order['status']} | Payment: ${order['paymentStatus']}\nRs ${order['totalAmount'] ?? 0}',
+              style: const TextStyle(color: Colors.white70)),
+          avatarPath: 'assets/Icons/patient.jpg',
           footer: order['paymentStatus'] == 'paid'
               ? null
               : OutlinedButton(
@@ -961,6 +1116,24 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
   List<Map<String, dynamic>> _feedbacks = [];
   List<Map<String, dynamic>> _notifications = [];
 
+  // Search & Filter Controllers
+  final TextEditingController _patientSearchController = TextEditingController();
+  final TextEditingController _appointmentSearchController = TextEditingController();
+  final TextEditingController _feedbackSearchController = TextEditingController();
+  final TextEditingController _notificationSearchController = TextEditingController();
+  
+  // Bulk action state
+  Set<String> _selectedAppointments = {};
+  bool _bulkMode = false;
+  
+  // Filter state
+  DateTime? _appointmentDateFrom;
+  DateTime? _appointmentDateTo;
+  String? _appointmentStatusFilter;
+  int? _feedbackRatingFrom;
+  int? _feedbackRatingTo;
+  String? _notificationTypeFilter;
+
   @override
   void initState() {
     super.initState();
@@ -971,12 +1144,71 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
 
   @override
   void dispose() {
+    _patientSearchController.dispose();
+    _appointmentSearchController.dispose();
+    _feedbackSearchController.dispose();
+    _notificationSearchController.dispose();
     ApiService.socket?.off('notification', _socketRefresh);
     super.dispose();
   }
 
   void _socketRefresh(dynamic _) {
     if (mounted) _refresh(silent: true);
+  }
+
+  Future<void> _searchPatients(String query) async {
+    if (query.isEmpty) {
+      await _refresh();
+      return;
+    }
+    final result = await ApiService.searchDoctorPatients(query: query);
+    if (mounted) {
+      setState(() {
+        _patients = _list(result, 'patients');
+      });
+    }
+  }
+
+  Future<void> _searchAppointments() async {
+    final query = _appointmentSearchController.text.trim();
+    final result = await ApiService.searchDoctorAppointments(
+      query: query.isEmpty ? null : query,
+      status: _appointmentStatusFilter,
+      dateFrom: _appointmentDateFrom,
+      dateTo: _appointmentDateTo,
+    );
+    if (mounted) {
+      setState(() {
+        _appointments = _list(result, 'appointments');
+      });
+    }
+  }
+
+  Future<void> _searchFeedbacks() async {
+    final query = _feedbackSearchController.text.trim();
+    final result = await ApiService.searchDoctorFeedbacks(
+      query: query.isEmpty ? null : query,
+      ratingFrom: _feedbackRatingFrom,
+      ratingTo: _feedbackRatingTo,
+    );
+    if (mounted) {
+      setState(() {
+        _feedbacks = _list(result, 'feedbacks');
+      });
+    }
+  }
+
+  Future<void> _searchNotifications() async {
+    final query = _notificationSearchController.text.trim();
+    final result = await ApiService.searchDoctorNotifications(
+      query: query.isEmpty ? null : query,
+      type: _notificationTypeFilter,
+    );
+    if (mounted) {
+      setState(() {
+        _notifications = _list(result, 'notifications');
+      });
+    }
   }
 
   Future<void> _refresh({bool silent = false}) async {
@@ -1068,6 +1300,184 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
       followUpDate: draft.followUpDate,
     );
     _snack(response['message']?.toString() ?? 'Prescription created');
+    await _refresh();
+  }
+
+  // Micro-Feature: Appointment Actions
+
+  Future<void> _markAppointmentPriority(Map<String, dynamic> appointment) async {
+    final isPriority = !(appointment['isPriority'] ?? false);
+    final response = await ApiService.markAppointmentPriority(
+      appointmentId: _idOf(appointment),
+      isPriority: isPriority,
+    );
+    _snack(response['message']?.toString() ?? 'Priority updated');
+    await _refresh();
+  }
+
+  Future<void> _markAppointmentComplete(Map<String, dynamic> appointment) async {
+    final response = await ApiService.markAppointmentComplete(_idOf(appointment));
+    _snack(response['message']?.toString() ?? 'Appointment marked as completed');
+    await _refresh();
+  }
+
+  Future<void> _rescheduleAppointment(Map<String, dynamic> appointment) async {
+    final currentDate = DateTime.tryParse(appointment['date']?.toString() ?? '') ?? DateTime.now();
+    final currentTime = appointment['time']?.toString() ?? '10:00';
+
+    final date = await showDatePicker(
+      context: context,
+      initialDate: currentDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (date == null) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(DateTime.parse('$currentDate $currentTime')),
+    );
+    if (time == null) return;
+
+    final reasonController = TextEditingController();
+    final reason = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Reschedule Reason'),
+        content: TextField(
+          controller: reasonController,
+          decoration: const InputDecoration(labelText: 'Reason (optional)'),
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, reasonController.text.trim()),
+            child: const Text('Reschedule'),
+          ),
+        ],
+      ),
+    );
+    if (reason == null) return;
+
+    final newDate = date;
+    final newTime = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+
+    final response = await ApiService.rescheduleAppointment(
+      appointmentId: _idOf(appointment),
+      newDate: newDate,
+      newTime: newTime,
+      reason: reason.isEmpty ? null : reason,
+    );
+    _snack(response['message']?.toString() ?? 'Appointment rescheduled');
+    await _refresh();
+  }
+
+  Future<void> _bulkAppointmentAction(String action) async {
+    if (_selectedAppointments.isEmpty) {
+      _snack('Please select appointments first');
+      return;
+    }
+
+    final confirmMessage = action == 'accept' ? 'Accept ${_selectedAppointments.length} appointments?'
+      : action == 'reject' ? 'Reject ${_selectedAppointments.length} appointments?'
+      : action == 'mark-priority' ? 'Mark ${_selectedAppointments.length} appointments as priority?'
+      : 'Remove priority from ${_selectedAppointments.length} appointments?';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Confirm Bulk Action'),
+        content: Text(confirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final response = await ApiService.bulkAppointmentAction(
+      appointmentIds: _selectedAppointments.toList(),
+      action: action,
+    );
+    _snack(response['message']?.toString() ?? 'Bulk action completed');
+    setState(() {
+      _selectedAppointments.clear();
+      _bulkMode = false;
+    });
+    await _refresh();
+  }
+
+  // Micro-Feature: Feedback Actions
+
+  Future<void> _replyToFeedback(Map<String, dynamic> feedback) async {
+    final replyController = TextEditingController();
+    final reply = await showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Reply to Feedback'),
+        content: TextField(
+          controller: replyController,
+          decoration: const InputDecoration(labelText: 'Your reply'),
+          maxLines: 4,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, replyController.text.trim()),
+            child: const Text('Reply'),
+          ),
+        ],
+      ),
+    );
+    if (reply == null || reply.isEmpty) return;
+
+    final response = await ApiService.replyToFeedback(
+      feedbackId: _idOf(feedback),
+      reply: reply,
+    );
+    _snack(response['message']?.toString() ?? 'Reply sent');
+    await _refresh();
+  }
+
+  Future<void> _deleteFeedback(Map<String, dynamic> feedback) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete Feedback'),
+        content: const Text('Are you sure you want to delete this feedback?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final response = await ApiService.deleteDoctorFeedback(_idOf(feedback));
+    _snack(response['message']?.toString() ?? 'Feedback deleted');
     await _refresh();
   }
 
@@ -1215,82 +1625,99 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
         ],
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue.shade700),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text('Dr. ${_profile?['name'] ?? 'Doctor'}', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text('${_profile?['specialization'] ?? 'General'}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                ],
-              ),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF4A148C), Color(0xFF0D47A1)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            ListTile(
-              leading: const Icon(Icons.dashboard),
-              title: const Text('Dashboard'),
-              selected: _section == DoctorSection.dashboard,
-              onTap: () {
-                setState(() => _section = DoctorSection.dashboard);
-                Navigator.pop(context);
-              },
+          ),
+          child: SafeArea(
+            child: ListView(
+              children: [
+                UserAccountsDrawerHeader(
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent,
+                  ),
+                  accountName: Text('Dr. ${_profile?['name'] ?? 'Doctor'}', style: const TextStyle(color: Colors.white)),
+                  accountEmail: Text('${_profile?['specialization'] ?? 'General'}', style: const TextStyle(color: Colors.white)),
+                  currentAccountPicture: CircleAvatar(
+                    child: Image.asset(
+                      'assets/Icons/doctor.png',
+                      errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white, size: 30),
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.dashboard, color: Colors.white),
+                  title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
+                  selected: _section == DoctorSection.dashboard,
+                  selectedTileColor: Colors.white.withValues(alpha: 0.1),
+                  onTap: () {
+                    setState(() => _section = DoctorSection.dashboard);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.people, color: Colors.white),
+                  title: const Text('All Patients', style: TextStyle(color: Colors.white)),
+                  selected: _section == DoctorSection.patients,
+                  selectedTileColor: Colors.white.withValues(alpha: 0.1),
+                  onTap: () {
+                    setState(() => _section = DoctorSection.patients);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.schedule, color: Colors.white),
+                  title: const Text('Appointment Requests', style: TextStyle(color: Colors.white)),
+                  selected: _section == DoctorSection.appointments,
+                  selectedTileColor: Colors.white.withValues(alpha: 0.1),
+                  onTap: () {
+                    setState(() => _section = DoctorSection.appointments);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.event_available, color: Colors.white),
+                  title: const Text('Upcoming Appointments', style: TextStyle(color: Colors.white)),
+                  selected: _section == DoctorSection.upcomingAppointments,
+                  selectedTileColor: Colors.white.withValues(alpha: 0.1),
+                  onTap: () {
+                    setState(() => _section = DoctorSection.upcomingAppointments);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.star, color: Colors.white),
+                  title: const Text('Feedback', style: TextStyle(color: Colors.white)),
+                  selected: _section == DoctorSection.feedbacks,
+                  selectedTileColor: Colors.white.withValues(alpha: 0.1),
+                  onTap: () {
+                    setState(() => _section = DoctorSection.feedbacks);
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.notifications, color: Colors.white),
+                  title: const Text('Notifications', style: TextStyle(color: Colors.white)),
+                  selected: _section == DoctorSection.notifications,
+                  selectedTileColor: Colors.white.withValues(alpha: 0.1),
+                  onTap: () {
+                    setState(() => _section = DoctorSection.notifications);
+                    Navigator.pop(context);
+                  },
+                ),
+                const Divider(color: Colors.white30),
+                ListTile(
+                  leading: const Icon(Icons.logout, color: Colors.white),
+                  title: const Text('Logout', style: TextStyle(color: Colors.white)),
+                  onTap: _logout,
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('All Patients'),
-              selected: _section == DoctorSection.patients,
-              onTap: () {
-                setState(() => _section = DoctorSection.patients);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.schedule),
-              title: const Text('Appointment Requests'),
-              selected: _section == DoctorSection.appointments,
-              onTap: () {
-                setState(() => _section = DoctorSection.appointments);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.event_available),
-              title: const Text('Upcoming Appointments'),
-              selected: _section == DoctorSection.upcomingAppointments,
-              onTap: () {
-                setState(() => _section = DoctorSection.upcomingAppointments);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.star),
-              title: const Text('Feedback'),
-              selected: _section == DoctorSection.feedbacks,
-              onTap: () {
-                setState(() => _section = DoctorSection.feedbacks);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Notifications'),
-              selected: _section == DoctorSection.notifications,
-              onTap: () {
-                setState(() => _section = DoctorSection.notifications);
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: _logout,
-            ),
-          ],
+          ),
         ),
       ),
       body: _loading
@@ -1368,9 +1795,9 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
                         appointment['status'] == 'confirmed' &&
                         appointment['paymentStatus'] == 'paid';
                     return _contentCard(
-                      title: patient['name']?.toString() ?? 'Patient',
-                      subtitle:
-                          '${appointment['type']} • ${appointment['consultationMode'] ?? 'scheduled'}\n${_formatAppointmentDate(appointment)}\nStatus: ${appointment['status']} | Payment: ${appointment['paymentStatus']}',
+                      title: Text(patient['name']?.toString() ?? 'Patient'),
+                      subtitle: Text(
+                          '${appointment['type']} • ${appointment['consultationMode'] ?? 'scheduled'}\n${_formatAppointmentDate(appointment)}\nStatus: ${appointment['status']} | Payment: ${appointment['paymentStatus']}'),
                       footer: Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -1437,18 +1864,18 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
                   ),
                   ..._patients.map(
                     (patient) => _contentCard(
-                      title: patient['name']?.toString() ?? 'Patient',
-                      subtitle:
-                          '${patient['email'] ?? ''}\n${patient['phone'] ?? ''}',
+                      title: Text(patient['name']?.toString() ?? 'Patient'),
+                      subtitle: Text(
+                          '${patient['email'] ?? ''}\n${patient['phone'] ?? ''}'),
                     ),
                   ),
                   _sectionHeader('Feedback', 'Recent feedback.'),
                   ..._feedbacks.map((item) {
                     final user = item['user'] as Map<String, dynamic>? ?? {};
                     return _contentCard(
-                      title:
-                          '${user['name'] ?? 'Patient'} • ${item['rating'] ?? 0}/5',
-                      subtitle: item['review']?.toString() ?? 'No review',
+                      title: Text(
+                          '${user['name'] ?? 'Patient'} • ${item['rating'] ?? 0}/5'),
+                      subtitle: Text(item['review']?.toString() ?? 'No review'),
                     );
                   }),
                 ],
@@ -1459,14 +1886,41 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        TextField(
+          controller: _patientSearchController,
+          decoration: InputDecoration(
+            labelText: 'Search patients',
+            hintText: 'Name, email, or phone',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: _patientSearchController.text.isEmpty 
+              ? null 
+              : IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _patientSearchController.clear();
+                    _searchPatients('');
+                  },
+                ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onChanged: (query) {
+            setState(() {});
+            if (query.isNotEmpty) {
+              _searchPatients(query);
+            }
+          },
+        ),
+        const SizedBox(height: 16),
         if (_patients.isEmpty)
-          _emptyCard('No patients yet')
+          _emptyCard('No patients found')
         else
           ..._patients.map(
             (patient) => _contentCard(
-              title: patient['name']?.toString() ?? 'Patient',
-              subtitle:
-                  '${patient['email'] ?? ''}\n${patient['phone'] ?? ''}\nRegistered: ${_formatDate(patient['createdAt']?.toString())}',
+              title: Text(patient['name']?.toString() ?? 'Patient'),
+              subtitle: Text(
+                  '${patient['email'] ?? ''}\n${patient['phone'] ?? ''}\nRegistered: ${_formatDate(patient['createdAt']?.toString())}'),
             ),
           ),
       ],
@@ -1477,59 +1931,289 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // Search bar
+        TextField(
+          controller: _appointmentSearchController,
+          decoration: InputDecoration(
+            labelText: 'Search appointments',
+            hintText: 'Patient name, email or phone',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: _appointmentSearchController.text.isEmpty 
+              ? null 
+              : IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _appointmentSearchController.clear();
+                    _appointmentStatusFilter = null;
+                    _appointmentDateFrom = null;
+                    _appointmentDateTo = null;
+                    setState(() {});
+                    _refresh();
+                  },
+                ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onChanged: (_) {
+            setState(() {});
+            _searchAppointments();
+          },
+        ),
+        const SizedBox(height: 12),
+        
+        // Filter bar
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            // Status filter dropdown
+            DropdownMenu<String?>(
+              initialSelection: _appointmentStatusFilter,
+              onSelected: (value) {
+                setState(() => _appointmentStatusFilter = value);
+                _searchAppointments();
+              },
+              dropdownMenuEntries: [
+                const DropdownMenuEntry(value: null, label: 'All status'),
+                const DropdownMenuEntry(value: 'pending', label: 'Pending'),
+                const DropdownMenuEntry(value: 'accepted', label: 'Accepted'),
+                const DropdownMenuEntry(value: 'confirmed', label: 'Confirmed'),
+                const DropdownMenuEntry(value: 'completed', label: 'Completed'),
+                const DropdownMenuEntry(value: 'rejected', label: 'Rejected'),
+              ],
+            ),
+            
+            // Date from
+            Tooltip(
+              message: _appointmentDateFrom == null ? 'Select from date' : _formatDate(_appointmentDateFrom!.toIso8601String()),
+              child: FilledButton.tonal(
+                onPressed: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: _appointmentDateFrom ?? DateTime.now(),
+                    firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                  );
+                  if (date != null) {
+                    setState(() => _appointmentDateFrom = date);
+                    _searchAppointments();
+                  }
+                },
+                child: Text(_appointmentDateFrom == null ? 'From date' : _formatDate(_appointmentDateFrom!.toIso8601String())),
+              ),
+            ),
+            
+            // Date to
+            Tooltip(
+              message: _appointmentDateTo == null ? 'Select to date' : _formatDate(_appointmentDateTo!.toIso8601String()),
+              child: FilledButton.tonal(
+                onPressed: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: _appointmentDateTo ?? DateTime.now(),
+                    firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                  );
+                  if (date != null) {
+                    setState(() => _appointmentDateTo = date);
+                    _searchAppointments();
+                  }
+                },
+                child: Text(_appointmentDateTo == null ? 'To date' : _formatDate(_appointmentDateTo!.toIso8601String())),
+              ),
+            ),
+            
+            // Clear filters
+            if (_appointmentStatusFilter != null || _appointmentDateFrom != null || _appointmentDateTo != null)
+              OutlinedButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _appointmentStatusFilter = null;
+                    _appointmentDateFrom = null;
+                    _appointmentDateTo = null;
+                  });
+                  _searchAppointments();
+                },
+                icon: const Icon(Icons.clear),
+                label: const Text('Clear filters'),
+              ),
+          ],
+        ),
+        // Bulk action controls
+        if (_bulkMode)
+          Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                Text('${_selectedAppointments.length} selected'),
+                const Spacer(),
+                OutlinedButton(
+                  onPressed: () => _bulkAppointmentAction('accept'),
+                  child: const Text('Accept All'),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  onPressed: () => _bulkAppointmentAction('reject'),
+                  child: const Text('Reject All'),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  onPressed: () => _bulkAppointmentAction('mark-priority'),
+                  child: const Text('Mark Priority'),
+                ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _selectedAppointments.clear();
+                    _bulkMode = false;
+                  }),
+                  child: const Text('Cancel'),
+                ),
+              ],
+            ),
+          ),
+        
+        // Toggle bulk mode button
+        if (!_bulkMode)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => setState(() => _bulkMode = true),
+              icon: const Icon(Icons.checklist),
+              label: const Text('Bulk Actions'),
+            ),
+          ),
+        
+        const SizedBox(height: 16),
+        
+        // Appointments list
         if (_appointments.isEmpty)
-          _emptyCard('No appointment requests yet')
+          _emptyCard('No appointment requests found')
         else
           ..._appointments.map((appointment) {
             final patient = appointment['patient'] as Map<String, dynamic>? ?? {};
             final unlocked = appointment['status'] == 'confirmed' && appointment['paymentStatus'] == 'paid';
-            return _contentCard(
-              title: patient['name']?.toString() ?? 'Patient',
-              subtitle:
-                  '${appointment['type']} • ${appointment['consultationMode'] ?? 'scheduled'}\n${_formatAppointmentDate(appointment)}\nStatus: ${appointment['status']} | Payment: ${appointment['paymentStatus']}',
-              footer: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  if (appointment['status'] == 'pending')
-                    FilledButton(
-                      onPressed: () => _accept(appointment),
-                      child: const Text('Accept'),
-                    ),
-                  if (appointment['status'] == 'pending')
-                    OutlinedButton(
-                      onPressed: () => _reject(appointment),
-                      child: const Text('Reject'),
-                    ),
-                  if (unlocked)
-                    OutlinedButton(
-                      onPressed: () => _openDoctorChat(appointment),
-                      child: const Text('Chat'),
-                    ),
-                  if (unlocked)
-                    OutlinedButton(
-                      onPressed: () => _createMeeting(appointment),
-                      child: const Text('Create Video Link'),
-                    ),
-                  if ((appointment['meetingLink']?.toString() ?? '').isNotEmpty)
-                    OutlinedButton(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => LinkWebViewPage(
-                            title: 'Consultation Room',
-                            url: appointment['meetingLink']?.toString() ?? '',
-                          ),
+            final isPriority = appointment['isPriority'] ?? false;
+            final appointmentId = _idOf(appointment);
+            
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: _contentCard(
+                title: Row(
+                  children: [
+                    if (_bulkMode)
+                      Checkbox(
+                        value: _selectedAppointments.contains(appointmentId),
+                        onChanged: (selected) {
+                          setState(() {
+                            if (selected == true) {
+                              _selectedAppointments.add(appointmentId);
+                            } else {
+                              _selectedAppointments.remove(appointmentId);
+                            }
+                          });
+                        },
+                      ),
+                    Expanded(
+                      child: Text(
+                        patient['name']?.toString() ?? 'Patient',
+                        style: TextStyle(
+                          color: isPriority ? Colors.orange : null,
+                          fontWeight: isPriority ? FontWeight.bold : null,
                         ),
                       ),
-                      child: const Text('Open Meeting'),
                     ),
-                  if (unlocked)
-                    OutlinedButton(
-                      onPressed: () => _writePrescription(appointment),
-                      child: const Text('Create Prescription'),
+                    if (isPriority)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.orange,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          'PRIORITY',
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
+                ),
+                subtitle: Text(
+                    '${appointment['type']} • ${appointment['consultationMode'] ?? 'scheduled'}\n${_formatAppointmentDate(appointment)}\nStatus: ${appointment['status']} | Payment: ${appointment['paymentStatus']}',
+                ),
+                footer: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (appointment['status'] == 'pending')
+                      FilledButton(
+                        onPressed: () => _accept(appointment),
+                        child: const Text('Accept'),
+                      ),
+                    if (appointment['status'] == 'pending')
+                      OutlinedButton(
+                        onPressed: () => _reject(appointment),
+                        child: const Text('Reject'),
+                      ),
+                    // Priority toggle
+                    OutlinedButton.icon(
+                      onPressed: () => _markAppointmentPriority(appointment),
+                      icon: Icon(isPriority ? Icons.star : Icons.star_border),
+                      label: Text(isPriority ? 'Remove Priority' : 'Mark Priority'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: isPriority ? Colors.orange : null,
+                      ),
                     ),
-                ],
+                    // Complete button
+                    if (unlocked && appointment['status'] != 'completed')
+                      OutlinedButton.icon(
+                        onPressed: () => _markAppointmentComplete(appointment),
+                        icon: const Icon(Icons.check_circle),
+                        label: const Text('Mark Complete'),
+                      ),
+                    // Reschedule button
+                    if (appointment['status'] == 'confirmed' || appointment['status'] == 'accepted')
+                      OutlinedButton.icon(
+                        onPressed: () => _rescheduleAppointment(appointment),
+                        icon: const Icon(Icons.schedule),
+                        label: const Text('Reschedule'),
+                      ),
+                    if (unlocked)
+                      OutlinedButton(
+                        onPressed: () => _openDoctorChat(appointment),
+                        child: const Text('Chat'),
+                      ),
+                    if (unlocked)
+                      OutlinedButton(
+                        onPressed: () => _createMeeting(appointment),
+                        child: const Text('Create Video Link'),
+                      ),
+                    if ((appointment['meetingLink']?.toString() ?? '').isNotEmpty)
+                      OutlinedButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => LinkWebViewPage(
+                              title: 'Consultation Room',
+                              url: appointment['meetingLink']?.toString() ?? '',
+                            ),
+                          ),
+                        ),
+                        child: const Text('Open Meeting'),
+                      ),
+                    if (unlocked)
+                      OutlinedButton(
+                        onPressed: () => _writePrescription(appointment),
+                        child: const Text('Create Prescription'),
+                      ),
+                  ],
+                ),
               ),
             );
           }),
@@ -1549,13 +2233,16 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
           ...upcoming.map((appt) {
             final patient = appt['patient'] as Map<String, dynamic>? ?? {};
             final nextDate = DateTime.tryParse(appt['nextAppointmentDate']?.toString() ?? '');
+            final isPriority = appt['isPriority'] ?? false;
+            final appointmentId = appt['_id']?.toString() ?? '';
+            
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.15),
+                color: isPriority ? Colors.orange.withValues(alpha: 0.15) : Colors.blue.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                border: Border.all(color: isPriority ? Colors.orange.withValues(alpha: 0.3) : Colors.blue.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1563,32 +2250,90 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        patient['name']?.toString() ?? 'Patient',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                      Expanded(
                         child: Text(
-                          'In ${appt['daysUntilNextAppt']} days',
-                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                          patient['name']?.toString() ?? 'Patient',
+                          style: TextStyle(
+                            fontSize: 16, 
+                            fontWeight: FontWeight.bold, 
+                            color: isPriority ? Colors.orange : Colors.white,
+                          ),
                         ),
+                      ),
+                      Row(
+                        children: [
+                          if (isPriority)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.orange,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Text(
+                                'PRIORITY',
+                                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isPriority ? Colors.orange : Colors.blue,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'In ${appt['daysUntilNextAppt']} days',
+                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Scheduled: ${nextDate != null ? _formatDate(nextDate.toIso8601String()) : 'TBD'}',
-                    style: const TextStyle(color: Colors.white70),
+                    style: const TextStyle(color: Colors.white),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${appt['type'] ?? 'Consultation'} • ${appt['consultationMode'] ?? 'scheduled'}',
-                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                  const SizedBox(height: 12),
+                  // Action buttons
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () => _markAppointmentPriority(appt),
+                        icon: Icon(isPriority ? Icons.star : Icons.star_border),
+                        label: Text(isPriority ? 'Remove Priority' : 'Mark Priority'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: isPriority ? Colors.orange : Colors.white,
+                          side: BorderSide(color: isPriority ? Colors.orange : Colors.white.withValues(alpha: 0.5)),
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () => _rescheduleAppointment(appt),
+                        icon: const Icon(Icons.schedule),
+                        label: const Text('Reschedule'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () => _markAppointmentComplete(appt),
+                        icon: const Icon(Icons.check_circle),
+                        label: const Text('Mark Complete'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1602,14 +2347,131 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // Search bar
+        TextField(
+          controller: _feedbackSearchController,
+          decoration: InputDecoration(
+            labelText: 'Search feedbacks',
+            hintText: 'Patient name or feedback text',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: _feedbackSearchController.text.isEmpty 
+              ? null 
+              : IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _feedbackSearchController.clear();
+                    _feedbackRatingFrom = null;
+                    _feedbackRatingTo = null;
+                    setState(() {});
+                    _refresh();
+                  },
+                ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onChanged: (_) {
+            setState(() {});
+            _searchFeedbacks();
+          },
+        ),
+        const SizedBox(height: 12),
+        
+        // Rating filter
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            DropdownMenu<int?>(
+              initialSelection: _feedbackRatingFrom,
+              onSelected: (value) {
+                setState(() => _feedbackRatingFrom = value);
+                _searchFeedbacks();
+              },
+              dropdownMenuEntries: [
+                const DropdownMenuEntry(value: null, label: 'Min rating'),
+                const DropdownMenuEntry(value: 1, label: '⭐ 1+'),
+                const DropdownMenuEntry(value: 2, label: '⭐ 2+'),
+                const DropdownMenuEntry(value: 3, label: '⭐ 3+'),
+                const DropdownMenuEntry(value: 4, label: '⭐ 4+'),
+                const DropdownMenuEntry(value: 5, label: '⭐ 5'),
+              ],
+            ),
+            if (_feedbackRatingFrom != null)
+              OutlinedButton.icon(
+                onPressed: () {
+                  setState(() => _feedbackRatingFrom = null);
+                  _searchFeedbacks();
+                },
+                icon: const Icon(Icons.clear),
+                label: const Text('Clear'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        // Feedbacks list
         if (_feedbacks.isEmpty)
-          _emptyCard('No feedback yet')
+          _emptyCard('No feedbacks found')
         else
           ..._feedbacks.map((item) {
             final user = item['user'] as Map<String, dynamic>? ?? {};
+            final hasReply = item['reply'] != null && item['reply'].toString().isNotEmpty;
+            
             return _contentCard(
-              title: '${user['name'] ?? 'Patient'} • ${item['rating'] ?? 0}/5 ⭐',
-              subtitle: item['review']?.toString() ?? 'No review',
+              title: Text('${user['name'] ?? 'Patient'} • ${item['rating'] ?? 0}/5 ⭐'),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item['review']?.toString() ?? 'No review'),
+                  if (hasReply) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Your Reply:',
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            item['reply'].toString(),
+                            style: const TextStyle(fontStyle: FontStyle.italic),
+                          ),
+                          if (item['repliedAt'] != null)
+                            Text(
+                              'Replied on ${_formatDate(item['repliedAt'].toString())}',
+                              style: const TextStyle(fontSize: 12, color: Colors.white),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              footer: Row(
+                children: [
+                  if (!hasReply)
+                    TextButton.icon(
+                      onPressed: () => _replyToFeedback(item),
+                      icon: const Icon(Icons.reply),
+                      label: const Text('Reply'),
+                    ),
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: () => _deleteFeedback(item),
+                    icon: const Icon(Icons.delete, color: Colors.white),
+                    label: const Text('Delete', style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
             );
           }),
       ],
@@ -1620,15 +2482,88 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        ..._buildNotificationSection(
-          _notifications,
-          onMarkRead: (id) async {
-            await ApiService.markDoctorNotificationRead(id);
-            await _refresh(silent: true);
+        // Search and filter row
+        TextField(
+          controller: _notificationSearchController,
+          decoration: InputDecoration(
+            labelText: 'Search notifications',
+            hintText: 'Title or message',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: _notificationSearchController.text.isEmpty 
+              ? null 
+              : IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () {
+                    _notificationSearchController.clear();
+                    _notificationTypeFilter = null;
+                    setState(() {});
+                    _refresh();
+                  },
+                ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onChanged: (_) {
+            setState(() {});
+            _searchNotifications();
           },
-          emptyMessage: 'No doctor notifications yet.',
-          subtitle: 'Live request and payment alerts for the doctor dashboard.',
         ),
+        const SizedBox(height: 12),
+        
+        // Type filter
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            DropdownMenu<String?>(
+              initialSelection: _notificationTypeFilter,
+              onSelected: (value) {
+                setState(() => _notificationTypeFilter = value);
+                _searchNotifications();
+              },
+              dropdownMenuEntries: [
+                const DropdownMenuEntry(value: null, label: 'All types'),
+                const DropdownMenuEntry(value: 'appointment', label: 'Appointment'),
+                const DropdownMenuEntry(value: 'payment', label: 'Payment'),
+                const DropdownMenuEntry(value: 'feedback', label: 'Feedback'),
+                const DropdownMenuEntry(value: 'message', label: 'Message'),
+              ],
+            ),
+            
+            // Mark all read button
+            if (_notifications.any((n) => !(n['isRead'] ?? false)))
+              FilledButton.icon(
+                onPressed: () async {
+                  await ApiService.markAllDoctorNotificationsRead();
+                  _snack('All notifications marked as read');
+                  await _refresh(silent: true);
+                },
+                icon: const Icon(Icons.done_all, size: 18),
+                label: const Text('Mark all read'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        // Notifications list
+        if (_notifications.isEmpty)
+          _emptyCard('No doctor notifications yet')
+        else
+          ..._buildNotificationSection(
+            _notifications,
+            onMarkRead: (id) async {
+              await ApiService.markDoctorNotificationRead(id);
+              await _refresh(silent: true);
+            },
+            onDelete: (id) async {
+              await ApiService.deleteDoctorNotification(id);
+              _snack('Notification deleted');
+              await _refresh(silent: true);
+            },
+            emptyMessage: 'No notifications.',
+            subtitle: 'Live request and payment alerts for the doctor dashboard.',
+          ),
       ],
     );
   }
@@ -1644,6 +2579,7 @@ class MedicalKeeperPortalScreen extends StatefulWidget {
 
 class _MedicalKeeperPortalScreenState extends State<MedicalKeeperPortalScreen> {
   bool _loading = true;
+  int _selectedIndex = 0;
   Map<String, dynamic>? _profile;
   Map<String, dynamic>? _stats;
   List<Map<String, dynamic>> _medicines = [];
@@ -1684,62 +2620,191 @@ class _MedicalKeeperPortalScreenState extends State<MedicalKeeperPortalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Medical Keeper Portal'),
+        backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        title: Text(_selectedIndex == 0 ? 'Dashboard' : _selectedIndex == 1 ? 'Products' : _selectedIndex == 2 ? 'Orders' : 'Settings'),
         actions: [
-          IconButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AddMedicineScreen()),
-            ),
-            icon: const Icon(Icons.add_box),
+          if (_selectedIndex == 1) IconButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMedicineScreen())),
+            icon: const Icon(Icons.add),
           ),
           IconButton(onPressed: _refresh, icon: const Icon(Icons.refresh)),
           IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Lottie.asset('assets/lottie/Background_shooting_star.json', fit: BoxFit.cover, repeat: true),
+          ),
+          Positioned.fill(child: Container(color: Colors.black.withValues(alpha: 0.4))),
+          _loading ? const Center(child: CircularProgressIndicator()) : _buildBody(),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+        backgroundColor: const Color(0xFF0F172A),
+        indicatorColor: const Color(0xFF1E3A8A),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.dashboard, color: Colors.white), label: 'Dashboard'),
+          NavigationDestination(icon: Icon(Icons.inventory_2, color: Colors.white), label: 'Products'),
+          NavigationDestination(icon: Icon(Icons.local_shipping, color: Colors.white), label: 'Orders'),
+          NavigationDestination(icon: Icon(Icons.settings, color: Colors.white), label: 'Settings'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    switch (_selectedIndex) {
+      case 0: return _dashboardTab();
+      case 1: return _productsTab();
+      case 2: return _ordersTab();
+      case 3: return _settingsTab();
+      default: return _dashboardTab();
+    }
+  }
+
+  Widget _dashboardTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _heroCard(
+          title: _profile?['name']?.toString() ?? 'Medical Store',
+          subtitle: 'Seller Dashboard - Pharma Management',
+        ),
+        _sectionHeader('Overview', 'Today\'s Performance'),
+        Row(
+          children: [
+            Expanded(child: _statCard('Revenue', 'Rs ${_stats?['totalRevenue'] ?? 0}', Icons.currency_rupee, Colors.green)),
+            const SizedBox(width: 12),
+            Expanded(child: _statCard('Orders', '${_stats?['totalOrders'] ?? 0}', Icons.shopping_cart, Colors.blue)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(child: _statCard('Pending', '${_stats?['pendingOrders'] ?? 0}', Icons.pending, Colors.orange)),
+            const SizedBox(width: 12),
+            Expanded(child: _statCard('Delivered', '${_stats?['deliveredOrders'] ?? 0}', Icons.check_circle, Colors.green)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _sectionHeader('Inventory', 'Stock Overview'),
+        Row(
+          children: [
+            Expanded(child: _statCard('Medicines', '${_stats?['totalMedicines'] ?? 0}', Icons.medication, Colors.purple)),
+            const SizedBox(width: 12),
+            Expanded(child: _statCard('Low Stock', '${_stats?['lowStock'] ?? 0}', Icons.warning, Colors.red)),
+          ],
+        ),
+        const SizedBox(height: 12),
+        _sectionHeader('Recent Orders', 'Latest Orders'),
+        ...(_orders.isEmpty ? [_emptyCard('No orders yet')] : _orders.take(5).map((o) => _contentCard(
+          title: Text('Order ${_shortId(o)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          subtitle: Text('${o['status']} • Rs ${o['totalAmount'] ?? 0}', style: const TextStyle(color: Colors.white70)),
+          avatarPath: 'assets/Icons/patient.jpg',
+        ))),
+      ],
+    );
+  }
+
+  Widget _productsTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _sectionHeader('My Medicines', '${_medicines.length} products'),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMedicineScreen())),
+            icon: const Icon(Icons.add),
+            label: const Text('Add New Medicine'),
+          ),
+        ),
+        const SizedBox(height: 16),
+        ..._medicines.map((m) => _contentCard(
+          title: Text(m['name']?.toString() ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          subtitle: Text('${m['category']} • Stock: ${m['stock']} • Rs ${m['discountedPrice'] ?? m['price']}', style: const TextStyle(color: Colors.white70)),
+          footer: Wrap(
+            children: [
+              OutlinedButton(onPressed: () {}, child: const Text('Edit')),
+              const SizedBox(width: 8),
+              OutlinedButton(onPressed: () {}, child: const Text('Stock')),
+            ],
+          ),
+        )),
+      ],
+    );
+  }
+
+  Widget _ordersTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _sectionHeader('All Orders', '${_orders.length} orders'),
+        ..._orders.map((o) {
+          final user = o['user'] as Map<String, dynamic>? ?? {};
+          return _contentCard(
+            title: Text('Order ${_shortId(o)} - ${user['name'] ?? 'Patient'}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            subtitle: Text('Status: ${o['status']} | Payment: ${o['paymentStatus']} | Rs ${o['totalAmount'] ?? 0}', style: const TextStyle(color: Colors.white70)),
+            avatarPath: 'assets/Icons/patient.jpg',
+            footer: Wrap(
               children: [
-                _heroCard(
-                  title: _profile?['name']?.toString() ?? 'Medical Store',
-                  subtitle: 'Manage medicine inventory and pharmacy orders.',
-                ),
-                _statsWrap([
-                  _StatCard(
-                    'Medicines',
-                    '${_stats?['totalMedicines'] ?? 0}',
-                    Icons.medication_outlined,
-                  ),
-                  _StatCard(
-                    'Orders',
-                    '${_stats?['totalOrders'] ?? 0}',
-                    Icons.local_shipping_outlined,
-                  ),
-                  _StatCard(
-                    'Revenue',
-                    'Rs ${_stats?['totalRevenue'] ?? 0}',
-                    Icons.currency_rupee,
-                  ),
-                ]),
-                ..._medicines.map(
-                  (m) => _contentCard(
-                    title: m['name']?.toString() ?? 'Medicine',
-                    subtitle:
-                        '${m['category'] ?? 'General'} • Stock ${m['stock'] ?? 0}\nRs ${m['discountedPrice'] ?? m['price'] ?? 0}',
-                  ),
-                ),
-                ..._orders.map(
-                  (o) => _contentCard(
-                    title: 'Order ${_shortId(o)}',
-                    subtitle:
-                        '${o['status']} • ${o['paymentStatus']}\nRs ${o['totalAmount'] ?? 0}',
-                  ),
-                ),
+                if (o['status'] == 'confirmed')
+                  OutlinedButton(onPressed: () {}, child: const Text('Ship')),
+                if (o['status'] == 'shipped')
+                  OutlinedButton(onPressed: () {}, child: const Text('Deliver')),
               ],
             ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _settingsTab() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _sectionHeader('Store Settings', 'Manage your pharmacy'),
+        _contentCard(
+          title: const Text('Store Name', style: TextStyle(color: Colors.white)),
+          subtitle: Text(_profile?['name']?.toString() ?? 'Not set', style: const TextStyle(color: Colors.white70)),
+          footer: OutlinedButton(onPressed: () {}, child: const Text('Edit')),
+        ),
+        _contentCard(
+          title: const Text('Address', style: TextStyle(color: Colors.white)),
+          subtitle: const Text('Tap to update delivery address', style: TextStyle(color: Colors.white70)),
+          footer: OutlinedButton(onPressed: () {}, child: const Text('Edit')),
+        ),
+        _contentCard(
+          title: const Text('Account', style: TextStyle(color: Colors.white)),
+          subtitle: Text(_profile?['email']?.toString() ?? '', style: const TextStyle(color: Colors.white70)),
+        ),
+      ],
+    );
+  }
+
+  Widget _statCard(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 8),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        ],
+      ),
     );
   }
 }
@@ -1869,7 +2934,7 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
                       cursorColor: Colors.white,
                       decoration: const InputDecoration(
                         hintText: 'Type message',
-                        hintStyle: TextStyle(color: Colors.white54),
+                        hintStyle: TextStyle(color: Colors.white),
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -2246,18 +3311,34 @@ Widget _statsWrap(List<_StatCard> cards) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 16),
     child: Wrap(
+      alignment: WrapAlignment.center,
       spacing: 12,
       runSpacing: 12,
       children: cards
           .map(
-            (card) => SizedBox(
-              width: 165,
+            (card) => Flexible(
+              fit: FlexFit.loose,
               child: Container(
+                constraints: const BoxConstraints(minWidth: 140, maxWidth: 180),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.blue.withValues(alpha: 0.3),
+                      Colors.purple.withValues(alpha: 0.2),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2272,7 +3353,7 @@ Widget _statsWrap(List<_StatCard> cards) {
                         color: Colors.white,
                       ),
                     ),
-                    Text(card.label, style: const TextStyle(color: Colors.white70)),
+                    Text(card.label, style: const TextStyle(color: Colors.white)),
                   ],
                 ),
               ),
@@ -2284,52 +3365,91 @@ Widget _statsWrap(List<_StatCard> cards) {
 }
 
 Widget _sectionHeader(String title, String subtitle) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16, top: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [Color(0xFF1E3A8A), Color(0xFF0F172A)],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        const SizedBox(height: 4),
-        Text(subtitle, style: const TextStyle(color: Colors.white70)),
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+        Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 12)),
       ],
     ),
   );
 }
 
 Widget _contentCard({
-  required String title,
-  required String subtitle,
+  required Widget title,
+  required Widget subtitle,
   Widget? footer,
+  String? avatarPath,
+  Color? gradientColor1,
+  Color? gradientColor2,
 }) {
   return Container(
     margin: const EdgeInsets.only(bottom: 14),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: 0.15),
-      borderRadius: BorderRadius.circular(22),
-      border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+      gradient: LinearGradient(
+        colors: [
+          gradientColor1 ?? Colors.blue.withValues(alpha: 0.3),
+          gradientColor2 ?? Colors.purple.withValues(alpha: 0.2),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.2),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
     ),
-    child: Column(
+    child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
+        if (avatarPath != null) ...[
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: const Color(0xFF1E3A8A),
+            child: Image.asset(
+              avatarPath,
+              errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white),
+            ),
+          ),
+          const SizedBox(width: 14),
+        ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              title,
+              const SizedBox(height: 6),
+              subtitle,
+              if (footer != null) ...[const SizedBox(height: 14), footer],
+            ],
+          ),
         ),
-        const SizedBox(height: 6),
-        Text(subtitle, style: const TextStyle(color: Colors.white70)),
-        if (footer != null) ...[const SizedBox(height: 14), footer],
       ],
     ),
   );
 }
 
-Widget _emptyCard(String message) =>
-    _contentCard(title: 'Nothing here yet', subtitle: message);
+Widget _emptyCard(String message) => _contentCard(
+  title: const Text('Nothing here yet', style: TextStyle(color: Colors.white70)),
+  subtitle: Text(message, style: const TextStyle(color: Colors.white54)),
+);
 
 Widget _statCard({
   required IconData icon,
@@ -2338,7 +3458,7 @@ Widget _statCard({
   required Color color,
 }) {
   return Container(
-    padding: const EdgeInsets.all(14),
+    padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
       gradient: LinearGradient(
         begin: Alignment.topLeft,
@@ -2369,7 +3489,7 @@ Widget _statCard({
           subtitle,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white70,
+            color: Colors.white,
             fontSize: 11,
           ),
         ),
@@ -2381,6 +3501,7 @@ Widget _statCard({
 List<Widget> _buildNotificationSection(
   List<Map<String, dynamic>> items, {
   required Future<void> Function(String id) onMarkRead,
+  Future<void> Function(String id)? onDelete,
   required String emptyMessage,
   required String subtitle,
 }) {
@@ -2391,15 +3512,23 @@ List<Widget> _buildNotificationSection(
     _sectionHeader('Notifications', subtitle),
     ...items.map(
       (item) => _contentCard(
-        title: item['title']?.toString() ?? 'Notification',
-        subtitle:
-            '${item['message'] ?? ''}\n${_formatDate(item['createdAt']?.toString())}',
-        footer: item['isRead'] == true
-            ? null
-            : TextButton(
+        title: Text(item['title']?.toString() ?? 'Notification'),
+        subtitle: Text(
+            '${item['message'] ?? ''}\n${_formatDate(item['createdAt']?.toString())}'),
+        footer: Row(
+          children: [
+            if (item['isRead'] != true)
+              TextButton(
                 onPressed: () => onMarkRead(_idOf(item)),
                 child: const Text('Mark Read'),
               ),
+            if (onDelete != null)
+              TextButton(
+                onPressed: () => onDelete(_idOf(item)),
+                child: const Text('Delete', style: TextStyle(color: Colors.white)),
+              ),
+          ],
+        ),
       ),
     ),
   ];
@@ -2469,6 +3598,8 @@ String _patientTitle(PatientSection section) {
       return 'Notifications';
     case PatientSection.pharmacy:
       return 'Pharmacy';
+    case PatientSection.cart:
+      return 'Cart';
     case PatientSection.wellness:
       return 'Wellness';
   }

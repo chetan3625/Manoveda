@@ -147,12 +147,12 @@ class _JournalEntryScreenState extends State<JournalEntryScreen> {
                           String formattedDate = DateFormat.yMMMd().add_jm().format(DateTime.parse(entry['timestamp']));
                           return Card(
                             margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.black.withOpacity(0.3),
                             child: ListTile(
-                              title: Text(entry['content'], style: const TextStyle(fontSize: 16)),
+                              title: Text(entry['content'], style: const TextStyle(fontSize: 16, color: Colors.white)),
                               subtitle: Text(
                                 formattedDate,
-                                style: const TextStyle(color: Colors.black54),
+                                style: const TextStyle(color: Colors.white70),
                               ),
                             ),
                           );

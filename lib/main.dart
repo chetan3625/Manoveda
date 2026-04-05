@@ -36,7 +36,7 @@ class Manoveda extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF63B6E7),
-          brightness: Brightness.light,
+          brightness: Brightness.dark,
         ),
         scaffoldBackgroundColor: Colors.transparent,
         appBarTheme: const AppBarTheme(

@@ -426,8 +426,167 @@ class ApiService {
     return _request('PUT', '/doctor/notifications/$id/read');
   }
 
-  static Future<Map<String, dynamic>> getMedicalKeeperDashboard() async {
-    return _request('GET', '/medical-keeper/dashboard');
+  // Micro-Features: Search & Filter
+  
+  static Future<Map<String, dynamic>> searchDoctorPatients({String? query}) async {
+    final queryParams = query != null && query.trim().isNotEmpty
+        ? '?query=${Uri.encodeQueryComponent(query)}'
+        : '';
+    return _request('GET', '/doctor/patients/search$queryParams');
+  }
+
+  static Future<Map<String, dynamic>> getDoctorPatientDetails(String patientId) async {
+    return _request('GET', '/doctor/patients/$patientId');
+  }
+
+  static Future<Map<String, dynamic>> searchDoctorAppointments({
+    String? query,
+    String? status,
+    DateTime? dateFrom,
+    DateTime? dateTo,
+  }) async {
+    final params = <String, String>{};
+    if (query != null && query.trim().isNotEmpty) params['query'] = query;
+    if (status != null) params['status'] = status;
+    if (dateFrom != null) params['dateFrom'] = dateFrom.toIso8601String();
+    if (dateTo != null) params['dateTo'] = dateTo.toIso8601String();
+    
+    final queryString = params.isEmpty
+        ? ''
+        : '?' + params.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&');
+    return _request('GET', '/doctor/appointments/search$queryString');
+  }
+
+  // Micro-Features: Appointment Management
+
+  static Future<Map<String, dynamic>> markAppointmentPriority({
+    required String appointmentId,
+    required bool isPriority,
+  }) async {
+    return _request(
+      'PUT',
+      '/doctor/appointments/$appointmentId/priority',
+      body: {'isPriority': isPriority},
+    );
+  }
+
+  static Future<Map<String, dynamic>> bulkAppointmentAction({
+    required List<String> appointmentIds,
+    required String action,
+  }) async {
+    return _request(
+      'POST',
+      '/doctor/appointments/bulk-action',
+      body: {'appointmentIds': appointmentIds, 'action': action},
+    );
+  }
+
+  static Future<Map<String, dynamic>> markAppointmentComplete(String appointmentId) async {
+    return _request('POST', '/doctor/appointment/$appointmentId/complete');
+  }
+
+  static Future<Map<String, dynamic>> rescheduleAppointment({
+    required String appointmentId,
+    required DateTime newDate,
+    required String newTime,
+    String? reason,
+  }) async {
+    return _request(
+      'POST',
+      '/doctor/appointment/$appointmentId/reschedule',
+      body: {
+        'newDate': newDate.toIso8601String(),
+        'newTime': newTime,
+        'reason': reason,
+      },
+    );
+  }
+
+  static Future<Map<String, dynamic>> getUpcomingAppointmentsDetails() async {
+    return _request('POST', '/doctor/upcoming-appointments');
+  }
+
+  // Micro-Features: Feedback Management
+
+  static Future<Map<String, dynamic>> searchDoctorFeedbacks({
+    String? query,
+    int? ratingFrom,
+    int? ratingTo,
+  }) async {
+    final params = <String, String>{};
+    if (query != null && query.trim().isNotEmpty) params['query'] = query;
+    if (ratingFrom != null) params['ratingFrom'] = ratingFrom.toString();
+    if (ratingTo != null) params['ratingTo'] = ratingTo.toString();
+    
+    final queryString = params.isEmpty
+        ? ''
+        : '?' + params.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&');
+    return _request('GET', '/doctor/feedbacks/search$queryString');
+  }
+
+  static Future<Map<String, dynamic>> replyToFeedback({
+    required String feedbackId,
+    required String reply,
+  }) async {
+    return _request(
+      'PUT',
+      '/doctor/feedbacks/$feedbackId/reply',
+      body: {'reply': reply},
+    );
+  }
+
+  static Future<Map<String, dynamic>> deleteDoctorFeedback(String feedbackId) async {
+    return _request('DELETE', '/doctor/feedbacks/$feedbackId');
+  }
+
+  // Micro-Features: Notification Management
+
+  static Future<Map<String, dynamic>> searchDoctorNotifications({
+    String? query,
+    String? type,
+  }) async {
+    final params = <String, String>{};
+    if (query != null && query.trim().isNotEmpty) params['query'] = query;
+    if (type != null) params['type'] = type;
+    
+    final queryString = params.isEmpty
+        ? ''
+        : '?' + params.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&');
+    return _request('GET', '/doctor/notifications/search$queryString');
+  }
+
+  static Future<Map<String, dynamic>> markAllDoctorNotificationsRead() async {
+    return _request('PUT', '/doctor/notifications/mark-all-read');
+  }
+
+  static Future<Map<String, dynamic>> deleteDoctorNotification(String notificationId) async {
+    return _request('DELETE', '/doctor/notifications/$notificationId');
+  }
+
+  // Micro-Features: Statistics & Analytics
+
+  static Future<Map<String, dynamic>> getDoctorDashboardStats({
+    DateTime? dateFrom,
+    DateTime? dateTo,
+  }) async {
+    final params = <String, String>{};
+    if (dateFrom != null) params['dateFrom'] = dateFrom.toIso8601String();
+    if (dateTo != null) params['dateTo'] = dateTo.toIso8601String();
+    
+    final queryString = params.isEmpty
+        ? ''
+        : '?' + params.entries.map((e) => '${e.key}=${Uri.encodeQueryComponent(e.value)}').join('&');
+    return _request('GET', '/doctor/dashboard/stats$queryString');
+  }
+
+  static Future<Map<String, dynamic>> getMedicalKeeperDashboard({String? timeRange}) async {
+    final query = timeRange != null ? '?timeRange=$timeRange' : '';
+    return _request('GET', '/medical-keeper/dashboard$query');
+  }
+
+  static Future<Map<String, dynamic>> getMedicalKeeperAnalytics({String? period}) async {
+    final query = period != null ? '?period=$period' : '';
+    return _request('GET', '/medical-keeper/analytics$query');
   }
 
   static Future<Map<String, dynamic>> getMedicalKeeperMedicines() async {

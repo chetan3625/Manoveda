@@ -55,7 +55,7 @@ class AboutUsScreen extends StatelessWidget {
                       SizedBox(height: 10),
                       Text(
                         'We are the of students of TE Electronics and Computer Engineering who designed this app to help reduce mental stress among students. We believe in harnessing technology for a better and healthier life.',
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
+                        style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ],
                   ),
@@ -119,7 +119,7 @@ class AboutUsScreen extends StatelessWidget {
                     subtitle: Text(
                       '${student['Section']}${student['role'] != null ? ' - ${student['role']}' : ''} Branch',
                       style: const TextStyle(
-                        color: Colors.black54,
+                        color: Colors.white70,
                       ),
                     ),
                   ),
