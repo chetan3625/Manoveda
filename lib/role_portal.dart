@@ -936,6 +936,15 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
   }
 }
 
+enum DoctorSection {
+  dashboard,
+  patients,
+  appointments,
+  upcomingAppointments,
+  feedbacks,
+  notifications,
+}
+
 class DoctorPortalScreen extends StatefulWidget {
   const DoctorPortalScreen({super.key});
 
@@ -945,6 +954,7 @@ class DoctorPortalScreen extends StatefulWidget {
 
 class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
   bool _loading = true;
+  DoctorSection _section = DoctorSection.dashboard;
   Map<String, dynamic>? _profile;
   List<Map<String, dynamic>> _appointments = [];
   List<Map<String, dynamic>> _patients = [];
@@ -1135,30 +1145,191 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
     return _appointments.where((a) => a['status'] == 'pending').length;
   }
 
+  List<Map<String, dynamic>> _getUpcomingAppointments() {
+    final now = DateTime.now();
+    final upcoming = <Map<String, dynamic>>[];
+    final patientLastAppts = <String, Map<String, dynamic>>{};
+
+    for (final appointment in _appointments) {
+      if (appointment['status'] == 'confirmed' && appointment['paymentStatus'] == 'paid') {
+        final patientId = appointment['patient']?['_id']?.toString() ?? '';
+        if (patientId.isNotEmpty) {
+          if (patientLastAppts[patientId] == null) {
+            patientLastAppts[patientId] = appointment;
+          } else {
+            final lastDate = DateTime.tryParse(patientLastAppts[patientId]!['createdAt']?.toString() ?? '');
+            final currentDate = DateTime.tryParse(appointment['createdAt']?.toString() ?? '');
+            if (lastDate != null && currentDate != null && currentDate.isAfter(lastDate)) {
+              patientLastAppts[patientId] = appointment;
+            }
+          }
+        }
+      }
+    }
+
+    for (final patientId in patientLastAppts.keys) {
+      final lastAppt = patientLastAppts[patientId]!;
+      final lastDate = DateTime.tryParse(lastAppt['createdAt']?.toString() ?? '');
+      if (lastDate != null) {
+        final duration = lastAppt['duration'] ?? 30;
+        final nextDate = lastDate.add(Duration(days: duration));
+        if (nextDate.isAfter(now)) {
+          upcoming.add({
+            ...lastAppt,
+            'nextAppointmentDate': nextDate.toIso8601String(),
+            'daysUntilNextAppt': nextDate.difference(now).inDays,
+          });
+        }
+      }
+    }
+
+    upcoming.sort((a, b) => (a['daysUntilNextAppt'] as int).compareTo(b['daysUntilNextAppt'] as int));
+    return upcoming;
+  }
+
+  String _getSectionTitle() {
+    switch (_section) {
+      case DoctorSection.dashboard:
+        return 'Dashboard';
+      case DoctorSection.patients:
+        return 'All Patients';
+      case DoctorSection.appointments:
+        return 'Appointment Requests';
+      case DoctorSection.upcomingAppointments:
+        return 'Upcoming Appointments';
+      case DoctorSection.feedbacks:
+        return 'Patient Feedback';
+      case DoctorSection.notifications:
+        return 'Notifications';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doctor Dashboard'),
+        title: Text(_getSectionTitle()),
         actions: [
           IconButton(onPressed: _refresh, icon: const Icon(Icons.refresh)),
           IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue.shade700),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text('Dr. ${_profile?['name'] ?? 'Doctor'}', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text('${_profile?['specialization'] ?? 'General'}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                ],
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.dashboard),
+              title: const Text('Dashboard'),
+              selected: _section == DoctorSection.dashboard,
+              onTap: () {
+                setState(() => _section = DoctorSection.dashboard);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.people),
+              title: const Text('All Patients'),
+              selected: _section == DoctorSection.patients,
+              onTap: () {
+                setState(() => _section = DoctorSection.patients);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.schedule),
+              title: const Text('Appointment Requests'),
+              selected: _section == DoctorSection.appointments,
+              onTap: () {
+                setState(() => _section = DoctorSection.appointments);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.event_available),
+              title: const Text('Upcoming Appointments'),
+              selected: _section == DoctorSection.upcomingAppointments,
+              onTap: () {
+                setState(() => _section = DoctorSection.upcomingAppointments);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.star),
+              title: const Text('Feedback'),
+              selected: _section == DoctorSection.feedbacks,
+              onTap: () {
+                setState(() => _section = DoctorSection.feedbacks);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text('Notifications'),
+              selected: _section == DoctorSection.notifications,
+              onTap: () {
+                setState(() => _section = DoctorSection.notifications);
+                Navigator.pop(context);
+              },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: _logout,
+            ),
+          ],
+        ),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _refresh,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _heroCard(
-                    title: 'Dr. ${_profile?['name'] ?? ''}',
-                    subtitle:
-                        'Receive appointment requests, accept or reject them, wait for payment, unlock chat, run video consultations, and generate prescription PDFs.',
-                  ),
-                  const SizedBox(height: 20),
-                  GridView.count(
+              child: _buildSectionBody(),
+            ),
+    );
+  }
+
+  Widget _buildSectionBody() {
+    switch (_section) {
+      case DoctorSection.dashboard:
+        return _buildDashboard();
+      case DoctorSection.patients:
+        return _buildPatientsView();
+      case DoctorSection.appointments:
+        return _buildAppointmentsView();
+      case DoctorSection.upcomingAppointments:
+        return _buildUpcomingAppointmentsView();
+      case DoctorSection.feedbacks:
+        return _buildFeedbackView();
+      case DoctorSection.notifications:
+        return _buildNotificationsView();
+    }
+  }
+
+  Widget _buildDashboard() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _heroCard(
+          title: 'Dr. ${_profile?['name'] ?? ''}',
+          subtitle:
+              'Receive appointment requests, accept or reject them, wait for payment, unlock chat, run video consultations, and generate prescription PDFs.',
+        ),
+        const SizedBox(height: 20),
+        GridView.count(
                     crossAxisCount: 3,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
@@ -1281,8 +1452,184 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
                     );
                   }),
                 ],
-              ),
+              );
+  }
+
+  Widget _buildPatientsView() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        if (_patients.isEmpty)
+          _emptyCard('No patients yet')
+        else
+          ..._patients.map(
+            (patient) => _contentCard(
+              title: patient['name']?.toString() ?? 'Patient',
+              subtitle:
+                  '${patient['email'] ?? ''}\n${patient['phone'] ?? ''}\nRegistered: ${_formatDate(patient['createdAt']?.toString())}',
             ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAppointmentsView() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        if (_appointments.isEmpty)
+          _emptyCard('No appointment requests yet')
+        else
+          ..._appointments.map((appointment) {
+            final patient = appointment['patient'] as Map<String, dynamic>? ?? {};
+            final unlocked = appointment['status'] == 'confirmed' && appointment['paymentStatus'] == 'paid';
+            return _contentCard(
+              title: patient['name']?.toString() ?? 'Patient',
+              subtitle:
+                  '${appointment['type']} • ${appointment['consultationMode'] ?? 'scheduled'}\n${_formatAppointmentDate(appointment)}\nStatus: ${appointment['status']} | Payment: ${appointment['paymentStatus']}',
+              footer: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (appointment['status'] == 'pending')
+                    FilledButton(
+                      onPressed: () => _accept(appointment),
+                      child: const Text('Accept'),
+                    ),
+                  if (appointment['status'] == 'pending')
+                    OutlinedButton(
+                      onPressed: () => _reject(appointment),
+                      child: const Text('Reject'),
+                    ),
+                  if (unlocked)
+                    OutlinedButton(
+                      onPressed: () => _openDoctorChat(appointment),
+                      child: const Text('Chat'),
+                    ),
+                  if (unlocked)
+                    OutlinedButton(
+                      onPressed: () => _createMeeting(appointment),
+                      child: const Text('Create Video Link'),
+                    ),
+                  if ((appointment['meetingLink']?.toString() ?? '').isNotEmpty)
+                    OutlinedButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LinkWebViewPage(
+                            title: 'Consultation Room',
+                            url: appointment['meetingLink']?.toString() ?? '',
+                          ),
+                        ),
+                      ),
+                      child: const Text('Open Meeting'),
+                    ),
+                  if (unlocked)
+                    OutlinedButton(
+                      onPressed: () => _writePrescription(appointment),
+                      child: const Text('Create Prescription'),
+                    ),
+                ],
+              ),
+            );
+          }),
+      ],
+    );
+  }
+
+  Widget _buildUpcomingAppointmentsView() {
+    final upcoming = _getUpcomingAppointments();
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _sectionHeader('Upcoming Appointments', 'Automatically scheduled based on previous appointment duration'),
+        if (upcoming.isEmpty)
+          _emptyCard('No upcoming appointments scheduled')
+        else
+          ...upcoming.map((appt) {
+            final patient = appt['patient'] as Map<String, dynamic>? ?? {};
+            final nextDate = DateTime.tryParse(appt['nextAppointmentDate']?.toString() ?? '');
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        patient['name']?.toString() ?? 'Patient',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'In ${appt['daysUntilNextAppt']} days',
+                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Scheduled: ${nextDate != null ? _formatDate(nextDate.toIso8601String()) : 'TBD'}',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${appt['type'] ?? 'Consultation'} • ${appt['consultationMode'] ?? 'scheduled'}',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+                ],
+              ),
+            );
+          }),
+      ],
+    );
+  }
+
+  Widget _buildFeedbackView() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        if (_feedbacks.isEmpty)
+          _emptyCard('No feedback yet')
+        else
+          ..._feedbacks.map((item) {
+            final user = item['user'] as Map<String, dynamic>? ?? {};
+            return _contentCard(
+              title: '${user['name'] ?? 'Patient'} • ${item['rating'] ?? 0}/5 ⭐',
+              subtitle: item['review']?.toString() ?? 'No review',
+            );
+          }),
+      ],
+    );
+  }
+
+  Widget _buildNotificationsView() {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        ..._buildNotificationSection(
+          _notifications,
+          onMarkRead: (id) async {
+            await ApiService.markDoctorNotificationRead(id);
+            await _refresh(silent: true);
+          },
+          emptyMessage: 'No doctor notifications yet.',
+          subtitle: 'Live request and payment alerts for the doctor dashboard.',
+        ),
+      ],
     );
   }
 }
