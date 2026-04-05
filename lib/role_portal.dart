@@ -232,7 +232,15 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
   void _handlePaymentError(PaymentFailureResponse response) {
     // Handle payment failure with detailed logging
     print('Payment Error: Code=${response.code}, Description=${response.message}');
-    _snack('Payment failed: ${response.message ?? "Unknown error"}');
+    String errorMsg = response.message ?? 'Unknown error';
+    
+    if (errorMsg.contains('Invalid OTP')) {
+      errorMsg = 'Invalid OTP: Please enter 000000 (six zeros) or any 6-digit number';
+    } else if (errorMsg.contains('Card')) {
+      errorMsg = 'Card error: Try card 4111 1111 1111 1111';
+    }
+    
+    _snack('Payment failed: $errorMsg');
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
