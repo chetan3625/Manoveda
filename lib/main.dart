@@ -38,11 +38,12 @@ class Manoveda extends StatelessWidget {
           seedColor: const Color(0xFF63B6E7),
           brightness: Brightness.light,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF2FAFF),
+        scaffoldBackgroundColor: Colors.transparent,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.lightBlueAccent,
+          backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
           centerTitle: true,
+          elevation: 0,
         ),
         snackBarTheme: const SnackBarThemeData(
           behavior: SnackBarBehavior.floating,

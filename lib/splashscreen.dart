@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api_service.dart';
@@ -170,12 +171,13 @@ class _LoginpageState extends State<Loginpage> {
     }
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset("assets/splashscreen.jpg", fit: BoxFit.cover),
+            child: Lottie.asset("assets/lottie/Background_shooting_star.json", fit: BoxFit.cover, repeat: true),
           ),
-          Positioned.fill(child: Container(color: Colors.black.withValues(alpha: 0.7))),
+          Positioned.fill(child: Container(color: Colors.black.withValues(alpha: 0.6))),
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),

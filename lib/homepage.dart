@@ -5,6 +5,12 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:manoveda/widgets/app_scaffold.dart';
 
+import 'music_therapy.dart';
+import 'schedule_screen.dart';
+import 'voice_chatbot_screen.dart';
+import 'wellness_repository.dart';
+import 'yoga_screen.dart';
+
 import 'aboutus.dart';
 import 'affirmations.dart';
 import 'breathingexercise.dart';
@@ -14,11 +20,8 @@ import 'meditationscreen.dart';
 import 'mind_games_screen.dart';
 import 'mood_detection_screen.dart';
 import 'mood_tracker.dart';
-import 'music_therapy.dart';
-import 'schedule_screen.dart';
-import 'voice_chatbot_screen.dart';
-import 'wellness_repository.dart';
-import 'yoga_screen.dart';
+import 'role_portal.dart';
+
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -109,6 +112,11 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
+  Future<void> _openPatientPortal() async {
+    Navigator.pop(context);
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => const RolePortalPage()));
+  }
+
   Widget _buildDrawer() {
     final items = [
       _DrawerItem(Icons.home, 'Home', null),
@@ -138,6 +146,8 @@ class _HomepageState extends State<Homepage> {
           () => _open(const ScheduleScreen())),
       _DrawerItem(Icons.account_circle_rounded, 'About Us',
           () => _open(const AboutUsScreen())),
+      _DrawerItem(Icons.person, 'Patient Portal',
+          () => _openPatientPortal()),
     ];
 
     return Drawer(

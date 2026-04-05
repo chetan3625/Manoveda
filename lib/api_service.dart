@@ -7,6 +7,7 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 class ApiService {
   static const String baseUrl = 'https://manoveda-backend.onrender.com/api';
   static const String socketUrl = 'https://manoveda-backend.onrender.com';
+  static const String publicBaseUrl = 'https://manoveda-backend.onrender.com';
 
   static String? token;
   static String? userRole;
@@ -34,7 +35,10 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', newToken);
     await prefs.setString('role', user['role']?.toString() ?? 'patient');
-    await prefs.setString('userId', user['id']?.toString() ?? user['_id']?.toString() ?? '');
+    await prefs.setString(
+      'userId',
+      user['id']?.toString() ?? user['_id']?.toString() ?? '',
+    );
     await prefs.setString('currentUser', jsonEncode(user));
 
     token = newToken;
@@ -57,9 +61,9 @@ class ApiService {
   }
 
   static Map<String, String> get headers => {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
+    'Content-Type': 'application/json',
+    if (token != null) 'Authorization': 'Bearer $token',
+  };
 
   static Future<Map<String, dynamic>> _request(
     String method,
@@ -154,10 +158,7 @@ class ApiService {
     final data = await _request(
       'POST',
       '/auth/login',
-      body: {
-        'email': email,
-        'password': password,
-      },
+      body: {'email': email, 'password': password},
     );
 
     if (data['success'] == true) {
@@ -197,6 +198,7 @@ class ApiService {
     required DateTime date,
     required String time,
     String type = 'video',
+    String consultationMode = 'scheduled',
     String? symptoms,
   }) async {
     return _request(
@@ -207,13 +209,16 @@ class ApiService {
         'date': date.toIso8601String(),
         'time': time,
         'type': type,
+        'consultationMode': consultationMode,
         'symptoms': symptoms,
       },
     );
   }
 
   static Future<Map<String, dynamic>> getAppointments({String? status}) async {
-    final queryParams = status != null ? '?status=${Uri.encodeQueryComponent(status)}' : '';
+    final queryParams = status != null
+        ? '?status=${Uri.encodeQueryComponent(status)}'
+        : '';
     return _request('GET', '/patient/appointments$queryParams');
   }
 
@@ -239,10 +244,7 @@ class ApiService {
     return _request(
       'POST',
       '/patient/cart',
-      body: {
-        'medicineId': medicineId,
-        'quantity': quantity,
-      },
+      body: {'medicineId': medicineId, 'quantity': quantity},
     );
   }
 
@@ -257,10 +259,7 @@ class ApiService {
     return _request(
       'PUT',
       '/patient/cart',
-      body: {
-        'itemId': itemId,
-        'quantity': quantity,
-      },
+      body: {'itemId': itemId, 'quantity': quantity},
     );
   }
 
@@ -279,7 +278,9 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> getOrders({String? status}) async {
-    final queryParams = status != null ? '?status=${Uri.encodeQueryComponent(status)}' : '';
+    final queryParams = status != null
+        ? '?status=${Uri.encodeQueryComponent(status)}'
+        : '';
     return _request('GET', '/patient/orders$queryParams');
   }
 
@@ -313,11 +314,14 @@ class ApiService {
     return _request('GET', '/chat/chats');
   }
 
-  static Future<Map<String, dynamic>> createChat(String participantId) async {
+  static Future<Map<String, dynamic>> createChat(
+    String participantId, {
+    String? appointmentId,
+  }) async {
     return _request(
       'POST',
       '/chat/chats',
-      body: {'participantId': participantId},
+      body: {'participantId': participantId, 'appointmentId': appointmentId},
     );
   }
 
@@ -332,10 +336,7 @@ class ApiService {
     return _request(
       'POST',
       '/chat/chats/$chatId/messages',
-      body: {
-        'content': content,
-        'messageType': 'text',
-      },
+      body: {'content': content, 'messageType': 'text'},
     );
   }
 
@@ -343,8 +344,12 @@ class ApiService {
     return _request('GET', '/doctor/patients');
   }
 
-  static Future<Map<String, dynamic>> getDoctorAppointments({String? status}) async {
-    final queryParams = status != null ? '?status=${Uri.encodeQueryComponent(status)}' : '';
+  static Future<Map<String, dynamic>> getDoctorAppointments({
+    String? status,
+  }) async {
+    final queryParams = status != null
+        ? '?status=${Uri.encodeQueryComponent(status)}'
+        : '';
     return _request('GET', '/doctor/appointments$queryParams');
   }
 
@@ -353,6 +358,7 @@ class ApiService {
     String? status,
     String? notes,
     String? meetingLink,
+    String? rejectionReason,
   }) async {
     return _request(
       'PUT',
@@ -361,11 +367,14 @@ class ApiService {
         'status': status,
         'notes': notes,
         'meetingLink': meetingLink,
+        'rejectionReason': rejectionReason,
       },
     );
   }
 
-  static Future<Map<String, dynamic>> createMeetingLink(String appointmentId) async {
+  static Future<Map<String, dynamic>> createMeetingLink(
+    String appointmentId,
+  ) async {
     return _request(
       'POST',
       '/doctor/meeting-link',
@@ -376,6 +385,7 @@ class ApiService {
   static Future<Map<String, dynamic>> writePrescription({
     required String patientId,
     required String appointmentId,
+    required String diagnosis,
     required List<Map<String, dynamic>> medicines,
     String? notes,
     DateTime? followUpDate,
@@ -386,6 +396,7 @@ class ApiService {
       body: {
         'patientId': patientId,
         'appointmentId': appointmentId,
+        'diagnosis': diagnosis,
         'medicines': medicines,
         'notes': notes,
         'followUpDate': followUpDate?.toIso8601String(),
@@ -401,6 +412,16 @@ class ApiService {
     return _request('GET', '/doctor/feedbacks');
   }
 
+  static Future<Map<String, dynamic>> getDoctorNotifications() async {
+    return _request('GET', '/doctor/notifications');
+  }
+
+  static Future<Map<String, dynamic>> markDoctorNotificationRead(
+    String id,
+  ) async {
+    return _request('PUT', '/doctor/notifications/$id/read');
+  }
+
   static Future<Map<String, dynamic>> getMedicalKeeperDashboard() async {
     return _request('GET', '/medical-keeper/dashboard');
   }
@@ -409,13 +430,56 @@ class ApiService {
     return _request('GET', '/medical-keeper/medicines');
   }
 
-  static Future<Map<String, dynamic>> addMedicine(Map<String, dynamic> body) async {
+  static Future<Map<String, dynamic>> addMedicine(
+    Map<String, dynamic> body,
+  ) async {
     return _request('POST', '/medical-keeper/medicines', body: body);
   }
 
-  static Future<Map<String, dynamic>> getMedicalKeeperOrders({String? status}) async {
-    final queryParams = status != null ? '?status=${Uri.encodeQueryComponent(status)}' : '';
+  static Future<Map<String, dynamic>> updateMedicine(
+    String id,
+    Map<String, dynamic> body,
+  ) async {
+    return _request('PUT', '/medical-keeper/medicines/$id', body: body);
+  }
+
+  static Future<Map<String, dynamic>> deleteMedicine(String id) async {
+    return _request('DELETE', '/medical-keeper/medicines/$id');
+  }
+
+  static Future<Map<String, dynamic>> getMedicalKeeperOrders({
+    String? status,
+  }) async {
+    final queryParams = status != null
+        ? '?status=${Uri.encodeQueryComponent(status)}'
+        : '';
     return _request('GET', '/medical-keeper/orders$queryParams');
+  }
+
+  static Future<Map<String, dynamic>> getMedicalKeepers() async {
+    return _request('GET', '/patient/medical-keepers');
+  }
+
+  static Future<Map<String, dynamic>> getMedicalKeeperStoreMedicines(
+    String keeperId,
+  ) async {
+    return _request('GET', '/patient/medical-keeper/$keeperId/medicines');
+  }
+
+  static Future<Map<String, dynamic>> addToCartFromKeeper({
+    required String keeperId,
+    required String medicineId,
+    int quantity = 1,
+  }) async {
+    return _request(
+      'POST',
+      '/patient/cart',
+      body: {
+        'keeperId': keeperId,
+        'medicineId': medicineId,
+        'quantity': quantity,
+      },
+    );
   }
 
   static Future<Map<String, dynamic>> updateMedicalOrderStatus({
@@ -426,14 +490,13 @@ class ApiService {
     return _request(
       'PUT',
       '/medical-keeper/orders/$orderId',
-      body: {
-        'status': status,
-        'trackLocation': trackLocation,
-      },
+      body: {'status': status, 'trackLocation': trackLocation},
     );
   }
 
-  static Future<Map<String, dynamic>> createAppointmentPayment(String appointmentId) async {
+  static Future<Map<String, dynamic>> createAppointmentPayment(
+    String appointmentId,
+  ) async {
     return _request(
       'POST',
       '/payment/appointment',
@@ -442,15 +505,43 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> createOrderPayment(String orderId) async {
+    return _request('POST', '/payment/order', body: {'orderId': orderId});
+  }
+
+  static Future<Map<String, dynamic>> verifyPayment({
+    required String razorpayPaymentId,
+    required String razorpayOrderId,
+    required String razorpaySignature,
+    String? orderId,
+    String? appointmentId,
+    required String type,
+  }) async {
     return _request(
       'POST',
-      '/payment/order',
-      body: {'orderId': orderId},
+      '/payment/verify',
+      body: {
+        'razorpayPaymentId': razorpayPaymentId,
+        'razorpayOrderId': razorpayOrderId,
+        'razorpaySignature': razorpaySignature,
+        'orderId': orderId,
+        'appointmentId': appointmentId,
+        'type': type,
+      },
     );
   }
 
   static Future<Map<String, dynamic>> getPayments() async {
     return _request('GET', '/payment');
+  }
+
+  static String absoluteUrl(String? pathOrUrl) {
+    if (pathOrUrl == null || pathOrUrl.isEmpty) {
+      return '';
+    }
+    if (pathOrUrl.startsWith('http://') || pathOrUrl.startsWith('https://')) {
+      return pathOrUrl;
+    }
+    return '$publicBaseUrl$pathOrUrl';
   }
 
   static void connectSocket() {
