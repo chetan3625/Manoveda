@@ -1089,6 +1089,52 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  int _getTotalPatientsThisMonth() {
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+    final uniquePatients = <String>{};
+    
+    for (final appointment in _appointments) {
+      final createdAt = appointment['createdAt'];
+      if (createdAt != null) {
+        try {
+          final date = DateTime.parse(createdAt.toString());
+          if (date.isAfter(monthStart) && date.isBefore(now.add(const Duration(days: 1)))) {
+            final patientId = appointment['patient']?['_id']?.toString();
+            if (patientId != null) uniquePatients.add(patientId);
+          }
+        } catch (_) {}
+      }
+    }
+    return uniquePatients.length;
+  }
+
+  double _getTotalEarningsThisMonth() {
+    final now = DateTime.now();
+    final monthStart = DateTime(now.year, now.month, 1);
+    double total = 0;
+    
+    for (final appointment in _appointments) {
+      if (appointment['paymentStatus'] == 'paid' && appointment['status'] == 'confirmed') {
+        final createdAt = appointment['createdAt'];
+        if (createdAt != null) {
+          try {
+            final date = DateTime.parse(createdAt.toString());
+            if (date.isAfter(monthStart) && date.isBefore(now.add(const Duration(days: 1)))) {
+              final fee = appointment['fee'];
+              if (fee != null) total += (fee is int ? fee.toDouble() : fee as double);
+            }
+          } catch (_) {}
+        }
+      }
+    }
+    return total;
+  }
+
+  int _getPendingAppointments() {
+    return _appointments.where((a) => a['status'] == 'pending').length;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1111,6 +1157,35 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
                     subtitle:
                         'Receive appointment requests, accept or reject them, wait for payment, unlock chat, run video consultations, and generate prescription PDFs.',
                   ),
+                  const SizedBox(height: 20),
+                  GridView.count(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      _statCard(
+                        icon: Icons.people,
+                        title: _getTotalPatientsThisMonth().toString(),
+                        subtitle: 'Patients\nThis Month',
+                        color: Colors.blue,
+                      ),
+                      _statCard(
+                        icon: Icons.currency_rupee,
+                        title: '₹${_getTotalEarningsThisMonth().toStringAsFixed(0)}',
+                        subtitle: 'Earnings\nThis Month',
+                        color: Colors.green,
+                      ),
+                      _statCard(
+                        icon: Icons.schedule,
+                        title: _getPendingAppointments().toString(),
+                        subtitle: 'Pending\nAppointments',
+                        color: Colors.orange,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
                   _sectionHeader(
                     'Requests',
                     'Pending and active appointments from patients.',
@@ -1908,6 +1983,53 @@ Widget _contentCard({
 
 Widget _emptyCard(String message) =>
     _contentCard(title: 'Nothing here yet', subtitle: message);
+
+Widget _statCard({
+  required IconData icon,
+  required String title,
+  required String subtitle,
+  required Color color,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          color.withValues(alpha: 0.3),
+          color.withValues(alpha: 0.1),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: color.withValues(alpha: 0.3)),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, color: color, size: 28),
+        const SizedBox(height: 8),
+        Text(
+          title,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          subtitle,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: 11,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
 List<Widget> _buildNotificationSection(
   List<Map<String, dynamic>> items, {
