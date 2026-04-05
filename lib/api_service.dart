@@ -127,6 +127,8 @@ class ApiService {
     String? phone,
     String? specialization,
     int? experience,
+    String? qualification,
+    double? consultationFee,
   }) async {
     final data = await _request(
       'POST',
@@ -139,6 +141,8 @@ class ApiService {
         'phone': phone,
         'specialization': specialization,
         'experience': experience,
+        'qualification': qualification,
+        'consultationFee': consultationFee,
       },
     );
 

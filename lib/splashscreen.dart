@@ -22,6 +22,11 @@ class _LoginpageState extends State<Loginpage> {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _specializationController = TextEditingController();
+  final _experienceController = TextEditingController();
+  final _qualificationController = TextEditingController();
+  final _consultationFeeController = TextEditingController();
   String _selectedRole = 'patient';
 
   String? _token;
@@ -96,7 +101,7 @@ class _LoginpageState extends State<Loginpage> {
   Future<void> _register() async {
     if (_nameController.text.isEmpty || _emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
+        const SnackBar(content: Text('Please fill all required fields')),
       );
       return;
     }
@@ -108,6 +113,27 @@ class _LoginpageState extends State<Loginpage> {
       return;
     }
 
+    // Validate doctor-specific fields
+    if (_selectedRole == 'doctor') {
+      if (_specializationController.text.isEmpty ||
+          _experienceController.text.isEmpty ||
+          _qualificationController.text.isEmpty ||
+          _consultationFeeController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please fill all doctor-specific fields')),
+        );
+        return;
+      }
+
+      final fee = double.tryParse(_consultationFeeController.text.trim());
+      if (fee == null || fee <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid consultation fee')),
+        );
+        return;
+      }
+    }
+
     setState(() => _isLoggingIn = true);
 
     try {
@@ -116,6 +142,11 @@ class _LoginpageState extends State<Loginpage> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
         role: _selectedRole,
+        phone: _selectedRole == 'doctor' ? _phoneController.text.trim() : null,
+        specialization: _selectedRole == 'doctor' ? _specializationController.text.trim() : null,
+        experience: _selectedRole == 'doctor' ? int.tryParse(_experienceController.text.trim()) : null,
+        qualification: _selectedRole == 'doctor' ? _qualificationController.text.trim() : null,
+        consultationFee: _selectedRole == 'doctor' ? double.tryParse(_consultationFeeController.text.trim()) : null,
       );
 
       if (data['success'] == true) {
@@ -263,6 +294,41 @@ class _LoginpageState extends State<Loginpage> {
           ],
           onChanged: (value) => setState(() => _selectedRole = value!),
         ),
+        const SizedBox(height: 16),
+        TextField(
+          controller: _phoneController,
+          style: const TextStyle(color: Colors.white),
+          decoration: _inputDecoration('Phone Number', Icons.phone),
+          keyboardType: TextInputType.phone,
+        ),
+        const SizedBox(height: 16),
+        if (_selectedRole == 'doctor') ...[
+          TextField(
+            controller: _specializationController,
+            style: const TextStyle(color: Colors.white),
+            decoration: _inputDecoration('Specialization', Icons.medical_services),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _experienceController,
+            style: const TextStyle(color: Colors.white),
+            decoration: _inputDecoration('Experience (years)', Icons.work),
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _qualificationController,
+            style: const TextStyle(color: Colors.white),
+            decoration: _inputDecoration('Qualification', Icons.school),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _consultationFeeController,
+            style: const TextStyle(color: Colors.white),
+            decoration: _inputDecoration('Consultation Fee (₹)', Icons.currency_rupee),
+            keyboardType: TextInputType.number,
+          ),
+        ],
         const SizedBox(height: 16),
         TextField(
           controller: _passwordController,
