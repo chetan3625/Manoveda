@@ -230,8 +230,9 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
-    // Handle payment failure
-    _snack('Payment failed: ${response.message}');
+    // Handle payment failure with detailed logging
+    print('Payment Error: Code=${response.code}, Description=${response.message}');
+    _snack('Payment failed: ${response.message ?? "Unknown error"}');
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
@@ -310,6 +311,8 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
         final orderId = response['orderId'];
         final amount = appointment['fee'] ?? 0;
 
+        print('Payment Order Created: orderId=$orderId, amount=$amount');
+
         _currentPaymentAppointmentId = _idOf(appointment);
 
         var options = {
@@ -330,9 +333,11 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
         _razorpay.open(options);
       } else {
         _snack(response['message']?.toString() ?? 'Payment unavailable');
+        print('Payment creation failed: ${response['message']}');
       }
     } catch (e) {
-      _snack('Error creating payment order');
+      _snack('Error creating payment order: $e');
+      print('Error: $e');
     }
   }
 
@@ -875,6 +880,8 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
                         final orderId = response['orderId'];
                         final amount = order['totalAmount'] ?? 0;
 
+                        print('Order Payment Created: orderId=$orderId, amount=$amount');
+
                         _currentPaymentAppointmentId = null; // Not an appointment
                         _currentOrderId = _idOf(order);
 
@@ -896,9 +903,11 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
                         _razorpay.open(options);
                       } else {
                         _snack(response['message']?.toString() ?? 'Payment unavailable');
+                        print('Order payment creation failed: ${response['message']}');
                       }
                     } catch (e) {
-                      _snack('Error creating payment order');
+                      _snack('Error creating payment order: $e');
+                      print('Error: $e');
                     }
                   },
                   child: const Text('Pay Order'),
