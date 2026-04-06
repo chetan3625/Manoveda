@@ -8,6 +8,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lottie/lottie.dart';
+import 'app_config.dart';
 
 class VoiceChatbotScreen extends StatefulWidget {
   const VoiceChatbotScreen({super.key});
@@ -31,16 +32,11 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
   String _statusMessage = 'Tap to start talking';
   String _apiError = '';
 
-  // Structured conversation history for AI context
-  final List<Map<String, String>> _messages = [
-    {
-      'role': 'system',
-      'content': 'You are a supportive mental wellness assistant. Reply in the language the user uses (Marathi or English). IMPORTANT: If you respond in Marathi, use only Marathi Devanagari script. Do not provide translations, transliterations, or explanations in English. Keep responses concise for voice conversation.'
-    }
-  ];
+  static const String _assistantInstruction =
+      'You are a supportive mental wellness assistant. Reply in the language the user uses (Marathi or English). IMPORTANT: If you respond in Marathi, use only Marathi Devanagari script. Do not provide translations, transliterations, or explanations in English. Keep responses concise for voice conversation.';
 
-  // API Key
-  final String _openRouterApiKey = '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'.trim();
+  // Structured conversation history for AI context
+  final List<Map<String, String>> _messages = [];
 
   // Sound visualization data
   final List<double> _audioLevels = List.filled(20, 0.0);
@@ -243,6 +239,16 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
 
   Future<void> _processUserMessage(String message) async {
     if (!mounted) return;
+
+    if (!AppConfig.hasOpenRouterApiKey) {
+      setState(() {
+        _apiError =
+            'OpenRouter API key is missing.';
+        _statusMessage = 'AI assistant is not configured';
+      });
+      return;
+    }
+
     setState(() {
       _isProcessing = true;
       _statusMessage = 'Processing...';
@@ -274,40 +280,58 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
         _statusMessage = 'Tap to try again';
       });
     } finally {
-      if (!mounted) return;
-      setState(() {
-        _isProcessing = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
     }
   }
 
   Future<String> _callOpenRouter() async {
-  final url = Uri.parse('https://openrouter.ai/api/v1/chat/completions');
+    final requestMessages = <Map<String, String>>[
+      {
+        'role': 'user',
+        'content': 'Instruction: $_assistantInstruction',
+      },
+      ..._messages,
+    ];
 
-  final headers = {
-    'Authorization': 'Bearer $_openRouterApiKey',
-    'Content-Type': 'application/json',
-  };
+    final response = await http.post(
+      Uri.parse('https://openrouter.ai/api/v1/chat/completions'),
+      headers: {
+        'Authorization': 'Bearer ${AppConfig.openRouterApiKey}',
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://manoveda.app',
+        'X-Title': 'Manoveda Voice Assistant',
+      },
+      body: jsonEncode({
+        'model': 'google/gemma-3-4b-it:free',
+        'messages': requestMessages,
+        'temperature': 0.7,
+        'max_tokens': 200,
+      }),
+    );
 
-  final body = jsonEncode({
-    'model': 'google/gemma-3-4b-it:free',
-    'messages': _messages,
-    'stream': false,
-  });
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    if (response.statusCode != 200) {
+      final apiMessage =
+          data['error']?['message']?.toString() ?? 'Unknown OpenRouter API error';
+      throw Exception(apiMessage);
+    }
 
-  final response = await http.post(
-    url,
-    headers: headers,
-    body: body,
-  );
+    final choices = data['choices'];
+    if (choices is! List || choices.isEmpty) {
+      throw Exception('OpenRouter returned an empty response.');
+    }
 
-  if (response.statusCode == 200) {
-    final data = jsonDecode(response.body);
-    return data['choices'][0]['message']['content'] ?? 'No response';
-  } else {
-    throw 'API Error: ${response.body}';
+    final message = choices.first['message']?['content']?.toString().trim() ?? '';
+    if (message.isEmpty) {
+      throw Exception('OpenRouter returned an empty message.');
+    }
+
+    return message;
   }
-}
 
 
   Future<void> _speak(String text) async {
@@ -324,7 +348,7 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
         final matches = marathiSegmentRegex.allMatches(text);
         textToSpeak = matches
             .map((m) => m.group(0))
-            .where((s) => s != null && s!.trim().isNotEmpty && RegExp(r'[\u0900-\u097F]').hasMatch(s!))
+            .where((s) => s != null && s.trim().isNotEmpty && RegExp(r'[\u0900-\u097F]').hasMatch(s))
             .join(' ')
             .trim();
       }

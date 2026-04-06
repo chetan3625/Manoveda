@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:manoveda/splashscreen.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
@@ -11,6 +12,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 import 'add_medicine_screen.dart';
 import 'api_service.dart';
@@ -409,15 +411,97 @@ List<Map<String, dynamic>> _medicines = [];
     await _refresh(silent: true);
   }
 
+  bool _isPdfUrl(String url) {
+    final parsed = Uri.tryParse(url);
+    final path = parsed?.path.toLowerCase() ?? url.toLowerCase();
+    return path.endsWith('.pdf');
+  }
+
+  bool _shouldPreferExternalOpen(String url) {
+    final host = Uri.tryParse(url)?.host.toLowerCase() ?? '';
+    const externalHosts = <String>[
+      'meet.jit.si',
+      'meet.google.com',
+      'zoom.us',
+      'teams.microsoft.com',
+      'web.skype.com',
+    ];
+    return externalHosts.any((item) => host == item || host.endsWith('.$item'));
+  }
+
+  Future<bool> _tryLaunchUrl(
+    Uri uri, {
+    LaunchMode mode = LaunchMode.platformDefault,
+  }) async {
+    try {
+      return await launchUrl(uri, mode: mode);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _openPdfLink(String title, String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      _snack('Unable to open $title. The PDF link is invalid.');
+      return;
+    }
+
+    if (!mounted) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PdfViewerPage(title: title, url: url),
+      ),
+    );
+  }
+
   Future<void> _openLink(String title, String url) async {
     if (url.isEmpty) {
       _snack('$title is not available yet');
       return;
     }
+
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      _snack('Unable to open $title. The link is invalid.');
+      return;
+    }
+
+    if (_isPdfUrl(url)) {
+      await _openPdfLink(title, url);
+      return;
+    }
+
+    if (_shouldPreferExternalOpen(url)) {
+      final openedExternally = await _tryLaunchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (openedExternally) {
+        return;
+      }
+
+      final openedInBrowser = await _tryLaunchUrl(
+        uri,
+        mode: LaunchMode.platformDefault,
+      );
+      if (openedInBrowser) {
+        return;
+      }
+    }
+
+    if (!mounted) return;
+
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => LinkWebViewPage(title: title, url: url),
+        builder: (_) => LinkWebViewPage(
+          title: title,
+          url: url,
+          fallbackUrl: url,
+        ),
       ),
     );
   }
@@ -963,7 +1047,10 @@ List<Map<String, dynamic>> _medicines = [];
               'Diagnosis: ${item['diagnosis'] ?? 'Not provided'}\nMedicines: $medicines',
           ),
           footer: ElevatedButton(
-            onPressed: () => _generateAndShowPdf(item),
+            onPressed: () => _openLink(
+              'Prescription PDF',
+              ApiService.absoluteUrl(item['pdfUrl']?.toString()),
+            ),
             child: const Text('View PDF'),
           ),
         );
@@ -1503,6 +1590,42 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
     );
   }
 
+  Future<void> _openMeetingLink(String url) async {
+    if (url.isEmpty) {
+      _snack('Consultation Room is not available yet');
+      return;
+    }
+
+    final uri = Uri.tryParse(url);
+    if (uri == null) {
+      _snack('Unable to open consultation room. The link is invalid.');
+      return;
+    }
+
+    try {
+      final opened = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (opened) {
+        return;
+      }
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LinkWebViewPage(
+          title: 'Consultation Room',
+          url: url,
+          fallbackUrl: url,
+        ),
+      ),
+    );
+  }
+
   void _snack(String message) {
     ScaffoldMessenger.of(
       context,
@@ -1747,6 +1870,11 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
   }
 
   Widget _buildDashboard() {
+    final dashboardAppointments = _dashboardAppointments();
+    final dashboardPatients = _dashboardPatients();
+    final dashboardFeedbacks = _dashboardFeedbacks();
+    final dashboardNotifications = _dashboardNotifications();
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -1756,48 +1884,77 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
               'Receive appointment requests, accept or reject them, wait for payment, unlock chat, run video consultations, and generate prescription PDFs.',
         ),
         const SizedBox(height: 20),
-        GridView.count(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-                      _statCard(
-                        icon: Icons.people,
-                        title: _getTotalPatientsThisMonth().toString(),
-                        subtitle: 'Patients\nThis Month',
-                        color: Colors.blue,
-                      ),
-                      _statCard(
-                        icon: Icons.currency_rupee,
-                        title: '₹${_getTotalEarningsThisMonth().toStringAsFixed(0)}',
-                        subtitle: 'Earnings\nThis Month',
-                        color: Colors.green,
-                      ),
-                      _statCard(
-                        icon: Icons.schedule,
-                        title: _getPendingAppointments().toString(),
-                        subtitle: 'Pending\nAppointments',
-                        color: Colors.orange,
-                      ),
-                    ],
-                  ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final crossAxisCount = width >= 900
+                ? 3
+                : width >= 560
+                    ? 2
+                    : 1;
+            final aspectRatio = width >= 900
+                ? 1.25
+                : width >= 560
+                    ? 1.45
+                    : 2.6;
+
+            return GridView.count(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: aspectRatio,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                _statCard(
+                  icon: Icons.people,
+                  title: _getTotalPatientsThisMonth().toString(),
+                  subtitle: 'Patients\nThis Month',
+                  color: Colors.blue,
+                ),
+                _statCard(
+                  icon: Icons.currency_rupee,
+                  title: '₹${_getTotalEarningsThisMonth().toStringAsFixed(0)}',
+                  subtitle: 'Earnings\nThis Month',
+                  color: Colors.green,
+                ),
+                _statCard(
+                  icon: Icons.schedule,
+                  title: _getPendingAppointments().toString(),
+                  subtitle: 'Pending\nAppointments',
+                  color: Colors.orange,
+                ),
+              ],
+            );
+          },
+        ),
                   const SizedBox(height: 24),
                   _sectionHeader(
                     'Requests',
                     'Pending and active appointments from patients.',
                   ),
-                  ..._appointments.map((appointment) {
+                  if (dashboardAppointments.isEmpty)
+                    _emptyCard('No request data available')
+                  else
+                    ...dashboardAppointments.map((appointment) {
                     final patient =
                         appointment['patient'] as Map<String, dynamic>? ?? {};
                     final unlocked =
                         appointment['status'] == 'confirmed' &&
                         appointment['paymentStatus'] == 'paid';
+                    final title = _displayText(patient['name']) ??
+                        _displayText(appointment['patientName']) ??
+                        'Request ${_shortId(appointment)}';
+                    final details = [
+                      _displayText(appointment['type']),
+                      _displayText(appointment['consultationMode']),
+                      _displayAppointmentDate(appointment),
+                      _displayStatusLine(appointment),
+                    ].whereType<String>().join('\n');
+
                     return _contentCard(
-                      title: Text(patient['name']?.toString() ?? 'Patient'),
-                      subtitle: Text(
-                          '${appointment['type']} • ${appointment['consultationMode'] ?? 'scheduled'}\n${_formatAppointmentDate(appointment)}\nStatus: ${appointment['status']} | Payment: ${appointment['paymentStatus']}'),
+                      title: Text(title),
+                      subtitle: Text(details),
                       footer: Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -1825,17 +1982,8 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
                           if ((appointment['meetingLink']?.toString() ?? '')
                               .isNotEmpty)
                             OutlinedButton(
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => LinkWebViewPage(
-                                    title: 'Consultation Room',
-                                    url:
-                                        appointment['meetingLink']
-                                            ?.toString() ??
-                                        '',
-                                  ),
-                                ),
+                              onPressed: () => _openMeetingLink(
+                                appointment['meetingLink']?.toString() ?? '',
                               ),
                               child: const Text('Open Meeting'),
                             ),
@@ -1849,7 +1997,7 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
                     );
                   }),
                   ..._buildNotificationSection(
-                    _notifications,
+                    dashboardNotifications,
                     onMarkRead: (id) async {
                       await ApiService.markDoctorNotificationRead(id);
                       await _refresh(silent: true);
@@ -1862,20 +2010,40 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
                     'Patients',
                     'People connected to your appointments.',
                   ),
-                  ..._patients.map(
+                  if (dashboardPatients.isEmpty)
+                    _emptyCard('No patient data available')
+                  else
+                    ...dashboardPatients.map(
                     (patient) => _contentCard(
-                      title: Text(patient['name']?.toString() ?? 'Patient'),
+                      title: Text(
+                        _displayText(patient['name']) ??
+                            'Patient ${_shortId(patient)}',
+                      ),
                       subtitle: Text(
-                          '${patient['email'] ?? ''}\n${patient['phone'] ?? ''}'),
+                        [
+                          _displayText(patient['email']),
+                          _displayText(patient['phone']),
+                        ].whereType<String>().join('\n'),
+                      ),
                     ),
                   ),
                   _sectionHeader('Feedback', 'Recent feedback.'),
-                  ..._feedbacks.map((item) {
+                  if (dashboardFeedbacks.isEmpty)
+                    _emptyCard('No feedback data available')
+                  else
+                    ...dashboardFeedbacks.map((item) {
                     final user = item['user'] as Map<String, dynamic>? ?? {};
+                    final reviewer = _displayText(user['name']) ??
+                        'Feedback ${_shortId(item)}';
+                    final review = _displayText(item['review']);
+                    final rating = item['rating']?.toString();
                     return _contentCard(
                       title: Text(
-                          '${user['name'] ?? 'Patient'} • ${item['rating'] ?? 0}/5'),
-                      subtitle: Text(item['review']?.toString() ?? 'No review'),
+                        rating != null && rating.isNotEmpty
+                            ? '$reviewer • $rating/5'
+                            : reviewer,
+                      ),
+                      subtitle: Text(review ?? ''),
                     );
                   }),
                 ],
@@ -1883,6 +2051,7 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
   }
 
   Widget _buildPatientsView() {
+    final patients = _dashboardPatients();
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -1913,14 +2082,21 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
           },
         ),
         const SizedBox(height: 16),
-        if (_patients.isEmpty)
+        if (patients.isEmpty)
           _emptyCard('No patients found')
         else
-          ..._patients.map(
+          ...patients.map(
             (patient) => _contentCard(
-              title: Text(patient['name']?.toString() ?? 'Patient'),
+              title: Text(
+                _displayText(patient['name']) ??
+                    'Patient ${_shortId(patient)}',
+              ),
               subtitle: Text(
-                  '${patient['email'] ?? ''}\n${patient['phone'] ?? ''}\nRegistered: ${_formatDate(patient['createdAt']?.toString())}'),
+                  [
+                    _displayText(patient['email']),
+                    _displayText(patient['phone']),
+                    _displayRegisteredDate(patient),
+                  ].whereType<String>().join('\n')),
             ),
           ),
       ],
@@ -2196,14 +2372,8 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
                       ),
                     if ((appointment['meetingLink']?.toString() ?? '').isNotEmpty)
                       OutlinedButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => LinkWebViewPage(
-                              title: 'Consultation Room',
-                              url: appointment['meetingLink']?.toString() ?? '',
-                            ),
-                          ),
+                        onPressed: () => _openMeetingLink(
+                          appointment['meetingLink']?.toString() ?? '',
                         ),
                         child: const Text('Open Meeting'),
                       ),
@@ -2344,6 +2514,7 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
   }
 
   Widget _buildFeedbackView() {
+    final feedbacks = _dashboardFeedbacks();
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -2411,19 +2582,25 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
         const SizedBox(height: 16),
         
         // Feedbacks list
-        if (_feedbacks.isEmpty)
+        if (feedbacks.isEmpty)
           _emptyCard('No feedbacks found')
         else
-          ..._feedbacks.map((item) {
+          ...feedbacks.map((item) {
             final user = item['user'] as Map<String, dynamic>? ?? {};
             final hasReply = item['reply'] != null && item['reply'].toString().isNotEmpty;
-            
+            final reviewer = _displayText(user['name']) ?? 'Feedback ${_shortId(item)}';
+            final review = _displayText(item['review']) ?? '';
+             
             return _contentCard(
-              title: Text('${user['name'] ?? 'Patient'} • ${item['rating'] ?? 0}/5 ⭐'),
+              title: Text(
+                item['rating'] != null
+                    ? '$reviewer • ${item['rating']}/5 ⭐'
+                    : reviewer,
+              ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item['review']?.toString() ?? 'No review'),
+                  Text(review),
                   if (hasReply) ...[
                     const SizedBox(height: 8),
                     Container(
@@ -2479,6 +2656,7 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
   }
 
   Widget _buildNotificationsView() {
+    final notifications = _dashboardNotifications();
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -2532,7 +2710,7 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
             ),
             
             // Mark all read button
-            if (_notifications.any((n) => !(n['isRead'] ?? false)))
+            if (notifications.any((n) => !(n['isRead'] ?? false)))
               FilledButton.icon(
                 onPressed: () async {
                   await ApiService.markAllDoctorNotificationsRead();
@@ -2547,11 +2725,11 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
         const SizedBox(height: 16),
         
         // Notifications list
-        if (_notifications.isEmpty)
+        if (notifications.isEmpty)
           _emptyCard('No doctor notifications yet')
         else
           ..._buildNotificationSection(
-            _notifications,
+            notifications,
             onMarkRead: (id) async {
               await ApiService.markDoctorNotificationRead(id);
               await _refresh(silent: true);
@@ -2566,6 +2744,47 @@ class _DoctorPortalScreenState extends State<DoctorPortalScreen> {
           ),
       ],
     );
+  }
+
+  List<Map<String, dynamic>> _dashboardAppointments() {
+    return _appointments.where((appointment) {
+      final patient = appointment['patient'] as Map<String, dynamic>? ?? {};
+      return _displayText(patient['name']) != null ||
+          _displayText(appointment['patientName']) != null ||
+          _displayText(appointment['type']) != null ||
+          _displayText(appointment['consultationMode']) != null ||
+          _displayText(appointment['status']) != null ||
+          _displayText(appointment['paymentStatus']) != null ||
+          _displayAppointmentDate(appointment) != null;
+    }).toList();
+  }
+
+  List<Map<String, dynamic>> _dashboardPatients() {
+    return _patients.where((patient) {
+      return _displayText(patient['name']) != null ||
+          _displayText(patient['email']) != null ||
+          _displayText(patient['phone']) != null ||
+          _displayRegisteredDate(patient) != null;
+    }).toList();
+  }
+
+  List<Map<String, dynamic>> _dashboardFeedbacks() {
+    return _feedbacks.where((item) {
+      final user = item['user'] as Map<String, dynamic>? ?? {};
+      return _displayText(user['name']) != null ||
+          _displayText(item['review']) != null ||
+          item['rating'] != null ||
+          _displayText(item['reply']) != null;
+    }).toList();
+  }
+
+  List<Map<String, dynamic>> _dashboardNotifications() {
+    return _notifications.where((item) {
+      return _displayText(item['title']) != null ||
+          _displayText(item['message']) != null ||
+          _displayText(item['type']) != null ||
+          _displayNotificationDate(item) != null;
+    }).toList();
   }
 }
 
@@ -2957,29 +3176,215 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
 class LinkWebViewPage extends StatefulWidget {
   final String title;
   final String url;
+  final String? fallbackUrl;
 
-  const LinkWebViewPage({super.key, required this.title, required this.url});
+  const LinkWebViewPage({
+    super.key,
+    required this.title,
+    required this.url,
+    this.fallbackUrl,
+  });
 
   @override
   State<LinkWebViewPage> createState() => _LinkWebViewPageState();
 }
 
+class PdfViewerPage extends StatefulWidget {
+  final String title;
+  final String url;
+
+  const PdfViewerPage({super.key, required this.title, required this.url});
+
+  @override
+  State<PdfViewerPage> createState() => _PdfViewerPageState();
+}
+
+class _PdfViewerPageState extends State<PdfViewerPage> {
+  bool _hasError = false;
+
+  Future<void> _openExternally() async {
+    final uri = Uri.tryParse(widget.url);
+    if (uri == null) return;
+
+    final opened = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open PDF externally.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: [
+          IconButton(
+            onPressed: _openExternally,
+            icon: const Icon(Icons.open_in_new),
+          ),
+        ],
+      ),
+      body: _hasError
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.picture_as_pdf_outlined,
+                      size: 48,
+                      color: Colors.redAccent,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Unable to load this PDF inside the app.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      onPressed: _openExternally,
+                      icon: const Icon(Icons.open_in_browser),
+                      label: const Text('Open Externally'),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : SfPdfViewer.network(
+              widget.url,
+              canShowScrollHead: true,
+              canShowScrollStatus: true,
+              onDocumentLoadFailed: (_) {
+                if (!mounted) return;
+                setState(() {
+                  _hasError = true;
+                });
+              },
+            ),
+    );
+  }
+}
+
 class _LinkWebViewPageState extends State<LinkWebViewPage> {
   late final WebViewController _controller;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (_) {
+            if (!mounted) return;
+            setState(() {
+              _isLoading = true;
+              _errorMessage = null;
+            });
+          },
+          onPageFinished: (_) {
+            if (!mounted) return;
+            setState(() {
+              _isLoading = false;
+            });
+          },
+          onWebResourceError: (error) {
+            if (!mounted) return;
+            setState(() {
+              _isLoading = false;
+              _errorMessage = error.description.isNotEmpty
+                  ? error.description
+                  : 'Unable to load webpage on this device.';
+            });
+          },
+        ),
+      )
       ..loadRequest(Uri.parse(widget.url));
+
+    if (_controller.platform is AndroidWebViewController) {
+      AndroidWebViewController.enableDebugging(true);
+      (_controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
+    }
+  }
+
+  Future<void> _openExternally() async {
+    final target = widget.fallbackUrl ?? widget.url;
+    final uri = Uri.tryParse(target);
+    if (uri == null) return;
+
+    try {
+      final opened = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!opened && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No supported app or browser found.')),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to open link externally.')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      body: WebViewWidget(controller: _controller),
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: [
+          IconButton(
+            onPressed: _openExternally,
+            icon: const Icon(Icons.open_in_browser),
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_errorMessage != null)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.redAccent,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _errorMessage!,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton.icon(
+                      onPressed: _openExternally,
+                      icon: const Icon(Icons.open_in_new),
+                      label: const Text('Open Externally'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator()),
+        ],
+      ),
     );
   }
 }
@@ -3476,19 +3881,25 @@ Widget _statCard({
       children: [
         Icon(icon, color: color, size: 28),
         const SizedBox(height: 8),
-        Text(
-          title,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            title,
+            maxLines: 1,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 11,
           ),
@@ -3511,25 +3922,34 @@ List<Widget> _buildNotificationSection(
   return [
     _sectionHeader('Notifications', subtitle),
     ...items.map(
-      (item) => _contentCard(
-        title: Text(item['title']?.toString() ?? 'Notification'),
-        subtitle: Text(
-            '${item['message'] ?? ''}\n${_formatDate(item['createdAt']?.toString())}'),
-        footer: Row(
-          children: [
-            if (item['isRead'] != true)
-              TextButton(
-                onPressed: () => onMarkRead(_idOf(item)),
-                child: const Text('Mark Read'),
-              ),
-            if (onDelete != null)
-              TextButton(
-                onPressed: () => onDelete(_idOf(item)),
-                child: const Text('Delete', style: TextStyle(color: Colors.white)),
-              ),
-          ],
-        ),
-      ),
+      (item) {
+        final title = _displayText(item['title']) ??
+            _displayText(item['type']) ??
+            'Notification ${_shortId(item)}';
+        final subtitleText = [
+          _displayText(item['message']),
+          _displayNotificationDate(item),
+        ].whereType<String>().join('\n');
+
+        return _contentCard(
+          title: Text(title),
+          subtitle: Text(subtitleText),
+          footer: Row(
+            children: [
+              if (item['isRead'] != true)
+                TextButton(
+                  onPressed: () => onMarkRead(_idOf(item)),
+                  child: const Text('Mark Read'),
+                ),
+              if (onDelete != null)
+                TextButton(
+                  onPressed: () => onDelete(_idOf(item)),
+                  child: const Text('Delete', style: TextStyle(color: Colors.white)),
+                ),
+            ],
+          ),
+        );
+      },
     ),
   ];
 }
@@ -3580,6 +4000,57 @@ String _formatDate(String? raw, {bool dateOnly = false}) {
   return dateOnly
       ? DateFormat('dd MMM yyyy').format(parsed)
       : DateFormat('dd MMM yyyy, hh:mm a').format(parsed);
+}
+
+String? _displayText(dynamic value) {
+  final text = value?.toString().trim();
+  if (text == null || text.isEmpty || text == 'null') {
+    return null;
+  }
+  return text;
+}
+
+String? _displayAppointmentDate(Map<String, dynamic> appointment) {
+  final date = appointment['date']?.toString();
+  final time = _displayText(appointment['time']);
+  if ((date == null || date.isEmpty) && time == null) {
+    return null;
+  }
+  final formattedDate = date == null || date.isEmpty
+      ? null
+      : _formatDate(date, dateOnly: true);
+  if (formattedDate == null) {
+    return time;
+  }
+  return time == null ? formattedDate : '$formattedDate at $time';
+}
+
+String? _displayStatusLine(Map<String, dynamic> item) {
+  final status = _displayText(item['status']);
+  final payment = _displayText(item['paymentStatus']);
+  if (status == null && payment == null) {
+    return null;
+  }
+  if (status != null && payment != null) {
+    return 'Status: $status | Payment: $payment';
+  }
+  return status != null ? 'Status: $status' : 'Payment: $payment';
+}
+
+String? _displayRegisteredDate(Map<String, dynamic> patient) {
+  final createdAt = patient['createdAt']?.toString();
+  if (createdAt == null || createdAt.isEmpty) {
+    return null;
+  }
+  return 'Registered: ${_formatDate(createdAt)}';
+}
+
+String? _displayNotificationDate(Map<String, dynamic> item) {
+  final createdAt = item['createdAt']?.toString();
+  if (createdAt == null || createdAt.isEmpty) {
+    return null;
+  }
+  return _formatDate(createdAt);
 }
 
 String _patientTitle(PatientSection section) {
