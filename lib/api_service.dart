@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -73,33 +74,39 @@ class ApiService {
     final uri = Uri.parse('$baseUrl$path');
     late http.Response response;
 
-    switch (method) {
-      case 'GET':
-        response = await http.get(uri, headers: headers);
-        break;
-      case 'POST':
-        response = await http.post(
-          uri,
-          headers: headers,
-          body: body == null ? null : jsonEncode(body),
-        );
-        break;
-      case 'PUT':
-        response = await http.put(
-          uri,
-          headers: headers,
-          body: body == null ? null : jsonEncode(body),
-        );
-        break;
-      case 'DELETE':
-        response = await http.delete(
-          uri,
-          headers: headers,
-          body: body == null ? null : jsonEncode(body),
-        );
-        break;
-      default:
-        throw UnsupportedError('Unsupported method $method');
+    try {
+      switch (method) {
+        case 'GET':
+          response = await http.get(uri, headers: headers);
+          break;
+        case 'POST':
+          response = await http.post(
+            uri,
+            headers: headers,
+            body: body == null ? null : jsonEncode(body),
+          );
+          break;
+        case 'PUT':
+          response = await http.put(
+            uri,
+            headers: headers,
+            body: body == null ? null : jsonEncode(body),
+          );
+          break;
+        case 'DELETE':
+          response = await http.delete(
+            uri,
+            headers: headers,
+            body: body == null ? null : jsonEncode(body),
+          );
+          break;
+        default:
+          throw UnsupportedError('Unsupported method $method');
+      }
+    } on SocketException catch (_) {
+      throw Exception(
+        'Network error: unable to reach ${uri.host}. Check internet/DNS on the device and try again.',
+      );
     }
 
     if (response.body.isEmpty) {
@@ -130,12 +137,13 @@ class ApiService {
     String? qualification,
     double? consultationFee,
   }) async {
+    final normalizedEmail = email.trim().toLowerCase();
     final data = await _request(
       'POST',
       '/auth/register',
       body: {
         'name': name,
-        'email': email,
+        'email': normalizedEmail,
         'password': password,
         'role': role,
         'phone': phone,
@@ -159,10 +167,11 @@ class ApiService {
     required String email,
     required String password,
   }) async {
+    final normalizedEmail = email.trim().toLowerCase();
     final data = await _request(
       'POST',
       '/auth/login',
-      body: {'email': email, 'password': password},
+      body: {'email': normalizedEmail, 'password': password},
     );
 
     if (data['success'] == true) {

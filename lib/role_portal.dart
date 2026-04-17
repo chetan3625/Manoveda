@@ -33,6 +33,9 @@ import 'mood_detection_screen.dart';
 import 'yoga_screen.dart';
 import 'aboutus.dart';
 import 'cart_screen.dart';
+import 'certificate_screen.dart';
+import 'bhagavad_gita_screen.dart';
+import 'water_intake_screen.dart';
 
 class RolePortalPage extends StatefulWidget {
   const RolePortalPage({super.key});
@@ -603,6 +606,9 @@ List<Map<String, dynamic>> _medicines = [];
               _wellnessToolTile(Icons.smart_toy, 'AI Voice Assistant', () => _openPage(const VoiceChatbotScreen())),
               _wellnessToolTile(Icons.history_toggle_off, 'Wellness Timeline', () => _openPage(const ScheduleScreen())),
               _wellnessToolTile(Icons.info_outline, 'About Us', () => _openPage(const AboutUsScreen())),
+              _wellnessToolTile(Icons.card_membership, 'My Certificate', () => _openPage(const CertificateScreen())),
+              _wellnessToolTile(Icons.menu_book, 'Bhagavad Gita', () => _openPage(const BhagavadGitaScreen())),
+              _wellnessToolTile(Icons.water_drop, 'Water Intake', () => _openPage(const WaterIntakeScreen())),
               const Divider(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -703,12 +709,7 @@ List<Map<String, dynamic>> _medicines = [];
       return [
         _heroCard(
           title: 'Welcome ${_profile?['name'] ?? 'Patient'}',
-          subtitle:
-              'Request doctors, wait for approval, pay online, unlock chat, join video, and access prescription PDFs.',
-          action: FilledButton(
-            onPressed: () => setState(() => _section = PatientSection.wellness),
-            child: const Text('Go to Wellness'),
-          ),
+          subtitle: '"$_quote"\n- $_author',
         ),
         _statsWrap([
           _StatCard(
@@ -774,28 +775,6 @@ List<Map<String, dynamic>> _medicines = [];
 
   List<Widget> _wellnessBody() {
     return [
-      Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '"$_quote"',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '- $_author',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      const SizedBox(height: 16),
       if (_loadingDashboard)
         const Center(child: CircularProgressIndicator())
       else if (_summary != null)
@@ -911,11 +890,14 @@ List<Map<String, dynamic>> _medicines = [];
                 ),
               if (prescription != null)
                 OutlinedButton(
-                  onPressed: () => _openLink(
-                    'Prescription PDF',
-                    ApiService.absoluteUrl(prescription['pdfUrl']?.toString()),
-                  ),
-                  child: const Text('View Prescription'),
+                  onPressed: () {
+                    final modifiedPrescription = Map<String, dynamic>.from(prescription);
+                    if (modifiedPrescription['doctor'] == null && appointment['doctor'] != null) {
+                      modifiedPrescription['doctor'] = appointment['doctor'];
+                    }
+                    _generateAndShowPdf(modifiedPrescription);
+                  },
+                  child: const Text('Download Prescription'),
                 ),
             ],
           ),
@@ -997,23 +979,17 @@ List<Map<String, dynamic>> _medicines = [];
       await file.writeAsBytes(await pdf.save());
       print('PDF saved to: ${file.path}');
       
-      // Open the PDF file
-      print('Opening PDF...');
-      final uri = Uri.file(file.path);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-        print('PDF opened successfully');
-      } else {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✓ PDF saved to:\n${file.path}'),
-            duration: const Duration(seconds: 4),
-            backgroundColor: Colors.green[700],
+      // Open the PDF natively inside the app!
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => LocalPdfViewerPage(
+            title: 'Prescription PDF',
+            filePath: file.path,
           ),
-        );
-      }
-      
+        ),
+      );
     } catch (e) {
       print('ERROR generating PDF: $e');
       print('Stack trace: ${StackTrace.current}');
@@ -1047,11 +1023,8 @@ List<Map<String, dynamic>> _medicines = [];
               'Diagnosis: ${item['diagnosis'] ?? 'Not provided'}\nMedicines: $medicines',
           ),
           footer: ElevatedButton(
-            onPressed: () => _openLink(
-              'Prescription PDF',
-              ApiService.absoluteUrl(item['pdfUrl']?.toString()),
-            ),
-            child: const Text('View PDF'),
+            onPressed: () => _generateAndShowPdf(item),
+            child: const Text('Download PDF'),
           ),
         );
       }),
@@ -3173,6 +3146,27 @@ class _ChatRoomPageState extends State<ChatRoomPage> {
   }
 }
 
+class LocalPdfViewerPage extends StatelessWidget {
+  final String title;
+  final String filePath;
+
+  const LocalPdfViewerPage({super.key, required this.title, required this.filePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: SfPdfViewer.file(
+        File(filePath),
+        canShowScrollHead: true,
+        canShowScrollStatus: true,
+      ),
+    );
+  }
+}
+
 class LinkWebViewPage extends StatefulWidget {
   final String title;
   final String url;
@@ -3313,6 +3307,12 @@ class _LinkWebViewPageState extends State<LinkWebViewPage> {
       AndroidWebViewController.enableDebugging(true);
       (_controller.platform as AndroidWebViewController)
           .setMediaPlaybackRequiresUserGesture(false);
+          
+      // Ensure Android WebRTC permissions are requested automatically for video calls
+      (_controller.platform as AndroidWebViewController)
+          .setOnPlatformPermissionRequest((request) {
+        request.grant();
+      });
     }
   }
 

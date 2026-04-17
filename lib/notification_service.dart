@@ -98,15 +98,17 @@ class NotificationService {
       title,
       body,
       _nextInstanceOfTime(hour, minute),
-      const NotificationDetails(
+      NotificationDetails(
         android: AndroidNotificationDetails(
           'daily_reminder_channel',
           'Daily Reminders',
           channelDescription: 'Fixed time wellness reminders',
           importance: Importance.max,
           priority: Priority.high,
+          color: const Color(0xFF0F62FE),
+          styleInformation: BigTextStyleInformation(body),
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: const DarwinNotificationDetails(),
       ),
       androidScheduleMode: canScheduleExact
           ? AndroidScheduleMode.exactAllowWhileIdle

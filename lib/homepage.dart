@@ -21,6 +21,9 @@ import 'mind_games_screen.dart';
 import 'mood_detection_screen.dart';
 import 'mood_tracker.dart';
 import 'role_portal.dart';
+import 'certificate_screen.dart';
+import 'bhagavad_gita_screen.dart';
+import 'water_intake_screen.dart';
 
 
 class Homepage extends StatefulWidget {
@@ -146,6 +149,12 @@ class _HomepageState extends State<Homepage> {
           () => _open(const ScheduleScreen())),
       _DrawerItem(Icons.account_circle_rounded, 'About Us',
           () => _open(const AboutUsScreen())),
+      _DrawerItem(Icons.card_membership, 'My Certificate',
+          () => _open(const CertificateScreen())),
+      _DrawerItem(Icons.menu_book, 'Bhagavad Gita',
+          () => _open(const BhagavadGitaScreen())),
+      _DrawerItem(Icons.water_drop, 'Water Intake',
+          () => _open(const WaterIntakeScreen())),
       _DrawerItem(Icons.person, 'Patient Portal',
           () => _openPatientPortal()),
     ];

@@ -9,6 +9,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lottie/lottie.dart';
 import 'app_config.dart';
+import 'api_service.dart';
 
 class VoiceChatbotScreen extends StatefulWidget {
   const VoiceChatbotScreen({super.key});
@@ -18,6 +19,13 @@ class VoiceChatbotScreen extends StatefulWidget {
 }
 
 class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTickerProviderStateMixin {
+  static const String _assistantSetupMessage =
+      'Voice assistant is not configured.';
+  static const String _assistantInvalidKeyMessage =
+      'OpenRouter rejected the configured key: User not found. Replace it with a valid OpenRouter key.';
+  static const String _assistantBusyMessage =
+      'The AI provider is busy right now. Please try again in a moment.';
+
   // Speech and TTS instances
   late stt.SpeechToText _speechToText;
   late FlutterTts _flutterTts;
@@ -242,8 +250,7 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
 
     if (!AppConfig.hasOpenRouterApiKey) {
       setState(() {
-        _apiError =
-            'OpenRouter API key is missing.';
+        _apiError = _assistantSetupMessage;
         _statusMessage = 'AI assistant is not configured';
       });
       return;
@@ -276,7 +283,11 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _apiError = e.toString().replaceFirst('Exception: ', '').replaceFirst('Failed to get response: ', '');
+        _apiError = _humanizeApiError(
+          e.toString()
+              .replaceFirst('Exception: ', '')
+              .replaceFirst('Failed to get response: ', ''),
+        );
         _statusMessage = 'Tap to try again';
       });
     } finally {
@@ -291,8 +302,8 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
   Future<String> _callOpenRouter() async {
     final requestMessages = <Map<String, String>>[
       {
-        'role': 'user',
-        'content': 'Instruction: $_assistantInstruction',
+        'role': 'system',
+        'content': _assistantInstruction,
       },
       ..._messages,
     ];
@@ -306,8 +317,10 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
         'X-Title': 'Manoveda Voice Assistant',
       },
       body: jsonEncode({
-        'model': 'google/gemma-3-4b-it:free',
+        'model': 'google/gemini-2.5-flash-lite',
         'messages': requestMessages,
+        if (ApiService.userId?.trim().isNotEmpty == true)
+          'user': ApiService.userId,
         'temperature': 0.7,
         'max_tokens': 200,
       }),
@@ -331,6 +344,23 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
     }
 
     return message;
+  }
+
+  String _humanizeApiError(String error) {
+    final normalized = error.trim().toLowerCase();
+    if (normalized.contains('user not found') ||
+        normalized.contains('invalid api key') ||
+        normalized.contains('unauthorized')) {
+      return _assistantInvalidKeyMessage;
+    }
+    if (normalized.contains('provider returned error') ||
+        normalized.contains('temporarily rate-limited upstream') ||
+        normalized.contains('too many requests') ||
+        normalized.contains('rate limit') ||
+        normalized.contains('429')) {
+      return _assistantBusyMessage;
+    }
+    return error;
   }
 
 
