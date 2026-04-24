@@ -12,14 +12,25 @@ class AppConfig {
   static String geminiApiKey = '';
   static String openRouterApiKey = '';
 
+  static String _sanitizeApiKey(String value) {
+    return value
+        .replaceAll(RegExp(r'[\u200B-\u200D\uFEFF]'), '')
+        .replaceAll(RegExp(r'\s+'), '')
+        .trim();
+  }
+
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final savedProvider = prefs.getString(_providerKey);
     selectedProvider = savedProvider == AiProvider.openRouter.name
         ? AiProvider.openRouter
         : AiProvider.gemini;
-    geminiApiKey = prefs.getString(_geminiApiKeyKey)?.trim() ?? '';
-    openRouterApiKey = prefs.getString(_openRouterApiKeyKey)?.trim() ?? '';
+    geminiApiKey = _sanitizeApiKey(
+      prefs.getString(_geminiApiKeyKey) ?? '',
+    );
+    openRouterApiKey = _sanitizeApiKey(
+      prefs.getString(_openRouterApiKeyKey) ?? '',
+    );
   }
 
   static Future<void> saveAiSettings({
@@ -31,11 +42,11 @@ class AppConfig {
 
     selectedProvider = provider;
     if (geminiKey != null) {
-      geminiApiKey = geminiKey.trim();
+      geminiApiKey = _sanitizeApiKey(geminiKey);
       await prefs.setString(_geminiApiKeyKey, geminiApiKey);
     }
     if (openRouterKey != null) {
-      openRouterApiKey = openRouterKey.trim();
+      openRouterApiKey = _sanitizeApiKey(openRouterKey);
       await prefs.setString(_openRouterApiKeyKey, openRouterApiKey);
     }
 

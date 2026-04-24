@@ -476,6 +476,14 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen>
         normalized.contains('429')) {
       return _assistantBusyMessage;
     }
+    if (normalized.contains('socketexception') ||
+        normalized.contains('failed host lookup') ||
+        normalized.contains('host lookup') ||
+        normalized.contains('no address associated with hostname') ||
+        normalized.contains('connection failed') ||
+        normalized.contains('network is unreachable')) {
+      return 'Your device could not reach the ${AppConfig.activeProviderLabel} server. Please check Wi-Fi/mobile data, DNS, VPN/firewall settings, then try again.';
+    }
     if (normalized.contains('not found for api version') ||
         normalized.contains('not supported for generatecontent') ||
         normalized.contains('unsupported model')) {
