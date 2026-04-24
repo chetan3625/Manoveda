@@ -109,19 +109,24 @@ class ApiService {
       );
     }
 
+    final isSuccess = response.statusCode >= 200 && response.statusCode < 300;
+
     if (response.body.isEmpty) {
-      return {
-        'success': response.statusCode >= 200 && response.statusCode < 300,
-      };
+      return {'success': isSuccess};
     }
 
     final decoded = jsonDecode(response.body);
     if (decoded is Map<String, dynamic>) {
-      return decoded;
+      return {
+        ...decoded,
+        'success': decoded['success'] is bool ? decoded['success'] : isSuccess,
+        'statusCode': response.statusCode,
+      };
     }
 
     return {
-      'success': response.statusCode >= 200 && response.statusCode < 300,
+      'success': isSuccess,
+      'statusCode': response.statusCode,
       'data': decoded,
     };
   }

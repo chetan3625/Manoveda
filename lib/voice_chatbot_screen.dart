@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -18,11 +19,8 @@ class VoiceChatbotScreen extends StatefulWidget {
   State<VoiceChatbotScreen> createState() => _VoiceChatbotScreenState();
 }
 
-class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTickerProviderStateMixin {
-  static const String _assistantSetupMessage =
-      'Voice assistant is not configured.';
-  static const String _assistantInvalidKeyMessage =
-      'OpenRouter rejected the configured key: User not found. Replace it with a valid OpenRouter key.';
+class _VoiceChatbotScreenState extends State<VoiceChatbotScreen>
+    with SingleTickerProviderStateMixin {
   static const String _assistantBusyMessage =
       'The AI provider is busy right now. Please try again in a moment.';
 
@@ -39,6 +37,7 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
   String _lastWords = '';
   String _statusMessage = 'Tap to start talking';
   String _apiError = '';
+  bool _isLoadingSettings = true;
 
   static const String _assistantInstruction =
       'You are a supportive mental wellness assistant. Reply in the language the user uses (Marathi or English). IMPORTANT: If you respond in Marathi, use only Marathi Devanagari script. Do not provide translations, transliterations, or explanations in English. Keep responses concise for voice conversation.';
@@ -60,8 +59,20 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
 
     _speechToText = stt.SpeechToText();
     _flutterTts = FlutterTts();
+    _loadAiSettings();
     _initializeSpeech();
     _initializeTts();
+  }
+
+  Future<void> _loadAiSettings() async {
+    await AppConfig.init();
+    if (!mounted) return;
+    setState(() {
+      _isLoadingSettings = false;
+      if (!AppConfig.hasActiveApiKey) {
+        _statusMessage = 'Add an API key to start talking';
+      }
+    });
   }
 
   Future<void> _initializeSpeech() async {
@@ -117,7 +128,7 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
     if (!_animationController.isAnimating) {
       _animationController.repeat();
     }
-    
+
     _levelTimer?.cancel();
     _levelTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (!_isListening && !_isSpeaking) {
@@ -233,7 +244,9 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
       localeId: localeId,
       listenFor: const Duration(seconds: 30),
       pauseFor: const Duration(seconds: 3),
-      listenMode: stt.ListenMode.confirmation,
+      listenOptions: stt.SpeechListenOptions(
+        listenMode: stt.ListenMode.confirmation,
+      ),
     );
   }
 
@@ -248,9 +261,10 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
   Future<void> _processUserMessage(String message) async {
     if (!mounted) return;
 
-    if (!AppConfig.hasOpenRouterApiKey) {
+    if (!AppConfig.hasActiveApiKey) {
       setState(() {
-        _apiError = _assistantSetupMessage;
+        _apiError =
+            'Add a ${AppConfig.activeProviderLabel} API key to continue.';
         _statusMessage = 'AI assistant is not configured';
       });
       return;
@@ -264,14 +278,17 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
 
     // Add user message to context
     _messages.add({'role': 'user', 'content': message});
-    
+
     // Keep history manageable (last 10 turns)
     if (_messages.length > 21) {
-      _messages.removeRange(1, 3); // Remove oldest user/assistant pair, keep system prompt
+      _messages.removeRange(
+        1,
+        3,
+      ); // Remove oldest user/assistant pair, keep system prompt
     }
 
     try {
-      final response = await _callOpenRouter();
+      final response = await _callAiProvider();
       _messages.add({'role': 'assistant', 'content': response});
 
       if (!mounted) return;
@@ -284,7 +301,8 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
       if (!mounted) return;
       setState(() {
         _apiError = _humanizeApiError(
-          e.toString()
+          e
+              .toString()
               .replaceFirst('Exception: ', '')
               .replaceFirst('Failed to get response: ', ''),
         );
@@ -299,12 +317,16 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
     }
   }
 
+  Future<String> _callAiProvider() {
+    return switch (AppConfig.selectedProvider) {
+      AiProvider.gemini => _callGemini(),
+      AiProvider.openRouter => _callOpenRouter(),
+    };
+  }
+
   Future<String> _callOpenRouter() async {
     final requestMessages = <Map<String, String>>[
-      {
-        'role': 'system',
-        'content': _assistantInstruction,
-      },
+      {'role': 'system', 'content': _assistantInstruction},
       ..._messages,
     ];
 
@@ -329,7 +351,8 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
     final Map<String, dynamic> data = jsonDecode(response.body);
     if (response.statusCode != 200) {
       final apiMessage =
-          data['error']?['message']?.toString() ?? 'Unknown OpenRouter API error';
+          data['error']?['message']?.toString() ??
+          'Unknown OpenRouter API error';
       throw Exception(apiMessage);
     }
 
@@ -338,9 +361,74 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
       throw Exception('OpenRouter returned an empty response.');
     }
 
-    final message = choices.first['message']?['content']?.toString().trim() ?? '';
+    final message =
+        choices.first['message']?['content']?.toString().trim() ?? '';
     if (message.isEmpty) {
       throw Exception('OpenRouter returned an empty message.');
+    }
+
+    return message;
+  }
+
+  Future<String> _callGemini() async {
+    final conversation = StringBuffer()
+      ..writeln(_assistantInstruction)
+      ..writeln()
+      ..writeln('Conversation so far:');
+
+    for (final entry in _messages) {
+      final role = entry['role'] ?? 'user';
+      final content = entry['content'] ?? '';
+      if (content.trim().isEmpty) continue;
+      conversation.writeln('${role.toUpperCase()}: $content');
+    }
+
+    conversation.writeln();
+    conversation.writeln(
+      'Reply naturally, keep it concise, and match the user language.',
+    );
+
+    final response = await http.post(
+      Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AppConfig.geminiApiKey}',
+      ),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'contents': [
+          {
+            'role': 'user',
+            'parts': [
+              {'text': conversation.toString()},
+            ],
+          },
+        ],
+        'generationConfig': {'temperature': 0.7, 'maxOutputTokens': 200},
+      }),
+    );
+
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    if (response.statusCode != 200) {
+      final apiMessage =
+          data['error']?['message']?.toString() ?? 'Unknown Gemini API error';
+      throw Exception(apiMessage);
+    }
+
+    final candidates = data['candidates'];
+    if (candidates is! List || candidates.isEmpty) {
+      throw Exception('Gemini returned an empty response.');
+    }
+
+    final parts = candidates.first['content']?['parts'];
+    if (parts is! List || parts.isEmpty) {
+      throw Exception('Gemini returned an empty message.');
+    }
+
+    final message = parts
+        .map((part) => part['text']?.toString() ?? '')
+        .join(' ')
+        .trim();
+    if (message.isEmpty) {
+      throw Exception('Gemini returned an empty message.');
     }
 
     return message;
@@ -350,8 +438,10 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
     final normalized = error.trim().toLowerCase();
     if (normalized.contains('user not found') ||
         normalized.contains('invalid api key') ||
+        normalized.contains('api key not valid') ||
+        normalized.contains('api_key_invalid') ||
         normalized.contains('unauthorized')) {
-      return _assistantInvalidKeyMessage;
+      return '${AppConfig.activeProviderLabel} rejected the API key. Please update it and try again.';
     }
     if (normalized.contains('provider returned error') ||
         normalized.contains('temporarily rate-limited upstream') ||
@@ -363,6 +453,174 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
     return error;
   }
 
+  Future<void> _showApiKeyBottomSheet() async {
+    final geminiController = TextEditingController(
+      text: AppConfig.geminiApiKey,
+    );
+    final openRouterController = TextEditingController(
+      text: AppConfig.openRouterApiKey,
+    );
+    AiProvider selectedProvider = AppConfig.selectedProvider;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF10233A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            final activeController = selectedProvider == AiProvider.gemini
+                ? geminiController
+                : openRouterController;
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Voice Assistant API Key',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Choose the provider and save the key you want the chatbot to use.',
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: CupertinoSlidingSegmentedControl<AiProvider>(
+                      backgroundColor: Colors.transparent,
+                      thumbColor: Colors.blueAccent,
+                      groupValue: selectedProvider,
+                      children: const {
+                        AiProvider.gemini: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 10,
+                          ),
+                          child: Text(
+                            'Gemini',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        AiProvider.openRouter: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 10,
+                          ),
+                          child: Text(
+                            'OpenRouter',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      },
+                      onValueChanged: (value) {
+                        if (value == null) return;
+                        setSheetState(() {
+                          selectedProvider = value;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  TextField(
+                    controller: activeController,
+                    obscureText: true,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText:
+                          '${selectedProvider == AiProvider.gemini ? 'Gemini' : 'OpenRouter'} API Key',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      hintText: 'Paste your API key here',
+                      hintStyle: const TextStyle(color: Colors.white38),
+                      filled: true,
+                      fillColor: Colors.white10,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final navigator = Navigator.of(context);
+                        final activeKey = activeController.text.trim();
+                        if (activeKey.isEmpty) {
+                          setState(() {
+                            _apiError =
+                                'Please enter a ${selectedProvider == AiProvider.gemini ? 'Gemini' : 'OpenRouter'} API key.';
+                          });
+                          return;
+                        }
+
+                        await AppConfig.saveAiSettings(
+                          provider: selectedProvider,
+                          geminiKey: geminiController.text,
+                          openRouterKey: openRouterController.text,
+                        );
+
+                        if (!mounted) return;
+                        setState(() {
+                          _apiError = '';
+                          _statusMessage = 'Tap to start talking';
+                        });
+                        navigator.pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text('Save'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    geminiController.dispose();
+    openRouterController.dispose();
+  }
 
   Future<void> _speak(String text) async {
     if (text.isEmpty) return;
@@ -370,7 +628,7 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
     try {
       // Detect language
       final language = _detectLanguage(text);
-      
+
       // Filter text to speak: if Marathi is detected, extract only the segments containing Devanagari script
       String textToSpeak = text;
       if (language == 'mr-IN') {
@@ -378,7 +636,12 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
         final matches = marathiSegmentRegex.allMatches(text);
         textToSpeak = matches
             .map((m) => m.group(0))
-            .where((s) => s != null && s.trim().isNotEmpty && RegExp(r'[\u0900-\u097F]').hasMatch(s))
+            .where(
+              (s) =>
+                  s != null &&
+                  s.trim().isNotEmpty &&
+                  RegExp(r'[\u0900-\u097F]').hasMatch(s),
+            )
             .join(' ')
             .trim();
       }
@@ -399,7 +662,7 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
       });
 
       _startLevelAnimation();
-      
+
       // Ensure we stop any current playback to prevent engine service errors
       await _flutterTts.stop();
       await _flutterTts.speak(textToSpeak.isNotEmpty ? textToSpeak : text);
@@ -482,6 +745,34 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 54, 20, 0),
+                    child: Row(
+                      children: [
+                        const Spacer(),
+                        FilledButton.icon(
+                          onPressed: _showApiKeyBottomSheet,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.white12,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                          ),
+                          icon: const Icon(Icons.key_outlined, size: 18),
+                          label: Text(
+                            _isLoadingSettings
+                                ? 'Loading...'
+                                : AppConfig.hasActiveApiKey
+                                ? AppConfig.activeProviderLabel
+                                : 'Add API Key',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
                   // Status text
                   Text(
                     _statusMessage,
@@ -504,8 +795,23 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
                       padding: const EdgeInsets.symmetric(horizontal: 32),
                       child: Text(
                         _apiError,
-                        style: const TextStyle(color: Colors.redAccent, fontSize: 14),
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 14,
+                        ),
                         textAlign: TextAlign.center,
+                      ),
+                    ),
+                  const Spacer(),
+                  if (!_isLoadingSettings)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 26),
+                      child: Text(
+                        'Current provider: ${AppConfig.activeProviderLabel}',
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                 ],
@@ -560,16 +866,16 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen> with SingleTick
             colors: _isListening
                 ? [Colors.red.shade400, Colors.red.shade700]
                 : _isProcessing
-                    ? [Colors.grey.shade500, Colors.grey.shade700]
-                    : [Colors.blue.shade400, Colors.indigo.shade700],
+                ? [Colors.grey.shade500, Colors.grey.shade700]
+                : [Colors.blue.shade400, Colors.indigo.shade700],
           ),
         ),
         child: Icon(
           _isListening
               ? Icons.mic
               : _isProcessing
-                  ? Icons.hourglass_empty
-                  : Icons.mic_none,
+              ? Icons.hourglass_empty
+              : Icons.mic_none,
           size: 35,
           color: Colors.white,
         ),
