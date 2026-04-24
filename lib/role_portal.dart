@@ -975,17 +975,20 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
     return [
       _sectionHeader('Appointments', ''),
       ...items.map((appointment) {
-        final doctor = appointment['doctor'] as Map<String, dynamic>? ?? {};
+        final doctor = _mapFromValue(appointment['doctor']);
         final canPay =
             appointment['status'] == 'accepted' &&
             appointment['paymentStatus'] != 'paid';
         final unlocked =
             appointment['status'] == 'confirmed' &&
             appointment['paymentStatus'] == 'paid';
-        final prescription =
-            appointment['prescription'] as Map<String, dynamic>?;
+        final prescription = _mapFromValue(appointment['prescription']);
         return _contentCard(
-          title: Text(doctor['name']?.toString() ?? 'Doctor'),
+          title: Text(
+            _displayText(doctor['name']) ??
+                _displayText(appointment['doctorName']) ??
+                'Doctor',
+          ),
           subtitle: Text(
             '${appointment['type']} • ${appointment['consultationMode'] ?? 'scheduled'}\n${_formatAppointmentDate(appointment)}\nStatus: ${appointment['status']} | Payment: ${appointment['paymentStatus']}',
           ),
@@ -1015,7 +1018,7 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
                         : 'Join Video',
                   ),
                 ),
-              if (prescription != null)
+              if (prescription.isNotEmpty)
                 OutlinedButton(
                   onPressed: () {
                     final modifiedPrescription = Map<String, dynamic>.from(
@@ -1078,7 +1081,12 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
     try {
       print('Generating PDF for prescription: $prescription');
       final pdf = pw.Document();
-      final doctor = prescription['doctor'] as Map<String, dynamic>? ?? {};
+      final doctor = _mapFromValue(prescription['doctor']);
+      final doctorName =
+          _displayText(doctor['name']) ??
+          _displayText(prescription['doctorName']) ??
+          _displayText(prescription['doctor']) ??
+          'Doctor';
       final medicines = _listFromValue(prescription['medicines']);
 
       print('Doctor: $doctor');
@@ -1098,7 +1106,7 @@ class _PatientPortalScreenState extends State<PatientPortalScreen> {
                   ),
                 ),
                 pw.SizedBox(height: 20),
-                pw.Text('Doctor: Dr. ${doctor['name'] ?? 'Doctor'}'),
+                pw.Text('Doctor: Dr. $doctorName'),
                 pw.Text('Patient: ${_profile?['name'] ?? 'Patient'}'),
                 pw.Text(
                   'Date: ${DateFormat('yyyy-MM-dd').format(DateTime.now())}',
@@ -4483,6 +4491,13 @@ List<Map<String, dynamic>> _listFromValue(dynamic value) {
       .whereType<Map>()
       .map((item) => Map<String, dynamic>.from(item))
       .toList();
+}
+
+Map<String, dynamic> _mapFromValue(dynamic value) {
+  if (value is Map) {
+    return Map<String, dynamic>.from(value);
+  }
+  return {};
 }
 
 String _idOf(Map<String, dynamic> item) =>
