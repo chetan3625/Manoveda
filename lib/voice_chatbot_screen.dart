@@ -23,6 +23,11 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen>
     with SingleTickerProviderStateMixin {
   static const String _assistantBusyMessage =
       'The AI provider is busy right now. Please try again in a moment.';
+  static const List<String> _geminiModelFallbacks = [
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite',
+    'gemini-1.5-flash-latest',
+  ];
 
   // Speech and TTS instances
   late stt.SpeechToText _speechToText;
@@ -388,50 +393,71 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen>
       'Reply naturally, keep it concise, and match the user language.',
     );
 
-    final response = await http.post(
-      Uri.parse(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AppConfig.geminiApiKey}',
-      ),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'contents': [
-          {
-            'role': 'user',
-            'parts': [
-              {'text': conversation.toString()},
-            ],
-          },
-        ],
-        'generationConfig': {'temperature': 0.7, 'maxOutputTokens': 200},
-      }),
+    String? lastError;
+
+    for (final model in _geminiModelFallbacks) {
+      final response = await http.post(
+        Uri.parse(
+          'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=${AppConfig.geminiApiKey}',
+        ),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'contents': [
+            {
+              'role': 'user',
+              'parts': [
+                {'text': conversation.toString()},
+              ],
+            },
+          ],
+          'generationConfig': {'temperature': 0.7, 'maxOutputTokens': 200},
+        }),
+      );
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      if (response.statusCode != 200) {
+        lastError =
+            data['error']?['message']?.toString() ??
+            'Unknown Gemini API error';
+        final normalizedError = lastError.toLowerCase();
+        final shouldTryAnotherModel =
+            normalizedError.contains('not found for api version') ||
+            normalizedError.contains('is not found') ||
+            normalizedError.contains('not supported for generatecontent') ||
+            normalizedError.contains('unsupported model');
+
+        if (shouldTryAnotherModel) {
+          continue;
+        }
+
+        throw Exception(lastError);
+      }
+
+      final candidates = data['candidates'];
+      if (candidates is! List || candidates.isEmpty) {
+        throw Exception('Gemini returned an empty response.');
+      }
+
+      final parts = candidates.first['content']?['parts'];
+      if (parts is! List || parts.isEmpty) {
+        throw Exception('Gemini returned an empty message.');
+      }
+
+      final message = parts
+          .map((part) => part['text']?.toString() ?? '')
+          .join(' ')
+          .trim();
+      if (message.isNotEmpty) {
+        return message;
+      }
+
+      throw Exception('Gemini returned an empty message.');
+    }
+
+    throw Exception(
+      lastError ??
+          'No supported Gemini model is available for this API key right now.',
     );
-
-    final Map<String, dynamic> data = jsonDecode(response.body);
-    if (response.statusCode != 200) {
-      final apiMessage =
-          data['error']?['message']?.toString() ?? 'Unknown Gemini API error';
-      throw Exception(apiMessage);
-    }
-
-    final candidates = data['candidates'];
-    if (candidates is! List || candidates.isEmpty) {
-      throw Exception('Gemini returned an empty response.');
-    }
-
-    final parts = candidates.first['content']?['parts'];
-    if (parts is! List || parts.isEmpty) {
-      throw Exception('Gemini returned an empty message.');
-    }
-
-    final message = parts
-        .map((part) => part['text']?.toString() ?? '')
-        .join(' ')
-        .trim();
-    if (message.isEmpty) {
-      throw Exception('Gemini returned an empty message.');
-    }
-
-    return message;
   }
 
   String _humanizeApiError(String error) {
@@ -449,6 +475,11 @@ class _VoiceChatbotScreenState extends State<VoiceChatbotScreen>
         normalized.contains('rate limit') ||
         normalized.contains('429')) {
       return _assistantBusyMessage;
+    }
+    if (normalized.contains('not found for api version') ||
+        normalized.contains('not supported for generatecontent') ||
+        normalized.contains('unsupported model')) {
+      return 'The selected Gemini model is not available for this API key right now. Please try again, or switch provider in the API key settings.';
     }
     return error;
   }

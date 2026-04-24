@@ -4206,61 +4206,69 @@ Widget _heroCard({
 Widget _statsWrap(List<_StatCard> cards) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 16),
-    child: Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 12,
-      runSpacing: 12,
-      children: cards
-          .map(
-            (card) => Flexible(
-              fit: FlexFit.loose,
-              child: Container(
-                constraints: const BoxConstraints(minWidth: 140, maxWidth: 180),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.blue.withValues(alpha: 0.3),
-                      Colors.purple.withValues(alpha: 0.2),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(card.icon, color: Colors.white),
-                    const SizedBox(height: 10),
-                    Text(
-                      card.value,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : MediaQuery.sizeOf(context).width;
+        final cardWidth = ((availableWidth - 12) / 2).clamp(140.0, 180.0);
+
+        return Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 12,
+          children: cards
+              .map(
+                (card) => SizedBox(
+                  width: cardWidth,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue.withValues(alpha: 0.3),
+                          Colors.purple.withValues(alpha: 0.2),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    Text(
-                      card.label,
-                      style: const TextStyle(color: Colors.white),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(card.icon, color: Colors.white),
+                        const SizedBox(height: 10),
+                        Text(
+                          card.value,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          card.label,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          )
-          .toList(),
+              )
+              .toList(),
+        );
+      },
     ),
   );
 }
